@@ -27,6 +27,7 @@ export const DockedMusicPlayer: React.FC = () => {
   const {
     selectedRealSong,
     isPlayerModalOpen,
+    closeMusicPlayer,
     closeRealSongPlayer,
     audioSourcePreference,
     setAudioSourcePreference,
@@ -42,17 +43,13 @@ export const DockedMusicPlayer: React.FC = () => {
 
   if (!selectedRealSong || isPlayerModalOpen) return null;
 
-  const ytEmbedUrl = getYouTubeEmbedUrl(selectedRealSong);
-  const spotifyEmbedUrl = getSpotifyEmbedUrl(selectedRealSong);
-  const ytMusicUrl = getYouTubeMusicUrl(selectedRealSong);
-  const spotifyUrl = getSpotifyUrl(selectedRealSong);
+  const ytEmbedUrl    = getYouTubeEmbedUrl(selectedRealSong);   // null if no valid ID
+  const spotifyEmbedUrl = getSpotifyEmbedUrl(selectedRealSong); // null if no valid ID
+  const ytMusicUrl    = getYouTubeMusicUrl(selectedRealSong);
+  const spotifyUrl    = getSpotifyUrl(selectedRealSong);
 
-  const isDraftedSequence = draftedTracks.some(
-    (t) => t.song.id === selectedRealSong.id
-  );
-  const currentTrackIndex = draftedTracks.findIndex(
-    (t) => t.song.id === selectedRealSong.id
-  );
+  const isDraftedSequence = draftedTracks.some((t) => t.song.id === selectedRealSong.id);
+  const currentTrackIndex = draftedTracks.findIndex((t) => t.song.id === selectedRealSong.id);
 
   const handleToggleSynth = () => {
     if (isSynthPlaying) {
@@ -62,6 +59,18 @@ export const DockedMusicPlayer: React.FC = () => {
       playSongPreview(selectedRealSong.audioSynthFreq, 8, audioEnabled);
       setIsSynthPlaying(true);
     }
+  };
+
+  const handleSourceSwitch = (pref: typeof audioSourcePreference) => {
+    stopSongPreview();
+    setIsSynthPlaying(false);
+    setAudioSourcePreference(pref);
+  };
+
+  const handleClose = () => {
+    stopSongPreview();
+    setIsSynthPlaying(false);
+    closeMusicPlayer(); // clears selectedRealSong + closes modal
   };
 
   return (
@@ -88,7 +97,7 @@ export const DockedMusicPlayer: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h4 className="text-sm font-extrabold text-white truncate group-hover:text-purple-300">
+              <h4 className="text-sm font-extrabold text-white truncate">
                 {selectedRealSong.title}
               </h4>
               <p className="text-xs text-gray-400 truncate">
@@ -100,34 +109,37 @@ export const DockedMusicPlayer: React.FC = () => {
           {/* In-App Source Switcher Tabs */}
           <div className="hidden md:flex items-center gap-1 bg-gray-900 p-1 rounded-xl border border-gray-800 text-xs font-bold">
             <button
-              onClick={() => setAudioSourcePreference('youtube')}
+              onClick={() => handleSourceSwitch('youtube')}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer ${
                 audioSourcePreference === 'youtube'
                   ? 'bg-red-600 text-white shadow'
                   : 'text-gray-400 hover:text-white'
               }`}
+              aria-label="Switch to YouTube preview"
             >
               <Music2 className="w-3.5 h-3.5" />
               <span>YouTube</span>
             </button>
             <button
-              onClick={() => setAudioSourcePreference('spotify')}
+              onClick={() => handleSourceSwitch('spotify')}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer ${
                 audioSourcePreference === 'spotify'
                   ? 'bg-emerald-600 text-white shadow'
                   : 'text-gray-400 hover:text-white'
               }`}
+              aria-label="Switch to Spotify preview"
             >
               <Radio className="w-3.5 h-3.5" />
               <span>Spotify</span>
             </button>
             <button
-              onClick={() => setAudioSourcePreference('synth')}
+              onClick={() => handleSourceSwitch('synth')}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer ${
                 audioSourcePreference === 'synth'
                   ? 'bg-purple-600 text-white shadow'
                   : 'text-gray-400 hover:text-white'
               }`}
+              aria-label="Switch to Synth tone preview"
             >
               <Volume2 className="w-3.5 h-3.5" />
               <span>Synth</span>
@@ -141,22 +153,24 @@ export const DockedMusicPlayer: React.FC = () => {
                 <button
                   onClick={() => {
                     stopSongPreview();
+                    setIsSynthPlaying(false);
                     playPrevDraftedTrack();
                   }}
                   disabled={currentTrackIndex <= 0}
                   className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-30 cursor-pointer"
-                  title="Previous Track"
+                  aria-label="Previous drafted track"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => {
                     stopSongPreview();
+                    setIsSynthPlaying(false);
                     playNextDraftedTrack();
                   }}
                   disabled={currentTrackIndex >= draftedTracks.length - 1}
                   className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-30 cursor-pointer"
-                  title="Next Track"
+                  aria-label="Next drafted track"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -166,7 +180,7 @@ export const DockedMusicPlayer: React.FC = () => {
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 transition cursor-pointer"
-              title={isCollapsed ? 'Expand Player' : 'Collapse Player'}
+              aria-label={isCollapsed ? 'Expand music player' : 'Collapse music player'}
             >
               <Volume2 className="w-4 h-4" />
             </button>
@@ -174,50 +188,53 @@ export const DockedMusicPlayer: React.FC = () => {
             <button
               onClick={() => openRealSongPlayer(selectedRealSong)}
               className="p-2 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-200 transition cursor-pointer"
-              title="Full Screen Player Modal"
+              aria-label="Open full screen player"
             >
               <Maximize2 className="w-4 h-4" />
             </button>
 
             <button
-              onClick={() => {
-                stopSongPreview();
-                closeRealSongPlayer();
-              }}
+              onClick={handleClose}
               className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white transition cursor-pointer"
-              title="Close Audio Dock"
+              aria-label="Close audio dock"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Embedded Player Body (Renders directly on the website) */}
+        {/* Embedded Player Body */}
         {!isCollapsed && (
           <div className="p-3 bg-black flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-900">
             {audioSourcePreference === 'youtube' && (
               <div className="w-full flex items-center justify-between gap-4">
-                <div className="w-full md:w-80 h-24 rounded-lg overflow-hidden border border-gray-800 bg-black flex-shrink-0">
-                  <iframe
-                    src={ytEmbedUrl}
-                    title="In-App YouTube Audio Player"
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  />
-                </div>
+                {ytEmbedUrl ? (
+                  <div className="w-full md:w-80 h-24 rounded-lg overflow-hidden border border-gray-800 bg-black flex-shrink-0">
+                    <iframe
+                      key={`yt-dock-${selectedRealSong.id}`}
+                      src={ytEmbedUrl}
+                      title={`${selectedRealSong.title} – YouTube Preview`}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-900 border border-gray-800 text-xs text-gray-300">
+                    <Music2 className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    <div>
+                      <p className="font-bold text-white">No embed available for this track.</p>
+                      <p className="text-gray-400">Open on YouTube to preview.</p>
+                    </div>
+                  </div>
+                )}
                 <div className="hidden sm:flex flex-col gap-1 text-xs text-gray-400 flex-1">
-                  <span className="font-bold text-white flex items-center gap-1.5">
-                    <Music2 className="w-4 h-4 text-red-500" />
-                    In-App YouTube Audio Player Active
-                  </span>
-                  <p>Streaming full audio directly on Album Architect site.</p>
                   <a
                     href={ytMusicUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-purple-400 hover:underline flex items-center gap-1 mt-1 font-semibold"
+                    className="text-purple-400 hover:underline flex items-center gap-1 font-semibold"
                   >
-                    <span>Open in YouTube Music app</span>
+                    <span>Open in YouTube Music</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
@@ -229,18 +246,20 @@ export const DockedMusicPlayer: React.FC = () => {
                 {spotifyEmbedUrl ? (
                   <div className="w-full md:w-96 h-[80px] rounded-lg overflow-hidden border border-gray-800 bg-black flex-shrink-0">
                     <iframe
+                      key={`sp-dock-${selectedRealSong.id}`}
                       src={spotifyEmbedUrl}
                       width="100%"
                       height="80"
                       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                       loading="lazy"
                       className="border-0"
+                      title={`${selectedRealSong.title} – Spotify Preview`}
                     />
                   </div>
                 ) : (
                   <div className="py-2 px-4 rounded-lg bg-gray-900 border border-gray-800 text-xs text-gray-300 flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-                    <span>In-App Spotify Bridge Active for &quot;{selectedRealSong.title}&quot;</span>
+                    <Radio className="w-4 h-4 text-emerald-400" />
+                    <span>No Spotify embed — open in app below.</span>
                   </div>
                 )}
                 <a
@@ -265,12 +284,13 @@ export const DockedMusicPlayer: React.FC = () => {
                         ? 'bg-pink-600 text-white animate-pulse'
                         : 'bg-purple-600 hover:bg-purple-500 text-white'
                     }`}
+                    aria-label={isSynthPlaying ? 'Stop synth tone' : 'Play synth tone'}
                   >
                     {isSynthPlaying ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-                    <span>{isSynthPlaying ? 'Stop Synth Tone' : 'Play Synth Tone'}</span>
+                    <span>{isSynthPlaying ? 'Stop Synth' : 'Play Synth'}</span>
                   </button>
                   <span className="text-xs text-gray-300 font-semibold">
-                    {selectedRealSong.audioSynthFreq} Hz Synthetic Oscillator
+                    {selectedRealSong.audioSynthFreq} Hz oscillator
                   </span>
                 </div>
               </div>

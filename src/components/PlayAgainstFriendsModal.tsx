@@ -64,10 +64,12 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
 
   const handleCreateAndStart = () => {
     playDraftLockSound(audioEnabled);
-    setDraftSeed(generatedSeed);
+    // Pass seed directly to startNewDraft — do NOT also call setDraftSeed,
+    // which would trigger a second startNewDraft internally. Audit H1.
     startNewDraft(gameMode, selectedEra, difficulty, generatedSeed);
     onClose();
   };
+
 
   const handleJoinSeed = (seedToJoin: string) => {
     const cleanSeed = seedToJoin.trim().toUpperCase();
@@ -143,15 +145,16 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
       }
 
       const rawSub = decoded.sub || {};
+      // Support both old (pacing/synergy/starPower) and new (slotFit/albumFlow/impact) shapes
       const matchup: VersusMatchup = {
         challengerAlias: sanitizeString(decoded.alias, 'Executive Opponent', 24),
         challengerScore: Math.round(rawScore * 10) / 10,
         challengerGrade: sanitizeString(decoded.grade, 'Gold Solid', 20),
         challengerSubScores: {
-          pacing: clampNum(rawSub.pacing, 0, 10, 7.5),
-          synergy: clampNum(rawSub.synergy, 0, 10, 7.5),
-          cohesion: clampNum(rawSub.cohesion, 0, 10, 7.5),
-          starPower: clampNum(rawSub.starPower, 0, 10, 7.5),
+          slotFit:   clampNum(rawSub.slotFit   ?? rawSub.pacing,    0, 10, 7.5),
+          albumFlow: clampNum(rawSub.albumFlow  ?? rawSub.synergy,   0, 10, 7.5),
+          cohesion:  clampNum(rawSub.cohesion,                       0, 10, 7.5),
+          impact:    clampNum(rawSub.impact     ?? rawSub.starPower, 0, 10, 7.5),
         },
         seed: sanitizeString(decoded.seed, 'ARCH-1v1', 12),
         gameMode: decoded.mode === 'album' ? 'album' : 'ep',
@@ -443,27 +446,27 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Flow & Pacing</span>
-                    <span className="font-bold text-purple-300">{evaluationResult.subScores.pacing.toFixed(1)}</span>
-                    <span className="font-bold text-pink-300">{versusMatchup.challengerSubScores.pacing.toFixed(1)}</span>
+                    <span className="text-gray-300">Slot Fit</span>
+                    <span className="font-bold text-purple-300">{evaluationResult.subScores.slotFit.toFixed(1)}</span>
+                    <span className="font-bold text-pink-300">{versusMatchup.challengerSubScores.slotFit.toFixed(1)}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Artist Synergy</span>
-                    <span className="font-bold text-purple-300">{evaluationResult.subScores.synergy.toFixed(1)}</span>
-                    <span className="font-bold text-pink-300">{versusMatchup.challengerSubScores.synergy.toFixed(1)}</span>
+                    <span className="text-gray-300">Album Flow</span>
+                    <span className="font-bold text-purple-300">{evaluationResult.subScores.albumFlow.toFixed(1)}</span>
+                    <span className="font-bold text-pink-300">{versusMatchup.challengerSubScores.albumFlow.toFixed(1)}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Album Cohesion</span>
+                    <span className="text-gray-300">Cohesion</span>
                     <span className="font-bold text-purple-300">{evaluationResult.subScores.cohesion.toFixed(1)}</span>
                     <span className="font-bold text-pink-300">{versusMatchup.challengerSubScores.cohesion.toFixed(1)}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Star Power</span>
-                    <span className="font-bold text-purple-300">{evaluationResult.subScores.starPower.toFixed(1)}</span>
-                    <span className="font-bold text-pink-300">{versusMatchup.challengerSubScores.starPower.toFixed(1)}</span>
+                    <span className="text-gray-300">Impact</span>
+                    <span className="font-bold text-purple-300">{evaluationResult.subScores.impact.toFixed(1)}</span>
+                    <span className="font-bold text-pink-300">{versusMatchup.challengerSubScores.impact.toFixed(1)}</span>
                   </div>
                 </div>
               </div>

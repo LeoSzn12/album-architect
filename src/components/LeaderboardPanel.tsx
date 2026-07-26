@@ -169,11 +169,11 @@ export const LeaderboardPanel: React.FC = () => {
                 {/* Score Column */}
                 <div className="flex items-center gap-4 self-end sm:self-auto">
                   <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <span title="Pacing">P: <strong className="text-purple-300">{entry.subScores.pacing.toFixed(1)}</strong></span>
+                    <span title="Slot Fit">SF: <strong className="text-purple-300">{entry.subScores.slotFit?.toFixed(1) ?? '—'}</strong></span>
                     <span>•</span>
-                    <span title="Synergy">S: <strong className="text-pink-300">{entry.subScores.synergy.toFixed(1)}</strong></span>
+                    <span title="Album Flow">AF: <strong className="text-pink-300">{entry.subScores.albumFlow?.toFixed(1) ?? '—'}</strong></span>
                     <span>•</span>
-                    <span title="Cohesion">C: <strong className="text-cyan-300">{entry.subScores.cohesion.toFixed(1)}</strong></span>
+                    <span title="Cohesion">C: <strong className="text-cyan-300">{entry.subScores.cohesion?.toFixed(1) ?? '—'}</strong></span>
                   </div>
 
                   <div className="text-right">

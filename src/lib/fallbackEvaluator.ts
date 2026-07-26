@@ -1,3 +1,16 @@
+/**
+ * Canonical A&R fallback evaluator.
+ *
+ * SINGLE SOURCE OF TRUTH — imported by both the API route
+ * (`src/app/api/critic-evaluate/route.ts`) and the Zustand store
+ * (`src/store/useDraftStore.ts`), so that a draft scored locally (network
+ * failure) and a draft scored on the server (no Gemini API key) produce
+ * byte-identical results.
+ *
+ * Delegates to `scoringEngine.ts` for the canonical weighted formula.
+ * Generates AI-style commentary from the deterministic scoring breakdown.
+ */
+
 import {
   GameMode,
   DraftedTrack,
@@ -6,33 +19,9 @@ import {
   EvaluationResult,
   EraFilter,
 } from '@/types/draft';
+import { scoreDraft, scoreToGradeBadge, scoreToVerdict } from '@/lib/scoringEngine';
 import { findOptimalPickForSlot } from '@/data/songs';
 
-/**
- * Canonical A&R fallback evaluator.
- *
- * SINGLE SOURCE OF TRUTH — imported by both the API route
- * (`src/app/api/critic-evaluate/route.ts`) and the Zustand store
- * (`src/store/useDraftStore.ts`), so that a draft scored locally (network
- * failure) and a draft scored on the server (no Gemini API key) produce
- * byte-identical results. Without this unification the two paths diverged —
- * the route hardcoded `rawScore: 9.5` while the store computed weighted
- * sub-scores, yielding different scores for the *same* draft depending on
- * whether the fetch succeeded.
- *
- * Formula (documented for audit reproducibility):
- *
- *   pacing     = clamp(4,10, round(10 - avgPacingDelta/15 - fatigueScore/30))
- *   synergy    = clamp(4,10, 7.5 + featureRatio*2 - abruptBpmCount*0.8)
- *   cohesion   = clamp(3,10, 9.8 - totalPenalty - pacingDisturbance)
- *   starPower  = clamp(5,10, avgEnergy/15 + highEnergyCount*0.4 + 3)
- *   overall    = clamp(4,10, 0.30·pacing + 0.25·synergy + 0.25·cohesion + 0.20·starPower)
- *
- *   Diamond Classic  ≥ 9.2
- *   Platinum Banger  ≥ 8.5
- *   Gold Solid       ≥ 7.5
- *   Mixtape Cut      otherwise
- */
 export function generateFallbackEvaluation(
   mode: GameMode,
   draftedTracks: DraftedTrack[],
@@ -40,76 +29,36 @@ export function generateFallbackEvaluation(
   energyMetrics: EnergyMetrics,
   eraFilter: EraFilter = 'all'
 ): EvaluationResult {
-  // 1. Pacing score: energy delta per slot from slot.targetEnergy.ideal
-  let totalPacingDelta = 0;
-  draftedTracks.forEach((dt) => {
-    totalPacingDelta += Math.abs(dt.song.energy - dt.slot.targetEnergy.ideal);
-  });
-  const avgPacingDelta =
-    draftedTracks.length > 0 ? totalPacingDelta / draftedTracks.length : 0;
-  const pacingSubScore = clamp(
-    4.0,
-    10.0,
-    round1(10 - avgPacingDelta / 15 - energyMetrics.fatigueScore / 30)
+  const { subScores, rawScore, finalScore } = scoreDraft(
+    draftedTracks,
+    monopolyReport,
+    energyMetrics
   );
 
-  // 2. Synergy sub-score: feature usage + smooth BPM transitions
-  const tracksWithFeatures = draftedTracks.filter(
-    (dt) => dt.song.featuredArtists.length > 0
-  ).length;
+  const gradeBadge = scoreToGradeBadge(finalScore);
+
+  // Specific track references for persona quotes
+  const openerSong = draftedTracks[0]?.song.title || 'Track 1';
+  const midTrack =
+    draftedTracks[Math.floor(draftedTracks.length / 2)]?.song.title || 'Midpoint Track';
+  const climaxTrack =
+    draftedTracks.find(
+      (dt) => dt.slot.id === 'apex-climax' || dt.song.energy >= 90
+    )?.song.title ||
+    draftedTracks[draftedTracks.length - 1]?.song.title ||
+    'Climax Track';
+
   const featureRatio =
-    draftedTracks.length > 0 ? tracksWithFeatures / draftedTracks.length : 0;
+    draftedTracks.length > 0
+      ? draftedTracks.filter((dt) => dt.song.featuredArtists.length > 0).length /
+        draftedTracks.length
+      : 0;
+
   const abruptBpmCount = energyMetrics.bpmTransitions.filter(
     (t) => t.status === 'abrupt'
   ).length;
-  const synergySubScore = clamp(
-    4.0,
-    10.0,
-    round1(7.5 + featureRatio * 2.0 - abruptBpmCount * 0.8)
-  );
 
-  // 3. Cohesion sub-score: monopoly penalty impact + smooth narrative flow
-  const pacingDisturbance =
-    energyMetrics.status !== 'Optimal Pacing' ? 1.0 : 0;
-  const cohesionSubScore = clamp(
-    3.0,
-    10.0,
-    round1(9.8 - monopolyReport.totalPenaltyDeduction - pacingDisturbance)
-  );
-
-  // 4. Star Power sub-score: average energy + iconic high-energy cuts
-  const avgEnergy = energyMetrics.avgEnergy;
-  const highEnergyCount = draftedTracks.filter(
-    (dt) => dt.song.energy >= 85
-  ).length;
-  const starPowerSubScore = clamp(
-    5.0,
-    10.0,
-    round1(avgEnergy / 15 + highEnergyCount * 0.4 + 3.0)
-  );
-
-  // Overall — weighted average of sub-scores (provenance preserved as rawScore)
-  const rawScore = round1(
-    pacingSubScore * 0.3 +
-      synergySubScore * 0.25 +
-      cohesionSubScore * 0.25 +
-      starPowerSubScore * 0.2
-  );
-  const finalScore = clamp(4.0, 10.0, rawScore);
-
-  const gradeBadge =
-    finalScore >= 9.2
-      ? 'Diamond Classic'
-      : finalScore >= 8.5
-      ? 'Platinum Banger'
-      : finalScore >= 7.5
-      ? 'Gold Solid'
-      : 'Mixtape Cut';
-
-  // Compute locally-optimal picks by scanning the library per slot, honoring
-  // the player's prior selections so the monotonic artist list matches their
-  // draft order. (The greedy pick is "optimal given prior picks," not the
-  // global optimum — copy reflects this.)
+  // Generate locally-optimal picks (greedy, honoring prior picks for artist diversity)
   const draftedSoloArtists: string[] = [];
   const optimalPicks = draftedTracks.map((dt) => {
     const bestSong =
@@ -136,42 +85,29 @@ export function generateFallbackEvaluation(
     };
   });
 
+  // Theoretical optimal score (greedy upper bound, not exhaustive)
   const theoreticalOptimalScore = Math.min(
     9.9,
-    Math.max(8.8, round1(9.5 + (eraFilter !== 'all' ? 0.3 : 0)))
+    Math.max(8.8, rawScore + (eraFilter !== 'all' ? 0.3 : 0) + 0.5)
   );
-
-  // Specific track references for persona quotes
-  const openerSong = draftedTracks[0]?.song.title || 'Track 1';
-  const midTrack =
-    draftedTracks[Math.floor(draftedTracks.length / 2)]?.song.title ||
-    'Midpoint Track';
-  const climaxTrack =
-    draftedTracks.find(
-      (dt) => dt.slot.id === 'apex-climax' || dt.song.energy >= 90
-    )?.song.title ||
-    draftedTracks[draftedTracks.length - 1]?.song.title ||
-    'Climax Track';
 
   return {
     overallScore: finalScore,
     rawScore,
     monopolyPenalty: monopolyReport.totalPenaltyDeduction,
     gradeBadge,
-    subScores: {
-      pacing: pacingSubScore,
-      synergy: synergySubScore,
-      cohesion: cohesionSubScore,
-      starPower: starPowerSubScore,
-    },
+    subScores,
     reviews: [
       {
         personaId: 'purist',
         name: 'Marcus "The Purist"',
         role: 'Boom-Bap Historian & A&R Head',
-        score: Math.min(10, round1(cohesionSubScore * 0.6 + pacingSubScore * 0.4)),
+        score: Math.min(
+          10,
+          round1(subScores.cohesion * 0.6 + subScores.slotFit * 0.4)
+        ),
         quote: monopolyReport.hasViolation
-          ? `Solo monopoly penalties hurt your lyricism cohesion score. Overusing ${monopolyReport.penalizedArtists[0]?.artist} diluted the project dynamic!`
+          ? `Solo monopoly penalties hurt your cohesion score. Overusing ${monopolyReport.penalizedArtists[0]?.artist} diluted the project dynamic!`
           : `Opening with "${openerSong}" set a pristine foundation. Clean execution across all ${draftedTracks.length} slots.`,
         detailedAnalysis: `Sequencing architecture held up well. Track transition into "${midTrack}" provided crucial narrative breath before "${climaxTrack}".`,
         keyHighlight: openerSong,
@@ -181,7 +117,10 @@ export function generateFallbackEvaluation(
         personaId: 'exec',
         name: 'Chloe "Data Exec"',
         role: 'Global Streaming Strategy Director',
-        score: Math.min(10, round1(starPowerSubScore * 0.6 + synergySubScore * 0.4)),
+        score: Math.min(
+          10,
+          round1(subScores.impact * 0.6 + subScores.albumFlow * 0.4)
+        ),
         quote:
           energyMetrics.status === 'High Energy Overload'
             ? `Adrenaline spikes without rest lead to listener drop-off after round 4. Incorporate mid-tempo interludes!`
@@ -196,7 +135,10 @@ export function generateFallbackEvaluation(
         personaId: 'connoisseur',
         name: 'Julian "Vibe Connoisseur"',
         role: 'Nocturnal Music Curator & DJ',
-        score: Math.min(10, round1(pacingSubScore * 0.5 + synergySubScore * 0.5)),
+        score: Math.min(
+          10,
+          round1(subScores.albumFlow * 0.5 + subScores.cohesion * 0.5)
+        ),
         quote:
           abruptBpmCount > 0
             ? `Detected ${abruptBpmCount} abrupt BPM jumps. Smooth out tempo changes between your street anthems and slow jams.`
@@ -220,22 +162,20 @@ export function generateFallbackEvaluation(
             .join(', ')} overload`
         : 'Roster Diversity Bonus: Perfect solo artist distribution',
     ],
-    optimalScore: theoreticalOptimalScore,
-    optimalPicks,
+    bestPossibleScore: theoreticalOptimalScore,
+    draftEfficiency: Math.round((finalScore / theoreticalOptimalScore) * 100),
+    bestPossibleTracklist: optimalPicks.map((p) => ({
+      slotName: p.slotName,
+      songTitle: p.bestSongTitle,
+      artist: p.bestArtist,
+      scoreDelta: 0,
+    })),
     source: 'fallback',
   };
 }
 
-/** Round to 1 decimal place. */
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
-/** Clamp n to the closed interval [lo, hi]. */
-function clamp(lo: number, hi: number, n: number): number {
-  return Math.min(hi, Math.max(lo, n));
-}
-
-// Keep `mode` in the signature for API parity; it is intentionally unused by
-// the current formula but reserved for future mode-weighted tuning.
 export type _FallbackMode = GameMode;

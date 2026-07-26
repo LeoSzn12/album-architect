@@ -2,10 +2,11 @@
 
 import React, { useEffect } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
-import { EraFilter } from '@/types/draft';
 import { DraftCard } from './DraftCard';
-import { RefreshCw, Sparkles, Trophy, Calendar, Undo2, AlertCircle, EyeOff, Swords } from 'lucide-react';
+import { ProgressStrip } from './ProgressStrip';
+import { RefreshCw, Sparkles, Trophy, Undo2, AlertCircle, Swords, EyeOff } from 'lucide-react';
 import { playHoverSound, playRerollSound, playDraftLockSound } from '@/lib/audioEngine';
+import { eraLabel } from '@/lib/eraSequence';
 
 interface DraftBoardProps {
   onEvaluateTrigger: () => void;
@@ -21,15 +22,18 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     undoLastPick,
     rerollTokens,
     useRerollToken: triggerRerollToken,
-    selectedEra,
-    setSelectedEra,
     difficulty,
     draftSeed,
     audioEnabled,
+    eraSequence,
   } = useDraftStore();
 
   const isCompleted = currentRoundIndex >= slots.length;
   const currentSlot = slots[currentRoundIndex];
+
+  // Auto-assigned era for this round
+  const currentEra = eraSequence[currentRoundIndex];
+  const currentEraLabel = currentEra ? eraLabel(currentEra) : null;
 
   // Cmd+Z / Ctrl+Z shortcut for Undo
   useEffect(() => {
@@ -60,13 +64,6 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     }
   };
 
-  const eraTabs: { id: EraFilter; label: string; badge: string }[] = [
-    { id: 'all', label: 'All Eras', badge: '1990s–2026' },
-    { id: '2020s', label: '2020s / Modern', badge: '2020+' },
-    { id: '2010s', label: '2010s Golden Era', badge: '2010–2019' },
-    { id: '2000s', label: '2000s & Classics', badge: '1990–2009' },
-  ];
-
   if (isCompleted) {
     return (
       <div className="w-full bg-gray-900/90 border border-purple-500/40 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-2xl backdrop-blur-md relative overflow-hidden my-6">
@@ -77,11 +74,11 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
 
         <span className="text-xs font-extrabold uppercase tracking-widest text-purple-400 mb-1">
-          Curating Complete
+          Draft Complete
         </span>
-        <h2 className="text-3xl font-extrabold text-white mb-2">Master Tracklist Locked In!</h2>
+        <h2 className="text-3xl font-extrabold text-white mb-2">Tracklist Locked In!</h2>
         <p className="text-sm text-gray-300 max-w-lg mb-6 leading-relaxed">
-          Your project sequencing is finalized. Send your tracklist to the AI Critic Evaluation Board (Marcus, Chloe, and Julian) to receive your overall score and badge!
+          {slots.length} tracks selected. Submit to the A&R Critic Board to get your final score and album grade.
         </p>
 
         <button
@@ -93,68 +90,53 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           className="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold rounded-2xl shadow-xl shadow-purple-900/40 text-base tracking-wide transition-all transform hover:scale-105 cursor-pointer flex items-center gap-2"
         >
           <Sparkles className="w-5 h-5 text-amber-300 animate-spin-slow" />
-          <span>Summon AI Critic Panel</span>
+          <span>Get Your Score</span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="w-full flex flex-col gap-6 my-4">
-      {/* Era / Decade Category Selector Bar */}
-      <div className="bg-gray-950/90 border border-purple-900/40 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-        <div className="flex items-center gap-2 text-xs font-extrabold text-purple-300">
-          <Calendar className="w-4 h-4 text-pink-400" />
-          <span>Candidate Era Category:</span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-          {eraTabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                setSelectedEra(tab.id);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                selectedEra === tab.id
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-950/50'
-                  : 'bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white border border-gray-800'
-              }`}
-            >
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="w-full flex flex-col gap-4 my-4">
+      {/* Persistent progress strip */}
+      <ProgressStrip />
 
       {/* Current Draft Slot Banner */}
       <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-5 sm:p-6 backdrop-blur-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="px-2.5 py-0.5 rounded bg-purple-950 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-800">
-              Round {currentSlot.roundNumber} / {slots.length}
+              Round {currentSlot.roundNumber} of {slots.length}
             </span>
-            {draftSeed && (
-              <span className="px-2.5 py-0.5 rounded bg-amber-950 text-amber-300 text-xs font-mono font-extrabold tracking-wider border border-amber-800 flex items-center gap-1">
-                <Swords className="w-3 h-3 text-amber-400" /> 1v1 Seed: {draftSeed}
+
+            {/* Auto-era badge */}
+            {currentEraLabel && (
+              <span className="px-2.5 py-0.5 rounded bg-indigo-950 text-indigo-300 text-xs font-bold uppercase tracking-wider border border-indigo-800">
+                {currentEraLabel}
               </span>
             )}
+
+            {draftSeed && (
+              <span className="px-2.5 py-0.5 rounded bg-amber-950 text-amber-300 text-xs font-mono font-extrabold tracking-wider border border-amber-800 flex items-center gap-1">
+                <Swords className="w-3 h-3 text-amber-400" /> 1v1: {draftSeed}
+              </span>
+            )}
+
             {difficulty === 'hardcore' ? (
               <span className="text-xs text-red-400 font-bold flex items-center gap-1">
-                <EyeOff className="w-3.5 h-3.5" /> Target Energy: Classified (Hardcore)
+                <EyeOff className="w-3.5 h-3.5" /> Target: Classified
               </span>
             ) : (
-              <span className="text-xs text-gray-400 font-semibold">
-                Slot Target Energy: {currentSlot.targetEnergy.ideal}%
+              <span className="text-xs text-gray-500 font-medium">
+                Target energy: {currentSlot.targetEnergy.ideal}%
               </span>
             )}
           </div>
 
-          <h2 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <span>Draft Your {currentSlot.name}</span>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+            Pick your <span className="text-purple-300">{currentSlot.name}</span>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-300 mt-1 max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-xl leading-relaxed">
             {currentSlot.description}
           </p>
         </div>
@@ -169,7 +151,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
               title="Undo last draft pick (Cmd+Z / Ctrl+Z)"
             >
               <Undo2 className="w-3.5 h-3.5 text-purple-400" />
-              <span>Undo Pick</span>
+              <span>Undo</span>
             </button>
           )}
 
@@ -182,31 +164,33 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
                 ? 'bg-purple-950/80 hover:bg-purple-900 border-purple-700 text-purple-200 shadow-md shadow-purple-950/40 hover:scale-105'
                 : 'bg-gray-950 border-gray-800 text-gray-600 cursor-not-allowed opacity-60'
             }`}
-            title="Refresh candidates for this round"
+            title="Refresh the candidate pool for this round"
+            aria-label={`Reroll candidate pool — ${rerollTokens} remaining`}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${rerollTokens > 0 ? 'text-pink-400' : ''}`} />
-            <span>Reroll Pool ({rerollTokens})</span>
+            <span>Reroll ({rerollTokens})</span>
           </button>
         </div>
       </div>
 
-      {/* 4-Card Positional Draft Options Grid OR Empty State */}
+      {/* 4-Card Draft Options Grid */}
       {currentOptions.length === 0 ? (
         <div className="w-full bg-gray-950 border border-purple-900/40 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
           <AlertCircle className="w-8 h-8 text-amber-400 animate-pulse" />
-          <h3 className="text-base font-extrabold text-white">No Tracks Found in Era Pool</h3>
+          <h3 className="text-base font-extrabold text-white">No Tracks in Current Era Pool</h3>
           <p className="text-xs text-gray-400 max-w-sm">
-            There are no candidates matching &quot;{selectedEra}&quot; for {currentSlot.name}. Widen your era category filter or use a reroll token.
+            The catalog doesn&apos;t have enough {currentEraLabel} songs for this slot. Use a reroll token to try again.
           </p>
           <button
-            onClick={() => setSelectedEra('all')}
-            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition cursor-pointer mt-2"
+            onClick={handleReroll}
+            disabled={rerollTokens <= 0}
+            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs transition cursor-pointer mt-2"
           >
-            Switch to All Eras
+            Reroll ({rerollTokens})
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {currentOptions.map((song) => (
             <DraftCard key={song.id} song={song} onDraft={draftSong} />
           ))}

@@ -16,6 +16,8 @@ export type SlotId =
   | 'storyteller-cut'
   | 'cinematic-outro';
 
+export type EraFilter = 'all' | '2020s' | '2010s' | '2000s';
+
 export interface DraftSlot {
   id: SlotId;
   name: string;
@@ -27,6 +29,13 @@ export interface DraftSlot {
     ideal: number;
   };
   iconName: string;
+  /**
+   * Default era bucket for this slot when no challenge seed is present.
+   * Used to auto-assign eras rather than letting the player manually filter.
+   */
+  defaultEra: EraFilter;
+  /** Curated label shown as the era badge in the UI (e.g. "2010s Cinematic Intro") */
+  eraLabel: string;
 }
 
 export interface Song {
@@ -44,21 +53,43 @@ export interface Song {
   slots: SlotId[];
   gradient: string;
   audioSynthFreq: number; // base frequency for synthesized preview audio
-  youtubeId?: string; // YouTube video ID e.g. "FW5s99y58d8"
+  youtubeId?: string; // YouTube video ID e.g. "FW5s99y58d8" — must be exactly 11 chars
   youtubeUrl?: string; // Direct YouTube / YT Music URL
-  spotifyId?: string; // Spotify track ID e.g. "0VjIjW4GlUZAMYd2vXMi3b"
+  spotifyId?: string; // Spotify track ID e.g. "0VjIjW4GlUZAMYd2vXMi3b" — 22 chars
   spotifyUrl?: string; // Direct Spotify URL
+  /**
+   * Curated game impact rating (0–10). Reflects a combination of cultural
+   * recognition, acclaim, commercial strength, and longevity. This is a game
+   * rating — NOT an objective statement of musical quality.
+   * Added in schema v3.
+   */
+  impact: number;
+  /**
+   * Optional album artwork URL. Use only authorized/stable sources.
+   * Gradient fallback is shown when absent.
+   */
+  artwork?: string;
 }
 
 export type AudioSourcePreference = 'youtube' | 'spotify' | 'synth';
-
-export type EraFilter = 'all' | '2020s' | '2010s' | '2000s';
 
 export interface DraftedTrack {
   slot: DraftSlot;
   song: Song;
   roundDrafted: number;
   isWildcard: boolean;
+}
+
+/**
+ * Records one full candidate pool presented to the player in a single round,
+ * including any rerolled pools. Used by the best-possible optimizer.
+ */
+export interface CandidateRound {
+  roundIndex: number;
+  slotId: SlotId;
+  assignedEra: EraFilter;
+  /** All pools the player was shown (initial + one entry per reroll used) */
+  pools: Song[][];
 }
 
 export interface MonopolyReport {
@@ -107,34 +138,62 @@ export interface CriticReview {
   badge: string;
 }
 
+/**
+ * Official scoring breakdown per the canonical scoring engine.
+ * Weights: SlotFit 35% · AlbumFlow 25% · Cohesion 20% · Impact 20%
+ * Monopoly penalty is a separate deduction applied AFTER the weighted score.
+ */
+export interface ScoringBreakdown {
+  /** How well each track fits its positional slot (energy delta, style match). 35% weight. */
+  slotFit: number;
+  /** Energy/BPM progression across the tracklist. Intentional vibe shifts allowed. 25% weight. */
+  albumFlow: number;
+  /** Genre consistency, mood arc, artist diversity, narrative sequencing. 20% weight. */
+  cohesion: number;
+  /** Cultural recognition, acclaim, commercial strength using curated `impact` field. 20% weight. */
+  impact: number;
+}
+
 export interface EvaluationResult {
-  overallScore: number; // out of 10
-  rawScore: number;
+  overallScore: number; // out of 10 (after monopoly deduction)
+  rawScore: number;     // weighted score before monopoly deduction
   monopolyPenalty: number;
   gradeBadge: string;
-  subScores: {
-    pacing: number;
-    synergy: number;
-    cohesion: number;
-    starPower: number;
-  };
+  /** New 4-category breakdown replacing old pacing/synergy/cohesion/starPower. */
+  subScores: ScoringBreakdown;
   reviews: CriticReview[];
   monopolyReport: MonopolyReport;
   energyMetrics: EnergyMetrics;
   highlights: string[];
-  optimalScore?: number; // theoretical maximum score achievable
-  optimalPicks?: {
+  /** Best score achievable from the exact candidate pools the player was shown. */
+  bestPossibleScore?: number;
+  /** Percentage of best possible score the player achieved (0–100). */
+  draftEfficiency?: number;
+  /** The optimal tracklist reconstructed from the player's actual candidate pools. */
+  bestPossibleTracklist?: {
     slotName: string;
-    bestSongTitle: string;
-    bestArtist: string;
-    reason: string;
+    songTitle: string;
+    artist: string;
+    scoreDelta: number; // how much this slot differed from player's pick
   }[];
+  /** The single pick that cost the player the most points vs best available. */
+  biggestMistake?: {
+    slotName: string;
+    playerPick: string;
+    bestAvailable: string;
+    scoreDifference: number;
+  };
+  /** The single pick that most exceeded expectations given available options. */
+  smartestPick?: {
+    slotName: string;
+    songTitle: string;
+    reason: string;
+  };
   /**
    * Provenance flag indicating where the score was computed.
-   *  - `gemini`   → AI Critic Board via the /api/critic-evaluate route (GEMINI_API_KEY present + call succeeded)
-   *  - `fallback` → local deterministic evaluator (no key or fetch failure, route fallback, or store fallback)
-   * Used by the scorecard/leaderboard for transparency and prevents silent
-   * divergence between network-fail and network-success draft sessions.
+   *  - `gemini`   → AI Critic Board via the /api/critic-evaluate route
+   *  - `fallback` → local deterministic evaluator (no key or fetch failure)
+   * Used by the scorecard/leaderboard for transparency.
    */
   source?: 'gemini' | 'fallback';
 }
@@ -166,24 +225,15 @@ export interface LeaderboardEntry {
   topTrackTitle: string;
   topTrackArtist: string;
   completedAt: string;
-  subScores: {
-    pacing: number;
-    synergy: number;
-    cohesion: number;
-    starPower: number;
-  };
+  subScores: ScoringBreakdown;
 }
 
 export interface VersusMatchup {
   challengerAlias: string;
   challengerScore: number;
   challengerGrade: string;
-  challengerSubScores: {
-    pacing: number;
-    synergy: number;
-    cohesion: number;
-    starPower: number;
-  };
+  challengerSubScores: ScoringBreakdown;
+  challengerEfficiency?: number;
   seed: string;
   gameMode: GameMode;
   difficulty: DifficultyTier;

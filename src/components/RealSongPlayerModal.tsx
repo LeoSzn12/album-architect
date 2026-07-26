@@ -44,12 +44,14 @@ export const RealSongPlayerModal: React.FC = () => {
     isOpen: isPlayerModalOpen,
     onClose: () => {
       stopSongPreview();
+      setIsSynthPlaying(false);
       closeRealSongPlayer();
     },
   });
 
   useEffect(() => {
-    // Stop preview on unmount or song ID change
+    // Stop synth on song change or modal close
+    setIsSynthPlaying(false);
     return () => {
       stopSongPreview();
     };
@@ -57,18 +59,14 @@ export const RealSongPlayerModal: React.FC = () => {
 
   if (!isPlayerModalOpen || !selectedRealSong) return null;
 
-  const spotifyEmbedUrl = getSpotifyEmbedUrl(selectedRealSong);
-  const ytMusicUrl = getYouTubeMusicUrl(selectedRealSong);
-  const ytVideoUrl = getYouTubeVideoUrl(selectedRealSong);
-  const spotifyUrl = getSpotifyUrl(selectedRealSong);
-  const ytEmbedUrl = getYouTubeEmbedUrl(selectedRealSong);
+  const spotifyEmbedUrl = getSpotifyEmbedUrl(selectedRealSong); // null if no valid ID
+  const ytMusicUrl      = getYouTubeMusicUrl(selectedRealSong);
+  const ytVideoUrl      = getYouTubeVideoUrl(selectedRealSong);
+  const spotifyUrl      = getSpotifyUrl(selectedRealSong);
+  const ytEmbedUrl      = getYouTubeEmbedUrl(selectedRealSong); // null if no valid ID
 
-  const isDraftedSequence = draftedTracks.some(
-    (t) => t.song.id === selectedRealSong.id
-  );
-  const currentTrackIndex = draftedTracks.findIndex(
-    (t) => t.song.id === selectedRealSong.id
-  );
+  const isDraftedSequence = draftedTracks.some((t) => t.song.id === selectedRealSong.id);
+  const currentTrackIndex = draftedTracks.findIndex((t) => t.song.id === selectedRealSong.id);
 
   const handleToggleSynth = () => {
     if (isSynthPlaying) {
@@ -78,6 +76,12 @@ export const RealSongPlayerModal: React.FC = () => {
       playSongPreview(selectedRealSong.audioSynthFreq, 6, audioEnabled);
       setIsSynthPlaying(true);
     }
+  };
+
+  const handleSourceSwitch = (pref: typeof audioSourcePreference) => {
+    stopSongPreview();
+    setIsSynthPlaying(false);
+    setAudioSourcePreference(pref);
   };
 
   return (
@@ -97,10 +101,11 @@ export const RealSongPlayerModal: React.FC = () => {
           <button
             onClick={() => {
               stopSongPreview();
+              setIsSynthPlaying(false);
               closeRealSongPlayer();
             }}
             className="absolute top-4 right-4 p-2 rounded-full bg-black/40 hover:bg-black/70 text-gray-200 hover:text-white transition-colors cursor-pointer"
-            title="Close Player"
+            aria-label="Close player"
           >
             <X className="w-5 h-5" />
           </button>
@@ -124,9 +129,7 @@ export const RealSongPlayerModal: React.FC = () => {
           </p>
 
           <div className="flex items-center gap-4 text-xs text-gray-300 mt-2 font-medium">
-            <span>
-              {selectedRealSong.album} ({selectedRealSong.year})
-            </span>
+            <span>{selectedRealSong.album} ({selectedRealSong.year})</span>
             <span>•</span>
             <span className="flex items-center gap-1 text-cyan-300 font-bold">
               <Disc className="w-3.5 h-3.5" />
@@ -143,47 +146,42 @@ export const RealSongPlayerModal: React.FC = () => {
         {/* Source Selector Tabs */}
         <div className="flex border-b border-gray-800 bg-gray-950/90 p-2 gap-2">
           <button
-            onClick={() => {
-              stopSongPreview();
-              setAudioSourcePreference('youtube');
-            }}
+            onClick={() => handleSourceSwitch('youtube')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               audioSourcePreference === 'youtube'
                 ? 'bg-red-600/90 text-white shadow-lg shadow-red-950/50'
                 : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
             }`}
+            aria-label="Preview via YouTube"
           >
             <Music2 className="w-4 h-4" />
-            <span>YouTube Music</span>
+            <span>YouTube</span>
           </button>
 
           <button
-            onClick={() => {
-              stopSongPreview();
-              setAudioSourcePreference('spotify');
-            }}
+            onClick={() => handleSourceSwitch('spotify')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               audioSourcePreference === 'spotify'
                 ? 'bg-emerald-600/90 text-white shadow-lg shadow-emerald-950/50'
                 : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
             }`}
+            aria-label="Preview via Spotify"
           >
             <Radio className="w-4 h-4" />
-            <span>Spotify Bridge</span>
+            <span>Spotify</span>
           </button>
 
           <button
-            onClick={() => {
-              setAudioSourcePreference('synth');
-            }}
+            onClick={() => handleSourceSwitch('synth')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               audioSourcePreference === 'synth'
                 ? 'bg-purple-600/90 text-white shadow-lg shadow-purple-950/50'
                 : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
             }`}
+            aria-label="Preview via Synth tone"
           >
             <Disc className="w-4 h-4" />
-            <span>Web Audio Synth</span>
+            <span>Synth Tone</span>
           </button>
         </div>
 
@@ -191,15 +189,28 @@ export const RealSongPlayerModal: React.FC = () => {
         <div className="p-6 bg-gray-900 flex flex-col items-center justify-center gap-4">
           {audioSourcePreference === 'youtube' && (
             <div className="w-full flex flex-col gap-4 items-center">
-              <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-800 shadow-2xl bg-black relative">
-                <iframe
-                  src={ytEmbedUrl}
-                  title={`${selectedRealSong.title} - YouTube Audio Player`}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
+              {ytEmbedUrl ? (
+                <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-800 shadow-2xl bg-black relative">
+                  <iframe
+                    key={`yt-modal-${selectedRealSong.id}`}
+                    src={ytEmbedUrl}
+                    title={`${selectedRealSong.title} – YouTube Preview`}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <div className="w-full py-10 px-4 rounded-xl bg-gray-950 border border-gray-800 text-center flex flex-col items-center gap-3">
+                  <Music2 className="w-10 h-10 text-red-400" />
+                  <div>
+                    <h4 className="text-sm font-extrabold text-white">No YouTube embed available</h4>
+                    <p className="text-xs text-gray-400 mt-1">
+                      This track doesn&apos;t have an in-app embed yet. Open it on YouTube below.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-wrap items-center justify-center gap-3 w-full">
                 <a
@@ -231,23 +242,23 @@ export const RealSongPlayerModal: React.FC = () => {
               {spotifyEmbedUrl ? (
                 <div className="w-full h-[152px] rounded-xl overflow-hidden border border-gray-800 shadow-xl bg-black">
                   <iframe
+                    key={`sp-modal-${selectedRealSong.id}`}
                     src={spotifyEmbedUrl}
                     width="100%"
                     height="152"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
                     className="border-0"
+                    title={`${selectedRealSong.title} – Spotify Preview`}
                   />
                 </div>
               ) : (
                 <div className="w-full py-8 px-4 rounded-xl bg-gray-950 border border-gray-800 text-center flex flex-col items-center gap-3">
-                  <Radio className="w-10 h-10 text-emerald-400 animate-pulse" />
+                  <Radio className="w-10 h-10 text-emerald-400" />
                   <div>
-                    <h4 className="text-sm font-extrabold text-white">
-                      Spotify Search Bridge Active
-                    </h4>
+                    <h4 className="text-sm font-extrabold text-white">No Spotify embed available</h4>
                     <p className="text-xs text-gray-400 mt-1 max-w-md">
-                      Stream &quot;{selectedRealSong.title}&quot; by {selectedRealSong.artist} directly inside Spotify web player or desktop app.
+                      No in-app Spotify player for &quot;{selectedRealSong.title}&quot; — open in the Spotify app below.
                     </p>
                   </div>
                 </div>
@@ -260,7 +271,7 @@ export const RealSongPlayerModal: React.FC = () => {
                 className="py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-emerald-950/40 cursor-pointer"
               >
                 <Radio className="w-4 h-4" />
-                <span>Play Track on Spotify</span>
+                <span>Open on Spotify</span>
                 <ExternalLink className="w-3.5 h-3.5 opacity-80" />
               </a>
             </div>
@@ -273,11 +284,9 @@ export const RealSongPlayerModal: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="text-sm font-extrabold text-white">
-                  Synthesized Frequency Tone
-                </h4>
+                <h4 className="text-sm font-extrabold text-white">Synthesized Frequency Tone</h4>
                 <p className="text-xs text-gray-400 mt-1">
-                  Base Tone: {selectedRealSong.audioSynthFreq} Hz • Pure Oscillator Audio
+                  Base: {selectedRealSong.audioSynthFreq} Hz • Pure oscillator audio
                 </p>
               </div>
 
@@ -288,16 +297,17 @@ export const RealSongPlayerModal: React.FC = () => {
                     ? 'bg-pink-600 hover:bg-pink-500 text-white animate-pulse'
                     : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-950/50'
                 }`}
+                aria-label={isSynthPlaying ? 'Stop synth tone' : 'Play synth tone'}
               >
                 {isSynthPlaying ? (
                   <>
                     <Square className="w-4 h-4" />
-                    <span>Stop Synth Tone</span>
+                    <span>Stop Synth</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4 fill-current" />
-                    <span>Play Synth Tone</span>
+                    <span>Play Synth</span>
                   </>
                 )}
               </button>
@@ -305,19 +315,21 @@ export const RealSongPlayerModal: React.FC = () => {
           )}
         </div>
 
-        {/* Footer Navigation Bar for Draft Sequences */}
+        {/* Footer Navigation for Draft Sequences */}
         {isDraftedSequence && draftedTracks.length > 1 && (
           <div className="p-4 bg-gray-950 border-t border-gray-800/80 flex items-center justify-between">
             <button
               onClick={() => {
                 stopSongPreview();
+                setIsSynthPlaying(false);
                 playPrevDraftedTrack();
               }}
               disabled={currentTrackIndex <= 0}
               className="py-1.5 px-3 rounded-lg bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none border border-gray-800 text-xs font-bold text-gray-300 flex items-center gap-1 transition-colors cursor-pointer"
+              aria-label="Previous track in draft"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>Previous Track</span>
+              <span>Previous</span>
             </button>
 
             <span className="text-xs font-bold text-gray-400">
@@ -327,12 +339,14 @@ export const RealSongPlayerModal: React.FC = () => {
             <button
               onClick={() => {
                 stopSongPreview();
+                setIsSynthPlaying(false);
                 playNextDraftedTrack();
               }}
               disabled={currentTrackIndex >= draftedTracks.length - 1}
               className="py-1.5 px-3 rounded-lg bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none border border-gray-800 text-xs font-bold text-gray-300 flex items-center gap-1 transition-colors cursor-pointer"
+              aria-label="Next track in draft"
             >
-              <span>Next Track</span>
+              <span>Next</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

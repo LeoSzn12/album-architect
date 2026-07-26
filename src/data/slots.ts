@@ -8,6 +8,8 @@ export const EP_SLOTS: DraftSlot[] = [
     description: 'Set the tone, build massive suspense, and hook the listener before the beat drops.',
     targetEnergy: { min: 60, max: 85, ideal: 75 },
     iconName: 'Sparkles',
+    defaultEra: '2010s',
+    eraLabel: '2010s Cinematic Intro',
   },
   {
     id: 'statement-banger',
@@ -16,6 +18,8 @@ export const EP_SLOTS: DraftSlot[] = [
     description: 'Capitalize on intro momentum. High-energy, heavy-bass trap to keep adrenaline surging.',
     targetEnergy: { min: 80, max: 100, ideal: 92 },
     iconName: 'Flame',
+    defaultEra: '2020s',
+    eraLabel: '2020s Statement Banger',
   },
   {
     id: 'gritty-anthem',
@@ -24,6 +28,8 @@ export const EP_SLOTS: DraftSlot[] = [
     description: 'Aggressive lyrical delivery and sub-bass weight to solidify project posture.',
     targetEnergy: { min: 75, max: 95, ideal: 85 },
     iconName: 'ShieldAlert',
+    defaultEra: '2000s',
+    eraLabel: 'Classics Gritty Anthem',
   },
   {
     id: 'vibe-shift',
@@ -32,6 +38,8 @@ export const EP_SLOTS: DraftSlot[] = [
     description: 'Shift gears into rhythmic bounce to keep feet moving and prevent listener fatigue.',
     targetEnergy: { min: 65, max: 85, ideal: 75 },
     iconName: 'Disc',
+    defaultEra: '2000s',
+    eraLabel: '2000s Vibe Shift',
   },
   {
     id: 'late-night-rnb',
@@ -40,6 +48,8 @@ export const EP_SLOTS: DraftSlot[] = [
     description: 'Switch lanes into a smooth nocturnal vibe to give the EP emotional depth.',
     targetEnergy: { min: 35, max: 65, ideal: 50 },
     iconName: 'Moon',
+    defaultEra: '2010s',
+    eraLabel: '2010s Late-Night Cut',
   },
   {
     id: 'apex-climax',
@@ -48,6 +58,8 @@ export const EP_SLOTS: DraftSlot[] = [
     description: 'Spike the adrenaline right back up with an undeniable stadium-shaking anthem.',
     targetEnergy: { min: 85, max: 100, ideal: 95 },
     iconName: 'Zap',
+    defaultEra: 'all',
+    eraLabel: 'Wildcard Climax',
   },
   {
     id: 'cinematic-outro',
@@ -56,6 +68,8 @@ export const EP_SLOTS: DraftSlot[] = [
     description: 'The party is over, lights are coming up. Leave the listener wanting to hit replay.',
     targetEnergy: { min: 50, max: 75, ideal: 62 },
     iconName: 'Sunset',
+    defaultEra: 'all',
+    eraLabel: 'Any-Era Outro',
   },
 ];
 
@@ -67,6 +81,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Set the tone, build massive suspense, and hook the listener before the beat drops.',
     targetEnergy: { min: 60, max: 85, ideal: 75 },
     iconName: 'Sparkles',
+    defaultEra: '2010s',
+    eraLabel: '2010s Cinematic Intro',
   },
   {
     id: 'statement-banger',
@@ -75,6 +91,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Capitalize on intro momentum. High-energy, heavy-bass trap to keep adrenaline surging.',
     targetEnergy: { min: 80, max: 100, ideal: 92 },
     iconName: 'Flame',
+    defaultEra: '2020s',
+    eraLabel: '2020s Statement Banger',
   },
   {
     id: 'gritty-anthem',
@@ -83,6 +101,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Aggressive lyrical delivery and sub-bass weight to solidify album posture.',
     targetEnergy: { min: 75, max: 95, ideal: 85 },
     iconName: 'ShieldAlert',
+    defaultEra: '2000s',
+    eraLabel: 'Classics Gritty Anthem',
   },
   {
     id: 'introspective-cut',
@@ -91,6 +111,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Strip away the aggression. Deliver raw lyricism and personal storytelling.',
     targetEnergy: { min: 40, max: 65, ideal: 55 },
     iconName: 'HeartHandshake',
+    defaultEra: '2010s',
+    eraLabel: '2010s Introspective',
   },
   {
     id: 'vibe-shift',
@@ -99,6 +121,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Shift gears into infectious mid-tempo grooves before listener fatigue sets in.',
     targetEnergy: { min: 65, max: 85, ideal: 75 },
     iconName: 'Disc',
+    defaultEra: '2000s',
+    eraLabel: '2000s Vibe Shift',
   },
   {
     id: 'mid-interlude',
@@ -107,6 +131,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Atmospheric breather sonic bridge to mark the end of Act I.',
     targetEnergy: { min: 20, max: 50, ideal: 35 },
     iconName: 'Wind',
+    defaultEra: 'all',
+    eraLabel: 'Wildcard Interlude',
   },
   {
     id: 'club-bounce',
@@ -115,6 +141,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Ignite Act II with infectious uptempo club bounce and radio magnetism.',
     targetEnergy: { min: 75, max: 95, ideal: 88 },
     iconName: 'Radio',
+    defaultEra: '2020s',
+    eraLabel: '2020s Club Bounce',
   },
   {
     id: 'late-night-rnb',
@@ -123,6 +151,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Sultry, atmospheric nocturnal R&B to build intimacy and soul.',
     targetEnergy: { min: 35, max: 65, ideal: 50 },
     iconName: 'Moon',
+    defaultEra: '2010s',
+    eraLabel: '2010s Late-Night R&B',
   },
   {
     id: 'experimental-flex',
@@ -131,6 +161,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Unconventional arrangements, distorted 808s, and progressive beat switches.',
     targetEnergy: { min: 50, max: 80, ideal: 68 },
     iconName: 'Cpu',
+    defaultEra: 'all',
+    eraLabel: 'Wildcard Flex',
   },
   {
     id: 'apex-climax',
@@ -139,6 +171,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'The crowning peak of the album—a high-stakes anthem that defines the era.',
     targetEnergy: { min: 85, max: 100, ideal: 95 },
     iconName: 'Zap',
+    defaultEra: 'all',
+    eraLabel: 'Any-Era Climax',
   },
   {
     id: 'acoustic-unplugged',
@@ -147,6 +181,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Bare instruments and raw vocal presence after the peak climax explosion.',
     targetEnergy: { min: 30, max: 55, ideal: 42 },
     iconName: 'Guitar',
+    defaultEra: 'all',
+    eraLabel: 'Wildcard Stripped',
   },
   {
     id: 'melodic-trap',
@@ -155,6 +191,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Lush synth melodies, floating vocals, and bouncing hi-hats.',
     targetEnergy: { min: 60, max: 80, ideal: 72 },
     iconName: 'Waves',
+    defaultEra: '2020s',
+    eraLabel: '2020s Melodic Wave',
   },
   {
     id: 'storyteller-cut',
@@ -163,6 +201,8 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Multi-verse narrative masterpiece laying out legacy, wisdom, and struggle.',
     targetEnergy: { min: 45, max: 70, ideal: 58 },
     iconName: 'BookOpen',
+    defaultEra: '2010s',
+    eraLabel: '2010s Storyteller',
   },
   {
     id: 'cinematic-outro',
@@ -171,5 +211,7 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     description: 'Curtain call. Sweeping orchestral resolution leaving an indelible legacy.',
     targetEnergy: { min: 50, max: 75, ideal: 62 },
     iconName: 'Sunset',
+    defaultEra: 'all',
+    eraLabel: 'Any-Era Outro',
   },
 ];

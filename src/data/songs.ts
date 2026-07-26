@@ -18,6 +18,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-intro', 'statement-banger'],
     gradient: 'from-purple-900 to-indigo-900',
     audioSynthFreq: 440,
+    impact: 9.2,
     youtubeId: 'r_0JjUe9SjI',
     spotifyId: '4JLwLl970s8h16Y40gKk7Z',
   },
@@ -36,6 +37,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-intro'],
     gradient: 'from-amber-900 to-red-900',
     audioSynthFreq: 392,
+    impact: 9.5,
     youtubeId: 'CHB4q1M6xGA',
     spotifyId: '78Lwoi92Bq2Z9Nl9R30r11',
   },
@@ -54,6 +56,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-intro', 'statement-banger'],
     gradient: 'from-red-900 to-pink-900',
     audioSynthFreq: 523,
+    impact: 8.4,
     youtubeId: 'c7tOAGY59uQ',
     spotifyId: '0L8yXoA6C7K4t8R50tZ7wU',
   },
@@ -72,6 +75,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-intro', 'gritty-anthem'],
     gradient: 'from-yellow-900 to-amber-950',
     audioSynthFreq: 330,
+    impact: 9.0,
     youtubeId: 'FJt7gNi334E',
   },
   {
@@ -89,6 +93,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-intro', 'statement-banger'],
     gradient: 'from-purple-950 to-pink-950',
     audioSynthFreq: 466,
+    impact: 9.1,
     youtubeId: '2a8PgqWrc_4',
   },
   {
@@ -106,6 +111,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-intro', 'experimental-flex'],
     gradient: 'from-pink-900 to-rose-950',
     audioSynthFreq: 370,
+    impact: 8.2,
     youtubeId: '3m78pY-d6Zc',
   },
 
@@ -125,6 +131,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'apex-climax'],
     gradient: 'from-cyan-950 to-blue-900',
     audioSynthFreq: 493,
+    impact: 8.8,
   },
   {
     id: 'song-8',
@@ -141,6 +148,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'gritty-anthem'],
     gradient: 'from-slate-900 to-zinc-950',
     audioSynthFreq: 293,
+    impact: 8.5,
   },
   {
     id: 'song-9',
@@ -157,6 +165,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'gritty-anthem'],
     gradient: 'from-emerald-950 to-teal-900',
     audioSynthFreq: 349,
+    impact: 8.3,
   },
   {
     id: 'song-10',
@@ -173,6 +182,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'club-bounce'],
     gradient: 'from-violet-950 to-purple-900',
     audioSynthFreq: 415,
+    impact: 8.9,
   },
   {
     id: 'song-11',
@@ -189,6 +199,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'apex-climax'],
     gradient: 'from-indigo-950 to-blue-950',
     audioSynthFreq: 466,
+    impact: 8.4,
   },
   {
     id: 'song-12',
@@ -205,6 +216,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'club-bounce'],
     gradient: 'from-gray-900 to-black',
     audioSynthFreq: 311,
+    impact: 8.7,
   },
 
   // --- GRITTY ANTHEM ---
@@ -223,6 +235,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['gritty-anthem', 'statement-banger'],
     gradient: 'from-stone-900 to-amber-950',
     audioSynthFreq: 370,
+    impact: 8.6,
   },
   {
     id: 'song-14',
@@ -239,6 +252,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['gritty-anthem', 'apex-climax'],
     gradient: 'from-blue-950 to-slate-900',
     audioSynthFreq: 440,
+    impact: 9.4,
   },
   {
     id: 'song-15',
@@ -255,6 +269,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['gritty-anthem'],
     gradient: 'from-red-950 to-neutral-900',
     audioSynthFreq: 261,
+    impact: 9.0,
   },
   {
     id: 'song-16',
@@ -271,6 +286,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['gritty-anthem', 'statement-banger'],
     gradient: 'from-cyan-950 to-blue-950',
     audioSynthFreq: 392,
+    impact: 8.3,
   },
 
   // --- INTROSPECTIVE CUT ---
@@ -289,6 +305,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['introspective-cut', 'storyteller-cut'],
     gradient: 'from-amber-950 to-yellow-900',
     audioSynthFreq: 330,
+    impact: 8.8,
   },
   {
     id: 'song-18',
@@ -305,6 +322,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['introspective-cut', 'cinematic-intro'],
     gradient: 'from-blue-950 to-purple-950',
     audioSynthFreq: 415,
+    impact: 8.5,
   },
   {
     id: 'song-19',
@@ -321,6 +339,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['introspective-cut', 'acoustic-unplugged'],
     gradient: 'from-teal-950 to-emerald-950',
     audioSynthFreq: 293,
+    impact: 8.6,
   },
   {
     id: 'song-20',
@@ -337,6 +356,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['introspective-cut', 'storyteller-cut'],
     gradient: 'from-zinc-900 to-stone-900',
     audioSynthFreq: 349,
+    impact: 9.3,
   },
 
   // --- VIBE SHIFT & CLUB BOUNCE ---
@@ -355,6 +375,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['vibe-shift', 'club-bounce'],
     gradient: 'from-fuchsia-950 to-pink-900',
     audioSynthFreq: 440,
+    impact: 9.4,
   },
   {
     id: 'song-22',
@@ -371,6 +392,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['vibe-shift', 'club-bounce'],
     gradient: 'from-purple-950 to-indigo-900',
     audioSynthFreq: 523,
+    impact: 8.7,
   },
   {
     id: 'song-23',
@@ -387,6 +409,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['vibe-shift', 'club-bounce'],
     gradient: 'from-rose-950 to-red-900',
     audioSynthFreq: 370,
+    impact: 8.4,
   },
   {
     id: 'song-24',
@@ -403,6 +426,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['vibe-shift', 'statement-banger'],
     gradient: 'from-emerald-950 to-black',
     audioSynthFreq: 466,
+    impact: 9.0,
   },
   {
     id: 'song-25',
@@ -419,6 +443,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['vibe-shift', 'club-bounce'],
     gradient: 'from-amber-900 to-pink-900',
     audioSynthFreq: 493,
+    impact: 8.8,
   },
 
   // --- MID-ALBUM INTERLUDE ---
@@ -437,6 +462,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['mid-interlude', 'introspective-cut'],
     gradient: 'from-lime-950 to-zinc-900',
     audioSynthFreq: 330,
+    impact: 9.1,
   },
   {
     id: 'song-27',
@@ -453,6 +479,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['mid-interlude'],
     gradient: 'from-purple-950 to-neutral-900',
     audioSynthFreq: 392,
+    impact: 9.0,
   },
   {
     id: 'song-28',
@@ -469,6 +496,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['mid-interlude'],
     gradient: 'from-slate-950 to-blue-950',
     audioSynthFreq: 277,
+    impact: 8.2,
   },
   {
     id: 'song-29',
@@ -485,6 +513,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['mid-interlude'],
     gradient: 'from-red-950 to-amber-950',
     audioSynthFreq: 349,
+    impact: 8.9,
   },
 
   // --- LATE-NIGHT CLUB ANTHEM ---
@@ -503,6 +532,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['club-bounce', 'apex-climax'],
     gradient: 'from-red-900 to-purple-900',
     audioSynthFreq: 523,
+    impact: 9.5,
   },
   {
     id: 'song-31',
@@ -519,6 +549,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['club-bounce', 'statement-banger'],
     gradient: 'from-sky-950 to-blue-900',
     audioSynthFreq: 440,
+    impact: 8.9,
   },
   {
     id: 'song-32',
@@ -535,6 +566,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['club-bounce', 'apex-climax', 'statement-banger'],
     gradient: 'from-amber-950 to-purple-950',
     audioSynthFreq: 493,
+    impact: 9.6,
   },
 
   // --- LATE-NIGHT R&B / SLOW JAM ---
@@ -553,6 +585,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['late-night-rnb'],
     gradient: 'from-gray-950 to-red-950',
     audioSynthFreq: 330,
+    impact: 8.5,
   },
   {
     id: 'song-34',
@@ -569,6 +602,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['late-night-rnb', 'introspective-cut'],
     gradient: 'from-black to-slate-900',
     audioSynthFreq: 293,
+    impact: 8.8,
   },
   {
     id: 'song-35',
@@ -585,6 +619,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['late-night-rnb', 'vibe-shift'],
     gradient: 'from-orange-950 to-amber-900',
     audioSynthFreq: 370,
+    impact: 8.7,
   },
   {
     id: 'song-36',
@@ -601,6 +636,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['late-night-rnb', 'vibe-shift'],
     gradient: 'from-pink-950 to-purple-950',
     audioSynthFreq: 440,
+    impact: 9.1,
   },
   {
     id: 'song-37',
@@ -617,6 +653,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['late-night-rnb'],
     gradient: 'from-indigo-950 to-black',
     audioSynthFreq: 311,
+    impact: 7.8,
   },
 
   // --- EXPERIMENTAL FLEX ---
@@ -635,6 +672,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['experimental-flex', 'statement-banger'],
     gradient: 'from-neutral-900 to-red-950',
     audioSynthFreq: 587,
+    impact: 8.8,
   },
   {
     id: 'song-39',
@@ -651,6 +689,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['experimental-flex', 'apex-climax'],
     gradient: 'from-cyan-950 to-blue-950',
     audioSynthFreq: 466,
+    impact: 8.5,
   },
   {
     id: 'song-40',
@@ -667,6 +706,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['experimental-flex', 'apex-climax'],
     gradient: 'from-red-950 to-black',
     audioSynthFreq: 523,
+    impact: 8.0,
   },
 
   // --- APEX HEAVY HITTER (CLIMAX) ---
@@ -685,6 +725,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['apex-climax', 'statement-banger'],
     gradient: 'from-yellow-950 to-amber-900',
     audioSynthFreq: 440,
+    impact: 9.5,
   },
   {
     id: 'song-42',
@@ -701,6 +742,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['apex-climax', 'vibe-shift'],
     gradient: 'from-emerald-950 to-teal-900',
     audioSynthFreq: 392,
+    impact: 8.9,
   },
   {
     id: 'song-43',
@@ -717,6 +759,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['apex-climax', 'statement-banger'],
     gradient: 'from-blue-950 to-indigo-950',
     audioSynthFreq: 330,
+    impact: 8.8,
   },
   {
     id: 'song-44',
@@ -733,6 +776,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['apex-climax', 'club-bounce'],
     gradient: 'from-purple-950 to-pink-950',
     audioSynthFreq: 493,
+    impact: 9.2,
   },
   {
     id: 'song-45',
@@ -749,6 +793,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['apex-climax', 'cinematic-intro'],
     gradient: 'from-red-900 to-amber-900',
     audioSynthFreq: 523,
+    impact: 9.4,
   },
 
   // --- ACOUSTIC / STRIPPED BACK ---
@@ -767,6 +812,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['acoustic-unplugged', 'late-night-rnb'],
     gradient: 'from-emerald-950 to-zinc-900',
     audioSynthFreq: 293,
+    impact: 9.2,
   },
   {
     id: 'song-47',
@@ -783,6 +829,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['acoustic-unplugged', 'late-night-rnb'],
     gradient: 'from-blue-950 to-cyan-950',
     audioSynthFreq: 261,
+    impact: 8.3,
   },
   {
     id: 'song-48',
@@ -799,6 +846,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['acoustic-unplugged', 'vibe-shift'],
     gradient: 'from-rose-950 to-neutral-900',
     audioSynthFreq: 349,
+    impact: 7.9,
   },
 
   // --- MELODIC TRAP ---
@@ -817,6 +865,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['melodic-trap', 'apex-climax'],
     gradient: 'from-purple-950 to-rose-950',
     audioSynthFreq: 440,
+    impact: 9.1,
   },
   {
     id: 'song-50',
@@ -833,6 +882,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['melodic-trap', 'introspective-cut'],
     gradient: 'from-indigo-950 to-slate-900',
     audioSynthFreq: 392,
+    impact: 8.7,
   },
   {
     id: 'song-51',
@@ -849,6 +899,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['melodic-trap', 'vibe-shift'],
     gradient: 'from-blue-950 to-teal-950',
     audioSynthFreq: 415,
+    impact: 8.3,
   },
 
   // --- STORYTELLER DEEP CUT ---
@@ -867,6 +918,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['storyteller-cut', 'introspective-cut'],
     gradient: 'from-amber-950 to-stone-900',
     audioSynthFreq: 330,
+    impact: 8.6,
   },
   {
     id: 'song-53',
@@ -883,6 +935,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['storyteller-cut', 'experimental-flex'],
     gradient: 'from-red-950 to-slate-900',
     audioSynthFreq: 440,
+    impact: 8.8,
   },
   {
     id: 'song-54',
@@ -899,6 +952,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['storyteller-cut', 'gritty-anthem'],
     gradient: 'from-amber-950 to-zinc-950',
     audioSynthFreq: 370,
+    impact: 9.6,
   },
 
   // --- CINEMATIC OUTRO ---
@@ -917,6 +971,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-outro'],
     gradient: 'from-pink-950 to-purple-950',
     audioSynthFreq: 440,
+    impact: 8.4,
   },
   {
     id: 'song-56',
@@ -933,6 +988,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-outro', 'late-night-rnb'],
     gradient: 'from-slate-950 to-black',
     audioSynthFreq: 311,
+    impact: 8.3,
   },
   {
     id: 'song-57',
@@ -949,6 +1005,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-outro', 'vibe-shift'],
     gradient: 'from-amber-900 to-rose-900',
     audioSynthFreq: 392,
+    impact: 9.0,
   },
   {
     id: 'song-58',
@@ -965,6 +1022,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-outro', 'introspective-cut'],
     gradient: 'from-blue-950 to-indigo-950',
     audioSynthFreq: 349,
+    impact: 8.5,
   },
   {
     id: 'song-59',
@@ -981,6 +1039,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-outro', 'acoustic-unplugged'],
     gradient: 'from-amber-900 to-cyan-950',
     audioSynthFreq: 523,
+    impact: 9.3,
   },
   {
     id: 'song-60',
@@ -997,6 +1056,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-outro', 'experimental-flex'],
     gradient: 'from-pink-950 to-rose-900',
     audioSynthFreq: 440,
+    impact: 8.7,
     youtubeId: '3m78pY-d6Zc',
   },
   // --- 2020s & 2021+ MODERN HEAT ---
@@ -1015,6 +1075,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['cinematic-intro', 'statement-banger', 'vibe-shift'],
     gradient: 'from-yellow-950 to-purple-950',
     audioSynthFreq: 440,
+    impact: 8.4,
     youtubeId: 'THVbP-JtI5M',
   },
   {
@@ -1032,6 +1093,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'gritty-anthem', 'apex-climax'],
     gradient: 'from-stone-900 to-red-950',
     audioSynthFreq: 523,
+    impact: 9.0,
     youtubeId: 'zI383uEwA6Q',
   },
   {
@@ -1049,6 +1111,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['late-night-rnb', 'vibe-shift'],
     gradient: 'from-indigo-950 to-pink-950',
     audioSynthFreq: 392,
+    impact: 8.6,
     youtubeId: 'U2d8hDAPe_o',
   },
   {
@@ -1066,6 +1129,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'gritty-anthem', 'apex-climax'],
     gradient: 'from-red-950 to-black',
     audioSynthFreq: 466,
+    impact: 8.9,
     youtubeId: 'B9synWjqBn8',
   },
   {
@@ -1083,6 +1147,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'vibe-shift'],
     gradient: 'from-emerald-950 to-black',
     audioSynthFreq: 415,
+    impact: 7.5,
     youtubeId: 'JgV1aN0E34M',
   },
   {
@@ -1100,6 +1165,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['statement-banger', 'gritty-anthem', 'apex-climax'],
     gradient: 'from-amber-950 to-red-900',
     audioSynthFreq: 493,
+    impact: 9.4,
     youtubeId: 'H58vbez_m4E',
   },
   {
@@ -1117,6 +1183,7 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['vibe-shift', 'gritty-anthem'],
     gradient: 'from-cyan-950 to-purple-950',
     audioSynthFreq: 370,
+    impact: 8.1,
     youtubeId: '_VQJ_y_w4J4',
   },
   {
@@ -1134,17 +1201,27 @@ export const SONG_LIBRARY: Song[] = [
     slots: ['late-night-rnb', 'vibe-shift', 'cinematic-outro'],
     gradient: 'from-blue-950 to-purple-950',
     audioSynthFreq: 330,
+    impact: 8.7,
     youtubeId: '61N8q1iCspc',
   },
 ];
 
 /**
  * Returns the era-filtered subset of the SONG_LIBRARY.
+ *
+ * Era buckets:
+ *   '2020s'  — 2020 and later
+ *   '2010s'  — 2010–2019 (Golden Era)
+ *   '2000s'  — before 2010, including pre-2000 classics (Illmatic, Ruff Ryders, etc.)
+ *   'all'    — entire library (no filter)
+ *
+ * Falling back from a specific era to 'all' must be explicit in the call site;
+ * this function never silently widens the pool.
  */
 export function filterByEra(library: Song[], eraFilter: EraFilter): Song[] {
-  if (eraFilter === '2020s') return library.filter((s) => s.year && s.year >= 2020);
-  if (eraFilter === '2010s') return library.filter((s) => s.year && s.year >= 2010 && s.year <= 2019);
-  if (eraFilter === '2000s') return library.filter((s) => s.year && s.year < 2010);
+  if (eraFilter === '2020s') return library.filter((s) => s.year !== undefined && s.year >= 2020);
+  if (eraFilter === '2010s') return library.filter((s) => s.year !== undefined && s.year >= 2010 && s.year <= 2019);
+  if (eraFilter === '2000s') return library.filter((s) => s.year !== undefined && s.year < 2010);
   return library;
 }
 

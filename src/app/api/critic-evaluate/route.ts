@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { EvaluationResult, MonopolyReport, EnergyMetrics, DraftedTrack, GameMode } from '@/types/draft';
+import {
+  EvaluationResult,
+  MonopolyReport,
+  EnergyMetrics,
+  DraftedTrack,
+  GameMode,
+  CandidateRound,
+} from '@/types/draft';
 import { generateFallbackEvaluation } from '@/lib/fallbackEvaluator';
+import { runBestPossibleOptimizer } from '@/lib/bestPossibleOptimizer';
 
 /**
  * Minimal runtime shape guard. Throws on malformed payloads before they can
- * crash the prompt-template string interpolation (e.g. `monopolyReport.penalizedArtists.map`
- * on `undefined`). Full schema validation (zod) is a tracked follow-up, but
- * this guard lets malformed requests fall through to the deterministic
- * fallback with a 200 response rather than a generic 500. (Audit finding M6.)
+ * crash the prompt-template string interpolation. (Audit finding M6.)
  */
 function isValidPayload(
   draftedTracks: unknown,
@@ -35,11 +40,15 @@ export async function POST(req: NextRequest) {
       draftedTracks,
       monopolyReport,
       energyMetrics,
+      candidateHistory,
+      selectedEra,
     }: {
       gameMode: GameMode;
       draftedTracks: DraftedTrack[];
       monopolyReport: MonopolyReport;
       energyMetrics: EnergyMetrics;
+      candidateHistory?: CandidateRound[];
+      selectedEra?: string;
     } = body;
 
     if (!isValidPayload(draftedTracks, monopolyReport, energyMetrics)) {
@@ -47,6 +56,18 @@ export async function POST(req: NextRequest) {
         { error: 'Malformed payload. Expected draftedTracks (non-empty) + monopolyReport + energyMetrics.' },
         { status: 400 }
       );
+    }
+
+    // ── Run best-possible optimizer (synchronous, <5ms for 7-round EP) ──
+    // This runs on both the API path and the fallback path so the result
+    // is always included regardless of whether Gemini is available.
+    let optimizerResult: ReturnType<typeof runBestPossibleOptimizer> | undefined;
+    if (Array.isArray(candidateHistory) && candidateHistory.length > 0) {
+      try {
+        optimizerResult = runBestPossibleOptimizer(draftedTracks, candidateHistory);
+      } catch (optErr) {
+        console.warn('Optimizer failed (non-fatal):', optErr);
+      }
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -59,13 +80,13 @@ export async function POST(req: NextRequest) {
             (t, i) =>
               `Track #${i + 1} (${t.slot.name}): "${t.song.title}" by ${
                 t.song.rawArtistString
-              } [BPM: ${t.song.bpm}, Energy: ${t.song.energy}%, Genre: ${t.song.genre}]`
+              } [BPM: ${t.song.bpm}, Energy: ${t.song.energy}%, Genre: ${t.song.genre}, Impact: ${t.song.impact?.toFixed(1) ?? 'N/A'}]`
           )
           .join('\n');
 
         const prompt = `
 You are an elite music A&R board consisting of 3 critics evaluating a ${
-          gameMode === 'ep' ? '6-track Quick EP' : '14-track Full Album'
+          gameMode === 'ep' ? '7-track Quick EP' : '14-track Full Album'
         } fantasy draft.
 
 Drafted Tracklist:
@@ -84,30 +105,38 @@ Energy Pacing Metrics:
 - Average Energy: ${energyMetrics.avgEnergy}%
 - Fatigue Status: ${energyMetrics.status}
 
-Rules & Persona Profiles:
-1. Marcus "The Boom-Bap Purist": Cares about lyrical depth, classic sequencing, opening & closing impact, and harshly penalizes lazy artist repeat monopoly picks.
-2. Chloe "The Streaming Data Exec": Cares about skip-rate minimization, playlisting potential, energy curve stability, and streaming velocity.
-3. Julian "The Late-Night Vibe Connoisseur": Cares about mood transitions, nocturnal R&B feel, emotional resonance, and aesthetic flow.
+IMPORTANT: The scoring system uses these 4 categories (return EXACTLY these field names):
+  - slotFit    (35%): How well each song's energy/genre fits its positional role
+  - albumFlow  (25%): Energy & BPM progression; intentional vibe shifts allowed
+  - cohesion   (20%): Genre consistency, mood arc, artist diversity
+  - impact     (20%): Cultural recognition, acclaim, commercial strength
 
-Return ONLY a valid JSON object matching this TypeScript format:
+The overallScore MUST equal: 0.35*slotFit + 0.25*albumFlow + 0.20*cohesion + 0.20*impact, minus monopolyPenalty.
+
+Critic Personas:
+1. Marcus "The Boom-Bap Purist": Cares about lyrical depth, classic sequencing, opening & closing impact. Harshly penalizes artist monopoly.
+2. Chloe "The Streaming Data Exec": Cares about skip-rate, playlisting potential, energy curve, streaming velocity.
+3. Julian "The Late-Night Vibe Connoisseur": Cares about mood transitions, nocturnal feel, emotional resonance, aesthetic flow.
+
+Return ONLY a valid JSON object with these EXACT fields:
 {
-  "overallScore": number (4.0 to 10.0),
-  "rawScore": number (0 to 10),
+  "overallScore": number (4.0 to 10.0, after monopoly deduction),
+  "rawScore": number (weighted 0–10 before deduction),
   "monopolyPenalty": number,
   "gradeBadge": string (e.g. "Diamond Classic", "Platinum Banger", "Gold Solid", "A&R Scrapbook"),
   "subScores": {
-    "pacing": number (1-10),
-    "synergy": number (1-10),
-    "cohesion": number (1-10),
-    "starPower": number (1-10)
+    "slotFit": number (1–10),
+    "albumFlow": number (1–10),
+    "cohesion": number (1–10),
+    "impact": number (1–10)
   },
   "reviews": [
     {
       "personaId": "purist",
       "name": "Marcus \"The Purist\"",
       "role": "Boom-Bap Historian & A&R Head",
-      "score": number (1-10),
-      "quote": string (1-2 sharp sentences in voice),
+      "score": number (1–10),
+      "quote": string (1–2 sharp sentences in voice),
       "detailedAnalysis": string,
       "keyHighlight": string,
       "badge": string
@@ -116,7 +145,7 @@ Return ONLY a valid JSON object matching this TypeScript format:
       "personaId": "exec",
       "name": "Chloe \"Data Exec\"",
       "role": "Global Streaming Strategy Director",
-      "score": number (1-10),
+      "score": number (1–10),
       "quote": string,
       "detailedAnalysis": string,
       "keyHighlight": string,
@@ -126,7 +155,7 @@ Return ONLY a valid JSON object matching this TypeScript format:
       "personaId": "connoisseur",
       "name": "Julian \"Vibe Connoisseur\"",
       "role": "Nocturnal Music Curator & DJ",
-      "score": number (1-10),
+      "score": number (1–10),
       "quote": string,
       "detailedAnalysis": string,
       "keyHighlight": string,
@@ -150,8 +179,17 @@ Return ONLY a valid JSON object matching this TypeScript format:
           const parsed = JSON.parse(responseText) as EvaluationResult;
           parsed.monopolyReport = monopolyReport;
           parsed.energyMetrics = energyMetrics;
-          // Stamp provenance so the scorecard can badge this as an AI Critic Board score.
           parsed.source = 'gemini';
+
+          // Attach optimizer results if available
+          if (optimizerResult) {
+            parsed.bestPossibleScore     = optimizerResult.bestPossibleScore;
+            parsed.draftEfficiency       = optimizerResult.draftEfficiency;
+            parsed.bestPossibleTracklist = optimizerResult.bestPossibleTracklist;
+            parsed.biggestMistake        = optimizerResult.biggestMistake  ?? undefined;
+            parsed.smartestPick          = optimizerResult.smartestPick    ?? undefined;
+          }
+
           return NextResponse.json(parsed);
         }
       } catch (genAiError) {
@@ -159,20 +197,27 @@ Return ONLY a valid JSON object matching this TypeScript format:
       }
     }
 
-    // Deterministic Fallback Evaluator if no API key or call fails.
-    // Uses the canonical evaluator in src/lib/fallbackEvaluator.ts so the
-    // server fallback and the client store fallback produce byte-identical
-    // results for the same draft. (Audit finding H4.)
+    // ── Deterministic Fallback ──
+    // Uses the canonical evaluator so server and client fallback produce
+    // byte-identical results for the same draft. (Audit finding H4.)
     const fallback = generateFallbackEvaluation(
       gameMode,
       draftedTracks,
       monopolyReport,
       energyMetrics,
-      // Era filter is not currently sent by the client; default to 'all' so
-      // optimal picks scan the full library. The store's own fallback path
-      // passes the live selectedEra."
-      'all'
+      (selectedEra === 'all' || selectedEra === '2020s' || selectedEra === '2010s' || selectedEra === '2000s')
+        ? selectedEra
+        : 'all'
     );
+
+    // Attach optimizer results to fallback too
+    if (optimizerResult) {
+      fallback.bestPossibleScore     = optimizerResult.bestPossibleScore;
+      fallback.draftEfficiency       = optimizerResult.draftEfficiency;
+      fallback.bestPossibleTracklist = optimizerResult.bestPossibleTracklist;
+      fallback.biggestMistake        = optimizerResult.biggestMistake  ?? undefined;
+      fallback.smartestPick          = optimizerResult.smartestPick    ?? undefined;
+    }
 
     return NextResponse.json(fallback);
   } catch (error) {
@@ -183,15 +228,3 @@ Return ONLY a valid JSON object matching this TypeScript format:
     );
   }
 }
-
-/*
- * The fallback evaluator previously lived here as a duplicate of the
- * client-side evaluator in src/store/useDraftStore.ts, with divergent
- * formulas (hardcoded rawScore: 9.5, different sub-score weights, different
- * persona quotes/badges). The same draft produced *different* scores depending
- * on whether the network request succeeded.
- *
- * The canonical evaluator now lives at src/lib/fallbackEvaluator.ts and is
- * imported by both this route and the store, guaranteeing byte-identical
- * fallback results regardless of the network path. (Audit finding H4.)
- */

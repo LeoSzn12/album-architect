@@ -7,6 +7,7 @@ import { OscilloscopeEnergyBar } from '@/components/OscilloscopeEnergyBar';
 import { ArtistMonopolyTracker } from '@/components/ArtistMonopolyTracker';
 import { DraftBoard } from '@/components/DraftBoard';
 import { AICriticPanel } from '@/components/AICriticPanel';
+import { LandingScreen } from '@/components/LandingScreen';
 import { ModeSelectorModal } from '@/components/ModeSelectorModal';
 import { TracklistDrawer } from '@/components/TracklistDrawer';
 import { ExportModal } from '@/components/ExportModal';
@@ -18,22 +19,34 @@ import { PlayAgainstFriendsModal } from '@/components/PlayAgainstFriendsModal';
 import { GameMode, DifficultyTier, EraFilter } from '@/types/draft';
 
 export default function Home() {
-  const { currentRoundIndex, slots, evaluationResult, evaluateDraft, startNewDraft } =
-    useDraftStore();
+  const {
+    currentRoundIndex,
+    slots,
+    draftedTracks,
+    evaluationResult,
+    evaluateDraft,
+    startNewDraft,
+  } = useDraftStore();
 
   const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
   const [isTracklistOpen, setIsTracklistOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const leaderboardRef = useRef<HTMLDivElement>(null);
   const isCompleted = currentRoundIndex >= slots.length;
 
-  // Auto-initialize challenge seed from URL search parameters on mount.
-  // Only call startNewDraft (which internally sets draftSeed); calling
-  // setDraftSeed first would double-invoke startNewDraft, resetting
-  // draftedTracks/evaluationResult twice and duplicating any future
-  // side-effects. (Audit finding H1.)
+  // Treat returning players (already mid-draft or completed) as "started"
+  useEffect(() => {
+    if (draftedTracks.length > 0 || currentRoundIndex > 0 || evaluationResult !== null) {
+      setHasStarted(true);
+    }
+  }, [draftedTracks.length, currentRoundIndex, evaluationResult]);
+
+  // Auto-initialize challenge seed from URL search params on mount.
+  // Only call startNewDraft (which sets draftSeed internally); calling
+  // setDraftSeed first would double-invoke startNewDraft. (Audit H1)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -51,6 +64,7 @@ export default function Home() {
         urlDiff === 'standard' || urlDiff === 'veteran' || urlDiff === 'hardcore' ? urlDiff : undefined,
         urlSeed
       );
+      setHasStarted(true);
     }
   }, [startNewDraft]);
 
@@ -62,6 +76,15 @@ export default function Home() {
     leaderboardRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleStartDraft = () => {
+    // startNewDraft without args uses current mode/era/difficulty
+    startNewDraft();
+    setHasStarted(true);
+  };
+
+  // Show landing screen only for brand-new sessions
+  const showLanding = !hasStarted;
+
   return (
     <div className="min-h-screen bg-[#0f1117] text-slate-100 flex flex-col justify-between selection:bg-purple-500 selection:text-white relative pb-24">
       {/* Background Neon Ambient Glow Orbs */}
@@ -69,7 +92,7 @@ export default function Home() {
       <div className="fixed bottom-10 right-1/4 translate-x-1/2 w-[30rem] h-[30rem] bg-pink-600/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-cyan-600/5 rounded-full blur-[160px] pointer-events-none" />
 
-      {/* Header */}
+      {/* Header — always visible */}
       <Header
         onOpenModeSelector={() => setIsModeSelectorOpen(true)}
         onToggleTracklist={() => setIsTracklistOpen(true)}
@@ -79,43 +102,58 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 flex-grow flex flex-col gap-6 relative z-10">
-        {/* Oscilloscope Waveform & Energy Bar */}
-        <OscilloscopeEnergyBar />
 
-        {/* Artist Monopoly Engine Status */}
-        <ArtistMonopolyTracker />
-
-        {/* Draft Stage or Critic Review Panel */}
-        {isCompleted && evaluationResult ? (
-          <AICriticPanel
-            onOpenExport={() => setIsExportOpen(true)}
+        {showLanding ? (
+          /* ── Landing (first-time experience) ── */
+          <LandingScreen
+            onStart={handleStartDraft}
             onOpenFriendsModal={() => setIsFriendsModalOpen(true)}
+            onScrollToLeaderboard={handleScrollToLeaderboard}
           />
         ) : (
-          <DraftBoard onEvaluateTrigger={handleEvaluate} />
+          /* ── Active Draft or Results ── */
+          <>
+            {/* Oscilloscope waveform – only when drafting */}
+            {!isCompleted && <OscilloscopeEnergyBar />}
+
+            {/* Artist monopoly tracker – only when drafting */}
+            {!isCompleted && <ArtistMonopolyTracker />}
+
+            {/* Main panel: critic results OR draft board */}
+            {isCompleted && evaluationResult ? (
+              <AICriticPanel
+                onOpenExport={() => setIsExportOpen(true)}
+                onOpenFriendsModal={() => setIsFriendsModalOpen(true)}
+              />
+            ) : (
+              <DraftBoard onEvaluateTrigger={handleEvaluate} />
+            )}
+          </>
         )}
 
-        {/* Executive Leaderboard & Rankings */}
-        <div ref={leaderboardRef}>
-          <LeaderboardPanel />
-        </div>
-
-        {/* Executive Draft History / Hall of Fame */}
-        <DraftHistoryPanel />
+        {/* Leaderboard & History — always below (not in landing) */}
+        {!showLanding && (
+          <>
+            <div ref={leaderboardRef}>
+              <LeaderboardPanel />
+            </div>
+            <DraftHistoryPanel />
+          </>
+        )}
       </main>
 
-      {/* Footer Status */}
+      {/* Footer */}
       <footer className="w-full max-w-6xl mx-auto text-center text-xs text-gray-500 py-6 border-t border-gray-800/80 mt-12 relative z-10 flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Album Architect v2.0 • Fantasy Music League & A&R Engine</span>
+          <span>Album Architect v3.0 • Fantasy Music Draft</span>
         </div>
         <div className="text-gray-400">
-          Powered by Next.js, Tailwind CSS & Zustand
+          Built with Next.js & Zustand
         </div>
       </footer>
 
-      {/* Modals & Slide-over Drawer */}
+      {/* Modals & Drawers */}
       <ModeSelectorModal
         isOpen={isModeSelectorOpen}
         onClose={() => setIsModeSelectorOpen(false)}
