@@ -32,21 +32,21 @@ export default function Home() {
   const [isTracklistOpen, setIsTracklistOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
+  const [hasStarted, setHasStarted] = useState(
+    () => draftedTracks.length > 0 || currentRoundIndex > 0 || evaluationResult !== null
+  );
 
   const leaderboardRef = useRef<HTMLDivElement>(null);
   const isCompleted = currentRoundIndex >= slots.length;
 
-  // Treat returning players (already mid-draft or completed) as "started"
+  // Sync started state when returning mid-draft
   useEffect(() => {
     if (draftedTracks.length > 0 || currentRoundIndex > 0 || evaluationResult !== null) {
-      setHasStarted(true);
+      queueMicrotask(() => setHasStarted(true));
     }
   }, [draftedTracks.length, currentRoundIndex, evaluationResult]);
 
   // Auto-initialize challenge seed from URL search params on mount.
-  // Only call startNewDraft (which sets draftSeed internally); calling
-  // setDraftSeed first would double-invoke startNewDraft. (Audit H1)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -64,7 +64,7 @@ export default function Home() {
         urlDiff === 'standard' || urlDiff === 'veteran' || urlDiff === 'hardcore' ? urlDiff : undefined,
         urlSeed
       );
-      setHasStarted(true);
+      queueMicrotask(() => setHasStarted(true));
     }
   }, [startNewDraft]);
 

@@ -28,7 +28,6 @@ export const DockedMusicPlayer: React.FC = () => {
     selectedRealSong,
     isPlayerModalOpen,
     closeMusicPlayer,
-    closeRealSongPlayer,
     audioSourcePreference,
     setAudioSourcePreference,
     openRealSongPlayer,

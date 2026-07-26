@@ -40,23 +40,13 @@ interface DraftStoreState {
   draftedTracks: DraftedTrack[];
   currentOptions: Song[];
   rerollTokens: number;
-  /**
-   * Per-draft monotonically-increasing reroll counter. Baked into seed-tag
-   * so successive rerolls produce distinct shuffles while remaining 100%
-   * reproducible for a given (seed, slot, rerollIndex) tuple. Fixes audit C1.
-   */
   rerollCount: number;
-  /**
-   * Auto-assigned era per slot. Derived from slot defaultEra + seed.
-   * Both players using the same seed receive the same era sequence.
-   */
   eraSequence: EraFilter[];
-  /**
-   * Full record of every candidate pool shown to the player (initial + rerolls).
-   * Used by the best-possible optimizer at the end of the draft.
-   */
   candidateHistory: CandidateRound[];
-  selectedEra: EraFilter; // kept for settings/display only; drafting uses eraSequence
+  selectedEra: EraFilter;
+  recentlyShownSongIds: string[];
+  recentlyShownArtists: string[];
+  soloDraftNonce: number;
   monopolyReport: MonopolyReport;
   energyMetrics: EnergyMetrics;
   evaluationResult: EvaluationResult | null;
@@ -76,6 +66,7 @@ interface DraftStoreState {
   setDraftSeed: (seed: string | null) => void;
   setPlayerAlias: (alias: string) => void;
   setSelectedEra: (era: EraFilter) => void;
+  fetchOptions: (slotId: SlotId, era: EraFilter, seed: string | null, rerollIndex?: number) => Song[];
   startNewDraft: (mode?: GameMode, era?: EraFilter, diff?: DifficultyTier, seed?: string | null) => void;
   draftSong: (song: Song, isWildcard?: boolean) => void;
   undoLastPick: () => boolean;
@@ -85,7 +76,6 @@ interface DraftStoreState {
   setAudioSourcePreference: (pref: AudioSourcePreference) => void;
   openRealSongPlayer: (song: Song) => void;
   closeRealSongPlayer: () => void;
-  /** Fully dismiss the music dock — clears selectedRealSong and closes modal. */
   closeMusicPlayer: () => void;
   playNextDraftedTrack: () => void;
   playPrevDraftedTrack: () => void;
@@ -127,6 +117,9 @@ export const useDraftStore = create<DraftStoreState>()(
       eraSequence: generateEraSequence(EP_SLOTS, null),
       candidateHistory: [],
       selectedEra: 'all',
+      recentlyShownSongIds: [],
+      recentlyShownArtists: [],
+      soloDraftNonce: 0,
       monopolyReport: EMPTY_MONOPOLY,
       energyMetrics: EMPTY_ENERGY,
       evaluationResult: null,
@@ -139,6 +132,37 @@ export const useDraftStore = create<DraftStoreState>()(
       pastDrafts: [],
       leaderboard: [],
       versusMatchup: null,
+
+      fetchOptions: (slotId: SlotId, era: EraFilter, seed: string | null, rerollIndex: number = 0) => {
+        const { draftedTracks, recentlyShownSongIds, recentlyShownArtists, soloDraftNonce } = get();
+        const draftedSongIds = draftedTracks.map((d) => d.song.id);
+        const draftedArtists = draftedTracks.map((d) => d.song.artist);
+
+        const options = getOptionsForSlot(slotId, 4, era, seed, {
+          rerollIndex: seed ? rerollIndex : rerollIndex + soloDraftNonce * 10,
+          draftedSongIds,
+          draftedArtists,
+          recentlyShownSongIds,
+          recentlyShownArtists,
+        });
+
+        if (seed === null) {
+          const shownIds = options.map((s) => s.id);
+          const shownArtists = options.map((s) => s.artist);
+          const prevIds = get().recentlyShownSongIds || [];
+          const prevArtists = get().recentlyShownArtists || [];
+
+          const updatedIds = Array.from(new Set([...shownIds, ...prevIds])).slice(0, 80);
+          const updatedArtists = Array.from(new Set([...shownArtists, ...prevArtists])).slice(0, 40);
+
+          set({
+            recentlyShownSongIds: updatedIds,
+            recentlyShownArtists: updatedArtists,
+          });
+        }
+
+        return options;
+      },
 
       setGameMode: (mode: GameMode) => {
         get().startNewDraft(mode);
@@ -157,7 +181,6 @@ export const useDraftStore = create<DraftStoreState>()(
       },
 
       setSelectedEra: (era: EraFilter) => {
-        // Only updates display preference — drafting always uses eraSequence
         set({ selectedEra: era });
       },
 
@@ -176,11 +199,15 @@ export const useDraftStore = create<DraftStoreState>()(
         let tokens = newMode === 'ep' ? 2 : 3;
         if (newDiff === 'veteran' || newDiff === 'hardcore') tokens = 1;
 
+        const nextNonce = newSeed === null ? get().soloDraftNonce + 1 : get().soloDraftNonce;
+        if (newSeed === null) {
+          set({ soloDraftNonce: nextNonce });
+        }
+
         const eraSequence = generateEraSequence(slots, newSeed);
         const slot0Era    = eraSequence[0];
-        const initialOptions = getOptionsForSlot(slots[0].id, 4, slot0Era, newSeed);
+        const initialOptions = get().fetchOptions(slots[0].id, slot0Era, newSeed, 0);
 
-        // Record the initial candidate pool for round 0
         const initialHistory: CandidateRound[] = [{
           roundIndex: 0,
           slotId: slots[0].id,
@@ -237,7 +264,7 @@ export const useDraftStore = create<DraftStoreState>()(
         if (nextRoundIndex < slots.length) {
           const nextSlot  = slots[nextRoundIndex];
           const nextEra   = eraSequence[nextRoundIndex] ?? 'all';
-          nextOptions     = getOptionsForSlot(nextSlot.id, 4, nextEra, draftSeed);
+          nextOptions     = get().fetchOptions(nextSlot.id, nextEra, draftSeed, 0);
 
           // Record the initial pool for the next round
           updatedHistory = [
@@ -269,7 +296,7 @@ export const useDraftStore = create<DraftStoreState>()(
         const prevRoundIndex  = updatedDrafted.length;
         const prevSlot        = slots[prevRoundIndex];
         const prevEra         = eraSequence[prevRoundIndex] ?? 'all';
-        const restoredOptions = getOptionsForSlot(prevSlot.id, 4, prevEra, draftSeed);
+        const restoredOptions = get().fetchOptions(prevSlot.id, prevEra, draftSeed, 0);
 
         const monopolyReport  = computeMonopolyReport(updatedDrafted);
         const energyMetrics   = computeEnergyMetrics(updatedDrafted);
@@ -300,10 +327,7 @@ export const useDraftStore = create<DraftStoreState>()(
         const currentSlot = slots[currentRoundIndex];
         const currentEra  = eraSequence[currentRoundIndex] ?? 'all';
 
-        // Bake the reroll counter into the seed-tag so each successive reroll
-        // produces a new shuffle while preserving 1v1 parity. Fixes audit C1.
-        const seededTag   = draftSeed ? `${draftSeed}#R${rerollCount + 1}` : null;
-        const freshOptions = getOptionsForSlot(currentSlot.id, 4, currentEra, seededTag);
+        const freshOptions = get().fetchOptions(currentSlot.id, currentEra, draftSeed, rerollCount + 1);
 
         // Append the rerolled pool to the current round's history
         const updatedHistory = candidateHistory.map((round, idx) =>
@@ -558,6 +582,9 @@ export const useDraftStore = create<DraftStoreState>()(
         eraSequence: state.eraSequence,
         candidateHistory: state.candidateHistory,
         selectedEra: state.selectedEra,
+        recentlyShownSongIds: state.recentlyShownSongIds,
+        recentlyShownArtists: state.recentlyShownArtists,
+        soloDraftNonce: state.soloDraftNonce,
         monopolyReport: state.monopolyReport,
         energyMetrics: state.energyMetrics,
         evaluationResult: state.evaluationResult,

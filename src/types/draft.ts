@@ -38,6 +38,40 @@ export interface DraftSlot {
   eraLabel: string;
 }
 
+export type SongArchetype =
+  | 'iconic-opener'
+  | 'cinematic'
+  | 'high-energy'
+  | 'lyrical'
+  | 'street-anthem'
+  | 'club'
+  | 'introspective'
+  | 'rnb'
+  | 'experimental'
+  | 'storytelling'
+  | 'climax'
+  | 'outro'
+  | 'value-pick';
+
+export interface CandidateDebugInfo {
+  bucket: 'headliner' | 'best-fit' | 'alternative' | 'sleeper';
+  slotAffinity: number;
+  selectionWeight: number;
+  recentlyShownPenalty: number;
+  reasons: string[];
+}
+
+export interface CandidateContext {
+  slotId: SlotId;
+  era: EraFilter;
+  seed: string | null;
+  rerollIndex: number;
+  draftedSongIds: string[];
+  draftedArtists: string[];
+  recentlyShownSongIds: string[];
+  recentlyShownArtists: string[];
+}
+
 export interface Song {
   id: string;
   title: string;
@@ -58,12 +92,26 @@ export interface Song {
   spotifyId?: string; // Spotify track ID e.g. "0VjIjW4GlUZAMYd2vXMi3b" — 22 chars
   spotifyUrl?: string; // Direct Spotify URL
   /**
-   * Curated game impact rating (0–10). Reflects a combination of cultural
-   * recognition, acclaim, commercial strength, and longevity. This is a game
-   * rating — NOT an objective statement of musical quality.
-   * Added in schema v3.
+   * Curated game impact rating (0–100). Reflects a combination of cultural
+   * recognition, acclaim, commercial strength, and longevity.
    */
   impact: number;
+  /** Cultural recognition / player familiarity (0–100). */
+  recognition: number;
+  /** Critical / artistic reputation (0–100). */
+  acclaim?: number;
+  /** Strategic gameplay identity tags. */
+  archetypes: SongArchetype[];
+  /** Positional fit score (0–100) per album slot. */
+  slotAffinity: Partial<Record<SlotId, number>>;
+  /** Indicates whether track is an actual album opener. */
+  isActualAlbumOpener?: boolean;
+  /** Indicates whether track is an actual album outro / closing track. */
+  isActualAlbumOutro?: boolean;
+  /** Track number on original album release. */
+  originalAlbumTrackNumber?: number;
+  /** Debug info populated in dev mode for candidate evaluation. */
+  debugInfo?: CandidateDebugInfo;
   /**
    * Optional album artwork URL. Use only authorized/stable sources.
    * Gradient fallback is shown when absent.

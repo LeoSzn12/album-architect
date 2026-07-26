@@ -1,4 +1,4 @@
-import { DraftSlot } from '@/types/draft';
+import type { DraftSlot } from '../types/draft.ts';
 
 export const EP_SLOTS: DraftSlot[] = [
   {

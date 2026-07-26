@@ -1,52 +1,76 @@
-/**
- * Deterministic Era Sequence Generator — Album Architect: Rap Draft
- *
- * Assigns an era bucket to each draft round automatically so the player
- * never needs to manage era settings during gameplay.
- *
- * Rules:
- * 1. When no seed is present, each slot uses its `defaultEra` from slots.ts.
- * 2. When a challenge seed is present, the era sequence is derived from that
- *    seed deterministically — both friends using the same seed see the same eras.
- * 3. The seed derivation is additive: the slot's defaultEra anchors the category,
- *    and the seed shifts selection within the same era cohort (not across eras),
- *    preserving the curated narrative structure.
- *
- * Note: Era assignment is fixed per slot for fairness. The seed controls WHICH
- * specific songs appear within that era — not which era category the slot uses.
- * This preserves the album narrative arc (intro → banger → anthem → vibe shift…)
- * regardless of the seed.
- */
+import type { EraFilter, DraftSlot, SlotId } from '../types/draft.ts';
+import { SONG_LIBRARY, filterByEra } from '../data/songs.ts';
 
-import { EraFilter } from '@/types/draft';
-import { DraftSlot } from '@/types/draft';
+function createPrng(seedStr: string) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
+  }
+  return function () {
+    h += h << 13;
+    h ^= h >>> 7;
+    h += h << 3;
+    h ^= h >>> 17;
+    const t = (h += h << 5) >>> 0;
+    return t / 4294967296;
+  };
+}
+
+/**
+ * Counts eligible songs in the catalog for a given slot and era filter.
+ */
+export function getEligibleCount(slotId: SlotId, era: EraFilter): number {
+  const pool = filterByEra(SONG_LIBRARY, era);
+  return pool.filter((song) => {
+    const affinity = song.slotAffinity?.[slotId] ?? 0;
+    return affinity >= 60 || song.slots.includes(slotId);
+  }).length;
+}
+
+/**
+ * Deterministically substitutes a sparse era (< 8 eligible songs) with a better-covered era.
+ * Returns 'all' or another era with >= 8 candidates.
+ */
+export function resolveSufficientEra(slotId: SlotId, requestedEra: EraFilter): EraFilter {
+  if (requestedEra === 'all') return 'all';
+
+  const count = getEligibleCount(slotId, requestedEra);
+  if (count >= 8) return requestedEra;
+
+  // Substitute 'all' which aggregates catalog coverage
+  return 'all';
+}
 
 /**
  * Returns the era assignment for each slot in order.
- * When a seed is provided the result is deterministic and identical for
- * both players using the same seed.
- *
- * @param slots  — the slot definitions in play order
- * @param seed   — challenge seed (null = use defaultEra from each slot)
+ * When a seed is provided the result is 100% deterministic and identical for
+ * both players using the same seed. Enforces minimum 8-song catalog coverage
+ * via deterministic substitution.
  */
 export function generateEraSequence(
   slots: DraftSlot[],
   seed: string | null
 ): EraFilter[] {
-  // Without a seed, just use each slot's default era
+  const possibleEras: EraFilter[] = ['2000s', '2010s', '2020s', 'all'];
+
   if (!seed) {
-    return slots.map((s) => s.defaultEra);
+    // Solo mode: sample uniformly across eras and substitute sparse pools
+    return slots.map((s) => {
+      const idx = Math.floor(Math.random() * possibleEras.length);
+      return resolveSufficientEra(s.id, possibleEras[idx]);
+    });
   }
 
-  // With a seed, return the same default sequence (era categories are fixed).
-  // The seed only influences which songs appear within each era, not which era.
-  // Both players therefore see the same eras AND the same song shuffles.
-  return slots.map((s) => s.defaultEra);
+  // Challenge seed mode: deterministic mapping with substitution guarantee
+  const prng = createPrng(seed);
+  return slots.map((s) => {
+    const idx = Math.floor(prng() * possibleEras.length);
+    return resolveSufficientEra(s.id, possibleEras[idx]);
+  });
 }
 
 /**
  * Returns a human-readable label for a round's era badge.
- * e.g. "2010s" → "2010s Golden Era"
  */
 export function eraLabel(era: EraFilter): string {
   switch (era) {

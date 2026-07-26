@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
             (t, i) =>
               `Track #${i + 1} (${t.slot.name}): "${t.song.title}" by ${
                 t.song.rawArtistString
-              } [BPM: ${t.song.bpm}, Energy: ${t.song.energy}%, Genre: ${t.song.genre}, Impact: ${t.song.impact?.toFixed(1) ?? 'N/A'}]`
+              } [BPM: ${t.song.bpm}, Energy: ${t.song.energy}%, Genre: ${t.song.genre}, Impact: ${(t.song.impact > 10 ? t.song.impact / 10 : t.song.impact)?.toFixed(1) ?? 'N/A'}]`
           )
           .join('\n');
 

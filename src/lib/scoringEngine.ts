@@ -152,8 +152,12 @@ function computeCohesionScore(drafted: DraftedTrack[], monopolyReport: MonopolyR
 
 function computeImpactScore(drafted: DraftedTrack[]): number {
   if (drafted.length === 0) return 5.0;
-  const avg = drafted.reduce((s, d) => s + (d.song.impact ?? 5), 0) / drafted.length;
-  // impact is already 0-10; clamp to [1,10] for scoring
+  const avg =
+    drafted.reduce((s, d) => {
+      const raw = d.song.impact ?? 50;
+      const scaled = raw > 10 ? raw / 10 : raw;
+      return s + scaled;
+    }, 0) / drafted.length;
   return round1(clamp(1, 10, avg));
 }
 

@@ -51,7 +51,7 @@ export const RealSongPlayerModal: React.FC = () => {
 
   useEffect(() => {
     // Stop synth on song change or modal close
-    setIsSynthPlaying(false);
+    queueMicrotask(() => setIsSynthPlaying(false));
     return () => {
       stopSongPreview();
     };

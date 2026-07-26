@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Album Architect — Dev Catalog Inspector</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
+    h1, h2, h3 { color: #f43f5e; margin-bottom: 12px; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+    .badge-danger { background: #991b1b; color: #fca5a5; }
+    .badge-warning { background: #854d0e; color: #fef08a; }
+    .badge-success { background: #166534; color: #86efac; }
+    .card { background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 24px; border: 1px solid #334155; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #334155; font-size: 14px; }
+    th { background: #0f172a; color: #94a3b8; }
+    tr:hover { background: #334155; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  </style>
+</head>
+<body>
+  <h1>🎵 Album Architect — Development Catalog Inspector</h1>
+  <p>Internal audit report detailing track metadata, slot coverage, artist distribution, and structural integrity.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Library Overview</h3>
+      <p><strong>Total Tracks:</strong> 125</p>
+      <p><strong>Unique Lead Artists:</strong> 47</p>
+      <p><strong>Actual Album Openers:</strong> 32</p>
+      <p><strong>Actual Album Outros:</strong> 9</p>
+    </div>
+
+    <div class="card">
+      <h3>Weak Slot × Era Combinations (<8 candidates)</h3>
+      <ul><li><strong>Cinematic Intro</strong> (2020s): <span class="badge badge-danger">7 songs</span> (Auto-substituted with 'all')</li><li><strong>Gritty Street Anthem</strong> (2020s): <span class="badge badge-danger">5 songs</span> (Auto-substituted with 'all')</li><li><strong>Vibe Shift & Club Bounce</strong> (2000s): <span class="badge badge-danger">7 songs</span> (Auto-substituted with 'all')</li><li><strong>Vibe Shift & Club Bounce</strong> (2020s): <span class="badge badge-danger">6 songs</span> (Auto-substituted with 'all')</li><li><strong>Late-Night R&B / Slow Jam</strong> (2000s): <span class="badge badge-danger">4 songs</span> (Auto-substituted with 'all')</li><li><strong>Late-Night R&B / Slow Jam</strong> (2010s): <span class="badge badge-danger">6 songs</span> (Auto-substituted with 'all')</li><li><strong>Late-Night R&B / Slow Jam</strong> (2020s): <span class="badge badge-danger">5 songs</span> (Auto-substituted with 'all')</li><li><strong>Apex Heavy Hitter (Climax)</strong> (2000s): <span class="badge badge-danger">6 songs</span> (Auto-substituted with 'all')</li><li><strong>Apex Heavy Hitter (Climax)</strong> (2020s): <span class="badge badge-danger">7 songs</span> (Auto-substituted with 'all')</li><li><strong>Cinematic Outro</strong> (2000s): <span class="badge badge-danger">5 songs</span> (Auto-substituted with 'all')</li><li><strong>Cinematic Outro</strong> (2010s): <span class="badge badge-danger">4 songs</span> (Auto-substituted with 'all')</li><li><strong>Cinematic Outro</strong> (2020s): <span class="badge badge-danger">4 songs</span> (Auto-substituted with 'all')</li><li><strong>Introspective Cut</strong> (2000s): <span class="badge badge-danger">5 songs</span> (Auto-substituted with 'all')</li><li><strong>Introspective Cut</strong> (2010s): <span class="badge badge-danger">5 songs</span> (Auto-substituted with 'all')</li><li><strong>Introspective Cut</strong> (2020s): <span class="badge badge-danger">4 songs</span> (Auto-substituted with 'all')</li><li><strong>Mid-Album Interlude</strong> (2000s): <span class="badge badge-danger">1 songs</span> (Auto-substituted with 'all')</li><li><strong>Mid-Album Interlude</strong> (2010s): <span class="badge badge-danger">2 songs</span> (Auto-substituted with 'all')</li><li><strong>Mid-Album Interlude</strong> (2020s): <span class="badge badge-danger">1 songs</span> (Auto-substituted with 'all')</li><li><strong>Mid-Album Interlude</strong> (all): <span class="badge badge-danger">4 songs</span> (Auto-substituted with 'all')</li><li><strong>Late-Night Club Anthem</strong> (2000s): <span class="badge badge-danger">4 songs</span> (Auto-substituted with 'all')</li><li><strong>Late-Night Club Anthem</strong> (2010s): <span class="badge badge-danger">2 songs</span> (Auto-substituted with 'all')</li><li><strong>Late-Night Club Anthem</strong> (2020s): <span class="badge badge-danger">4 songs</span> (Auto-substituted with 'all')</li><li><strong>Experimental Flex</strong> (2000s): <span class="badge badge-danger">1 songs</span> (Auto-substituted with 'all')</li><li><strong>Experimental Flex</strong> (2010s): <span class="badge badge-danger">6 songs</span> (Auto-substituted with 'all')</li><li><strong>Experimental Flex</strong> (2020s): <span class="badge badge-danger">0 songs</span> (Auto-substituted with 'all')</li><li><strong>Experimental Flex</strong> (all): <span class="badge badge-danger">7 songs</span> (Auto-substituted with 'all')</li><li><strong>Acoustic / Stripped Back</strong> (2000s): <span class="badge badge-danger">1 songs</span> (Auto-substituted with 'all')</li><li><strong>Acoustic / Stripped Back</strong> (2010s): <span class="badge badge-danger">0 songs</span> (Auto-substituted with 'all')</li><li><strong>Acoustic / Stripped Back</strong> (2020s): <span class="badge badge-danger">0 songs</span> (Auto-substituted with 'all')</li><li><strong>Acoustic / Stripped Back</strong> (all): <span class="badge badge-danger">1 songs</span> (Auto-substituted with 'all')</li><li><strong>Melodic Wave</strong> (2000s): <span class="badge badge-danger">0 songs</span> (Auto-substituted with 'all')</li><li><strong>Melodic Wave</strong> (2010s): <span class="badge badge-danger">0 songs</span> (Auto-substituted with 'all')</li><li><strong>Melodic Wave</strong> (2020s): <span class="badge badge-danger">3 songs</span> (Auto-substituted with 'all')</li><li><strong>Melodic Wave</strong> (all): <span class="badge badge-danger">3 songs</span> (Auto-substituted with 'all')</li><li><strong>Storyteller Deep Cut</strong> (2000s): <span class="badge badge-danger">3 songs</span> (Auto-substituted with 'all')</li><li><strong>Storyteller Deep Cut</strong> (2010s): <span class="badge badge-danger">5 songs</span> (Auto-substituted with 'all')</li><li><strong>Storyteller Deep Cut</strong> (2020s): <span class="badge badge-danger">0 songs</span> (Auto-substituted with 'all')</li></ul>
+    </div>
+
+    <div class="card">
+      <h3>Top Lead Artists</h3>
+      <ul>
+        <li><strong>Kanye West:</strong> 17 tracks</li><li><strong>Kendrick Lamar:</strong> 16 tracks</li><li><strong>Jay-Z:</strong> 10 tracks</li><li><strong>Travis Scott:</strong> 8 tracks</li><li><strong>Drake:</strong> 8 tracks</li><li><strong>J. Cole:</strong> 4 tracks</li><li><strong>Lil Wayne:</strong> 3 tracks</li><li><strong>50 Cent:</strong> 3 tracks</li><li><strong>OutKast:</strong> 3 tracks</li><li><strong>SZA:</strong> 3 tracks</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Full Catalog Inspection Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Artist</th>
+          <th>Year</th>
+          <th>Impact / Rec / Acc</th>
+          <th>Opener / Outro</th>
+          <th>Archetypes</th>
+          <th>Primary Slots</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td><strong>Dreams & Nightmares</strong></td>
+            <td>Meek Mill</td>
+            <td>2012</td>
+            <td>92 / 95 / 90</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, high-energy</td>
+            <td>cinematic-intro, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Dark Fantasy</strong></td>
+            <td>Kanye West</td>
+            <td>2010</td>
+            <td>95 / 94 / 98</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, cinematic</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>6 Foot 7 Foot</strong></td>
+            <td>Lil Wayne</td>
+            <td>2011</td>
+            <td>84 / 90 / 82</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>lyrical, high-energy</td>
+            <td>statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>No Church in the Wild</strong></td>
+            <td>Jay-Z</td>
+            <td>2011</td>
+            <td>90 / 92 / 91</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>cinematic, iconic-opener</td>
+            <td>cinematic-intro, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>STARGAZING</strong></td>
+            <td>Travis Scott</td>
+            <td>2018</td>
+            <td>91 / 93 / 89</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, experimental</td>
+            <td>cinematic-intro, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Tuscan Leather</strong></td>
+            <td>Drake</td>
+            <td>2013</td>
+            <td>89 / 88 / 94</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, lyrical, cinematic</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Ultralight Beam</strong></td>
+            <td>Kanye West</td>
+            <td>2016</td>
+            <td>93 / 91 / 96</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>cinematic, iconic-opener, introspective</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Wesley's Theory</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2015</td>
+            <td>92 / 86 / 99</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>cinematic, experimental, iconic-opener</td>
+            <td>cinematic-intro, experimental-flex</td>
+          </tr>
+          <tr>
+            <td><strong>BLOOD. / DNA.</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2017</td>
+            <td>94 / 95 / 95</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, high-energy</td>
+            <td>cinematic-intro, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Intro (It's Dark and Hell Is Hot)</strong></td>
+            <td>DMX</td>
+            <td>1998</td>
+            <td>88 / 82 / 91</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, street-anthem</td>
+            <td>cinematic-intro, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Dynasty Intro</strong></td>
+            <td>Jay-Z</td>
+            <td>2000</td>
+            <td>86 / 80 / 90</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, lyrical</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Goin Baby</strong></td>
+            <td>DaBaby</td>
+            <td>2019</td>
+            <td>78 / 81 / 75</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, street-anthem</td>
+            <td>statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Long Live A$AP</strong></td>
+            <td>A$AP Rocky</td>
+            <td>2013</td>
+            <td>82 / 83 / 84</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>cinematic, iconic-opener</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Sherane a.k.a Master Kendrick's Daughter</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2012</td>
+            <td>88 / 85 / 95</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>storytelling, cinematic, iconic-opener</td>
+            <td>cinematic-intro, storyteller-cut</td>
+          </tr>
+          <tr>
+            <td><strong>United In Grief</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2022</td>
+            <td>90 / 89 / 94</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>cinematic, iconic-opener, introspective</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>HYENA</strong></td>
+            <td>Travis Scott</td>
+            <td>2023</td>
+            <td>89 / 88 / 87</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>cinematic, iconic-opener, experimental</td>
+            <td>cinematic-intro, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>704</strong></td>
+            <td>J. Cole</td>
+            <td>2021</td>
+            <td>85 / 84 / 88</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>lyrical, iconic-opener</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>What Up Gangsta</strong></td>
+            <td>50 Cent</td>
+            <td>2003</td>
+            <td>93 / 92 / 91</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>street-anthem, iconic-opener</td>
+            <td>cinematic-intro, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>The Prelude</strong></td>
+            <td>Jay-Z</td>
+            <td>2006</td>
+            <td>84 / 80 / 85</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>cinematic, iconic-opener, lyrical</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Intro (The Documentary)</strong></td>
+            <td>The Game</td>
+            <td>2005</td>
+            <td>86 / 82 / 87</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, street-anthem</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Niggas in Paris</strong></td>
+            <td>Jay-Z</td>
+            <td>2011</td>
+            <td>97 / 98 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, street-anthem</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>SICKO MODE</strong></td>
+            <td>Travis Scott</td>
+            <td>2018</td>
+            <td>98 / 99 / 92</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, experimental, climax</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>HUMBLE.</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2017</td>
+            <td>96 / 97 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, lyrical</td>
+            <td>statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>First Class</strong></td>
+            <td>Jack Harlow</td>
+            <td>2022</td>
+            <td>87 / 93 / 76</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>club, high-energy</td>
+            <td>statement-banger, club-bounce</td>
+          </tr>
+          <tr>
+            <td><strong>FE!N</strong></td>
+            <td>Travis Scott</td>
+            <td>2023</td>
+            <td>94 / 95 / 85</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, experimental</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>In Da Club</strong></td>
+            <td>50 Cent</td>
+            <td>2003</td>
+            <td>99 / 100 / 95</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>club, iconic-opener, high-energy</td>
+            <td>statement-banger, club-bounce</td>
+          </tr>
+          <tr>
+            <td><strong>Ruff Ryders' Anthem</strong></td>
+            <td>DMX</td>
+            <td>1998</td>
+            <td>93 / 94 / 92</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, high-energy</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>B.O.B. (Bombs Over Baghdad)</strong></td>
+            <td>OutKast</td>
+            <td>2000</td>
+            <td>94 / 89 / 98</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, experimental, climax</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Shook Ones, Pt. II</strong></td>
+            <td>Mobb Deep</td>
+            <td>1995</td>
+            <td>96 / 92 / 99</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, lyrical</td>
+            <td>gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>m.A.A.d city</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2012</td>
+            <td>95 / 94 / 97</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, storytelling, high-energy</td>
+            <td>gritty-anthem, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Many Men (Wish Death)</strong></td>
+            <td>50 Cent</td>
+            <td>2003</td>
+            <td>94 / 95 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, storytelling</td>
+            <td>gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>BMF (Blow Money Fast)</strong></td>
+            <td>Rick Ross</td>
+            <td>2010</td>
+            <td>89 / 88 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, high-energy</td>
+            <td>gritty-anthem, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Love Sosa</strong></td>
+            <td>Chief Keef</td>
+            <td>2012</td>
+            <td>93 / 93 / 90</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, high-energy</td>
+            <td>gritty-anthem, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Bound 2</strong></td>
+            <td>Kanye West</td>
+            <td>2013</td>
+            <td>94 / 95 / 91</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>experimental, cinematic, value-pick</td>
+            <td>vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Passionfruit</strong></td>
+            <td>Drake</td>
+            <td>2017</td>
+            <td>93 / 96 / 89</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, cinematic</td>
+            <td>vibe-shift, late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>90210</strong></td>
+            <td>Travis Scott</td>
+            <td>2015</td>
+            <td>92 / 90 / 96</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>experimental, cinematic, introspective</td>
+            <td>vibe-shift, experimental-flex</td>
+          </tr>
+          <tr>
+            <td><strong>PRIDE.</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2017</td>
+            <td>89 / 91 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>introspective, experimental</td>
+            <td>vibe-shift, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Marvins Room</strong></td>
+            <td>Drake</td>
+            <td>2011</td>
+            <td>94 / 95 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, introspective</td>
+            <td>late-night-rnb, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Nights</strong></td>
+            <td>Frank Ocean</td>
+            <td>2016</td>
+            <td>96 / 93 / 99</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, experimental, cinematic</td>
+            <td>late-night-rnb, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Snooze</strong></td>
+            <td>SZA</td>
+            <td>2022</td>
+            <td>95 / 96 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb</td>
+            <td>late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>The Weekend</strong></td>
+            <td>SZA</td>
+            <td>2017</td>
+            <td>91 / 92 / 92</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, introspective</td>
+            <td>late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>Earned It</strong></td>
+            <td>The Weeknd</td>
+            <td>2015</td>
+            <td>92 / 94 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, cinematic</td>
+            <td>late-night-rnb, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>POWER</strong></td>
+            <td>Kanye West</td>
+            <td>2010</td>
+            <td>97 / 98 / 96</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>climax, high-energy, cinematic</td>
+            <td>apex-climax, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Till I Collapse</strong></td>
+            <td>Eminem</td>
+            <td>2002</td>
+            <td>98 / 99 / 95</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>climax, high-energy, street-anthem</td>
+            <td>apex-climax, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>CAROUSEL</strong></td>
+            <td>Travis Scott</td>
+            <td>2018</td>
+            <td>88 / 89 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>climax, high-energy, experimental</td>
+            <td>apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Runaway</strong></td>
+            <td>Kanye West</td>
+            <td>2010</td>
+            <td>98 / 97 / 100</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>outro, cinematic, climax</td>
+            <td>cinematic-outro, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Mortal Man</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2015</td>
+            <td>93 / 85 / 98</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, storytelling, introspective</td>
+            <td>cinematic-outro</td>
+          </tr>
+          <tr>
+            <td><strong>4 Your Eyez Only</strong></td>
+            <td>J. Cole</td>
+            <td>2016</td>
+            <td>91 / 88 / 96</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, storytelling, introspective</td>
+            <td>cinematic-outro, storyteller-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Last Call</strong></td>
+            <td>Kanye West</td>
+            <td>2004</td>
+            <td>90 / 86 / 95</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, storytelling, iconic-opener</td>
+            <td>cinematic-outro</td>
+          </tr>
+          <tr>
+            <td><strong>Till Further Notice</strong></td>
+            <td>Travis Scott</td>
+            <td>2023</td>
+            <td>91 / 90 / 92</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, cinematic, introspective</td>
+            <td>cinematic-outro, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>TELEKINESIS</strong></td>
+            <td>Travis Scott</td>
+            <td>2023</td>
+            <td>94 / 95 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>outro, climax, cinematic</td>
+            <td>cinematic-outro, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Mirror</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2022</td>
+            <td>90 / 88 / 94</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, introspective, cinematic</td>
+            <td>cinematic-outro, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Final Lullaby</strong></td>
+            <td>The Weeknd</td>
+            <td>2020</td>
+            <td>87 / 85 / 89</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, rnb, cinematic</td>
+            <td>cinematic-outro, late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>Shirt</strong></td>
+            <td>SZA</td>
+            <td>2022</td>
+            <td>92 / 94 / 91</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, vibe-shift</td>
+            <td>late-night-rnb, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Waste No Time</strong></td>
+            <td>Giveon</td>
+            <td>2022</td>
+            <td>86 / 88 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, introspective</td>
+            <td>late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>Off The Grid</strong></td>
+            <td>Kanye West</td>
+            <td>2021</td>
+            <td>94 / 95 / 92</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, high-energy, climax</td>
+            <td>gritty-anthem, statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Praise God</strong></td>
+            <td>Kanye West</td>
+            <td>2021</td>
+            <td>93 / 94 / 89</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, high-energy</td>
+            <td>gritty-anthem, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Hey Ya!</strong></td>
+            <td>OutKast</td>
+            <td>2003</td>
+            <td>100 / 100 / 98</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, high-energy, club</td>
+            <td>vibe-shift, statement-banger, club-bounce</td>
+          </tr>
+          <tr>
+            <td><strong>Sunshine</strong></td>
+            <td>Lupe Fiasco</td>
+            <td>2006</td>
+            <td>88 / 86 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, lyrical, value-pick</td>
+            <td>vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Cash In Cash Out</strong></td>
+            <td>Pharrell Williams</td>
+            <td>2022</td>
+            <td>90 / 92 / 91</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, high-energy, experimental</td>
+            <td>vibe-shift, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Liberation</strong></td>
+            <td>OutKast</td>
+            <td>1998</td>
+            <td>92 / 84 / 99</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, introspective, cinematic</td>
+            <td>cinematic-outro, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>The Message</strong></td>
+            <td>Nas</td>
+            <td>1996</td>
+            <td>94 / 91 / 98</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, street-anthem, lyrical</td>
+            <td>cinematic-intro, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>N95</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2022</td>
+            <td>92 / 93 / 91</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, lyrical</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Jimmy Cooks</strong></td>
+            <td>Drake</td>
+            <td>2022</td>
+            <td>93 / 95 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, street-anthem</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Rich Flex</strong></td>
+            <td>Drake</td>
+            <td>2022</td>
+            <td>94 / 96 / 87</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, club</td>
+            <td>statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Family Ties</strong></td>
+            <td>Baby Keem</td>
+            <td>2021</td>
+            <td>94 / 94 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, lyrical</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Surround Sound</strong></td>
+            <td>JID</td>
+            <td>2022</td>
+            <td>91 / 92 / 96</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>lyrical, high-energy</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Kody Blu 31</strong></td>
+            <td>JID</td>
+            <td>2022</td>
+            <td>88 / 84 / 98</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>introspective, vibe-shift, cinematic</td>
+            <td>vibe-shift, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>DNA.</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2017</td>
+            <td>96 / 97 / 96</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, lyrical, street-anthem</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Monster</strong></td>
+            <td>Kanye West</td>
+            <td>2010</td>
+            <td>95 / 96 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Black Skinhead</strong></td>
+            <td>Kanye West</td>
+            <td>2013</td>
+            <td>94 / 95 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, experimental, street-anthem</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Money Trees</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2012</td>
+            <td>96 / 97 / 97</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, cinematic, storytelling</td>
+            <td>vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Alright</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2015</td>
+            <td>98 / 96 / 100</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>iconic-opener, street-anthem, high-energy</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Location</strong></td>
+            <td>Khalid</td>
+            <td>2017</td>
+            <td>90 / 93 / 86</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb</td>
+            <td>late-night-rnb, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Lose Yourself</strong></td>
+            <td>Eminem</td>
+            <td>2002</td>
+            <td>100 / 100 / 99</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, lyrical</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Empire State of Mind</strong></td>
+            <td>Jay-Z</td>
+            <td>2009</td>
+            <td>99 / 100 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, street-anthem</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>99 Problems</strong></td>
+            <td>Jay-Z</td>
+            <td>2003</td>
+            <td>96 / 97 / 97</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, street-anthem, lyrical</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Gold Digger</strong></td>
+            <td>Kanye West</td>
+            <td>2005</td>
+            <td>97 / 98 / 91</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>club, high-energy</td>
+            <td>statement-banger, club-bounce</td>
+          </tr>
+          <tr>
+            <td><strong>Stronger</strong></td>
+            <td>Kanye West</td>
+            <td>2007</td>
+            <td>98 / 99 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, club</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Public Service Announcement</strong></td>
+            <td>Jay-Z</td>
+            <td>2003</td>
+            <td>95 / 93 / 98</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>iconic-opener, lyrical, street-anthem</td>
+            <td>cinematic-intro, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Be (Intro)</strong></td>
+            <td>Common</td>
+            <td>2005</td>
+            <td>90 / 86 / 99</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, cinematic, lyrical</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Intro (The Blueprint)</strong></td>
+            <td>Jay-Z</td>
+            <td>2001</td>
+            <td>92 / 88 / 97</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, cinematic, lyrical</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Say You Will</strong></td>
+            <td>Kanye West</td>
+            <td>2008</td>
+            <td>88 / 87 / 92</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, experimental, cinematic</td>
+            <td>cinematic-intro, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Good Morning</strong></td>
+            <td>Kanye West</td>
+            <td>2007</td>
+            <td>91 / 92 / 93</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, cinematic</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Keep Da O's</strong></td>
+            <td>Tyler, The Creator</td>
+            <td>2015</td>
+            <td>75 / 72 / 82</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>experimental, value-pick</td>
+            <td>experimental-flex</td>
+          </tr>
+          <tr>
+            <td><strong>EARFQUAKE</strong></td>
+            <td>Tyler, The Creator</td>
+            <td>2019</td>
+            <td>95 / 97 / 96</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, experimental, high-energy</td>
+            <td>vibe-shift, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>IGOR'S THEME</strong></td>
+            <td>Tyler, The Creator</td>
+            <td>2019</td>
+            <td>90 / 89 / 95</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, experimental, cinematic</td>
+            <td>cinematic-intro, experimental-flex</td>
+          </tr>
+          <tr>
+            <td><strong>Sing About Me, I'm Dying of Thirst</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2012</td>
+            <td>96 / 92 / 100</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>storytelling, introspective, lyrical</td>
+            <td>storyteller-cut, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Stan</strong></td>
+            <td>Eminem</td>
+            <td>2000</td>
+            <td>99 / 99 / 99</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>storytelling, introspective, cinematic</td>
+            <td>storyteller-cut, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Children's Story</strong></td>
+            <td>Slick Rick</td>
+            <td>1988</td>
+            <td>92 / 85 / 98</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>storytelling, lyrical, value-pick</td>
+            <td>storyteller-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Rewind</strong></td>
+            <td>Nas</td>
+            <td>2001</td>
+            <td>89 / 83 / 97</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>storytelling, lyrical, experimental</td>
+            <td>storyteller-cut, experimental-flex</td>
+          </tr>
+          <tr>
+            <td><strong>Thugz Mansion (Acoustic)</strong></td>
+            <td>2Pac</td>
+            <td>2002</td>
+            <td>90 / 88 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>introspective, lyrical, value-pick</td>
+            <td>acoustic-unplugged, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>J. Cole - m y . l i f e</strong></td>
+            <td>J. Cole</td>
+            <td>2021</td>
+            <td>91 / 93 / 90</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>lyrical, high-energy</td>
+            <td>melodic-trap, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Champagne Poetry</strong></td>
+            <td>Drake</td>
+            <td>2021</td>
+            <td>92 / 94 / 88</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, cinematic, lyrical</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>VIRGINIA BEACH</strong></td>
+            <td>Drake</td>
+            <td>2023</td>
+            <td>88 / 90 / 85</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, rnb</td>
+            <td>cinematic-intro, late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>Intro (The Carter)</strong></td>
+            <td>Lil Wayne</td>
+            <td>2004</td>
+            <td>85 / 82 / 88</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, street-anthem</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>3-Point Play</strong></td>
+            <td>Lil Wayne</td>
+            <td>2005</td>
+            <td>88 / 84 / 92</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, lyrical</td>
+            <td>cinematic-intro, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>360</strong></td>
+            <td>Pusha T</td>
+            <td>2018</td>
+            <td>91 / 88 / 96</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, street-anthem, lyrical</td>
+            <td>cinematic-intro, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Let The Lord Watch</strong></td>
+            <td>Little Brother</td>
+            <td>2019</td>
+            <td>80 / 70 / 92</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, lyrical, value-pick</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Confessions Part II</strong></td>
+            <td>Usher</td>
+            <td>2004</td>
+            <td>95 / 97 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, storytelling</td>
+            <td>late-night-rnb, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Burn</strong></td>
+            <td>Usher</td>
+            <td>2004</td>
+            <td>94 / 96 / 92</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb</td>
+            <td>late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>Slow Jamz</strong></td>
+            <td>Kanye West</td>
+            <td>2004</td>
+            <td>93 / 94 / 93</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, lyrical</td>
+            <td>late-night-rnb, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Just Wanna Rock</strong></td>
+            <td>Lil Uzi Vert</td>
+            <td>2022</td>
+            <td>92 / 95 / 82</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>club, high-energy</td>
+            <td>club-bounce, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>FukUMEAN</strong></td>
+            <td>Gunna</td>
+            <td>2023</td>
+            <td>91 / 94 / 84</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>club, value-pick</td>
+            <td>melodic-trap, club-bounce</td>
+          </tr>
+          <tr>
+            <td><strong>Type Shit</strong></td>
+            <td>Future</td>
+            <td>2024</td>
+            <td>92 / 93 / 86</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, street-anthem</td>
+            <td>statement-banger, gritty-anthem</td>
+          </tr>
+          <tr>
+            <td><strong>Like That</strong></td>
+            <td>Future</td>
+            <td>2024</td>
+            <td>97 / 98 / 94</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, street-anthem</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Not Like Us</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2024</td>
+            <td>100 / 100 / 98</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>street-anthem, club, high-energy</td>
+            <td>statement-banger, club-bounce</td>
+          </tr>
+          <tr>
+            <td><strong>Family Business</strong></td>
+            <td>Kanye West</td>
+            <td>2004</td>
+            <td>92 / 89 / 97</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>outro, introspective</td>
+            <td>cinematic-outro, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>My 1st Song</strong></td>
+            <td>Jay-Z</td>
+            <td>2003</td>
+            <td>91 / 86 / 96</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, lyrical</td>
+            <td>cinematic-outro</td>
+          </tr>
+          <tr>
+            <td><strong>Suicidal Thoughts</strong></td>
+            <td>The Notorious B.I.G.</td>
+            <td>1994</td>
+            <td>95 / 91 / 99</td>
+            <td>
+              
+              <span class="badge badge-warning">Outro</span>
+              
+            </td>
+            <td>outro, introspective, storytelling</td>
+            <td>cinematic-outro, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Walkin</strong></td>
+            <td>Denzel Curry</td>
+            <td>2022</td>
+            <td>86 / 82 / 94</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, vibe-shift, value-pick</td>
+            <td>cinematic-intro, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Ridin'</strong></td>
+            <td>Chamillionaire</td>
+            <td>2005</td>
+            <td>93 / 95 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>club, high-energy</td>
+            <td>statement-banger, club-bounce</td>
+          </tr>
+          <tr>
+            <td><strong>Slow Down</strong></td>
+            <td>Bobby Valentino</td>
+            <td>2005</td>
+            <td>88 / 90 / 85</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>rnb, value-pick</td>
+            <td>late-night-rnb</td>
+          </tr>
+          <tr>
+            <td><strong>A$AP Forever</strong></td>
+            <td>A$AP Rocky</td>
+            <td>2018</td>
+            <td>87 / 88 / 89</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>experimental, vibe-shift, value-pick</td>
+            <td>vibe-shift, experimental-flex</td>
+          </tr>
+          <tr>
+            <td><strong>Interlude</strong></td>
+            <td>J. Cole</td>
+            <td>2021</td>
+            <td>86 / 87 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>lyrical, value-pick</td>
+            <td>mid-interlude, statement-banger</td>
+          </tr>
+          <tr>
+            <td><strong>Stargazing (2020s Opener)</strong></td>
+            <td>Metro Boomin</td>
+            <td>2022</td>
+            <td>90 / 91 / 90</td>
+            <td>
+              <span class="badge badge-success">Opener</span> 
+              
+              
+            </td>
+            <td>iconic-opener, cinematic</td>
+            <td>cinematic-intro</td>
+          </tr>
+          <tr>
+            <td><strong>Superhero (Heroes & Villains)</strong></td>
+            <td>Metro Boomin</td>
+            <td>2022</td>
+            <td>93 / 95 / 89</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>high-energy, climax, street-anthem</td>
+            <td>statement-banger, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>Trance</strong></td>
+            <td>Metro Boomin</td>
+            <td>2022</td>
+            <td>92 / 93 / 91</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, experimental</td>
+            <td>vibe-shift, melodic-trap</td>
+          </tr>
+          <tr>
+            <td><strong>Public Service Announcement (Interlude)</strong></td>
+            <td>Jay-Z</td>
+            <td>2003</td>
+            <td>95 / 93 / 98</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>lyrical, street-anthem</td>
+            <td>mid-interlude</td>
+          </tr>
+          <tr>
+            <td><strong>All Of The Lights (Interlude)</strong></td>
+            <td>Kanye West</td>
+            <td>2010</td>
+            <td>92 / 90 / 96</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>cinematic, vibe-shift</td>
+            <td>mid-interlude, vibe-shift</td>
+          </tr>
+          <tr>
+            <td><strong>Buried Alive Interlude</strong></td>
+            <td>Kendrick Lamar</td>
+            <td>2011</td>
+            <td>88 / 86 / 95</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>lyrical, experimental, value-pick</td>
+            <td>mid-interlude, experimental-flex</td>
+          </tr>
+          <tr>
+            <td><strong>Self Care</strong></td>
+            <td>Mac Miller</td>
+            <td>2018</td>
+            <td>91 / 92 / 96</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, introspective</td>
+            <td>vibe-shift, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Reborn</strong></td>
+            <td>KIDS SEE GHOSTS</td>
+            <td>2018</td>
+            <td>92 / 91 / 97</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, introspective, experimental</td>
+            <td>vibe-shift, introspective-cut</td>
+          </tr>
+          <tr>
+            <td><strong>Pursuit of Happiness</strong></td>
+            <td>Kid Cudi</td>
+            <td>2009</td>
+            <td>96 / 98 / 95</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>vibe-shift, climax, iconic-opener</td>
+            <td>vibe-shift, apex-climax</td>
+          </tr>
+          <tr>
+            <td><strong>In My Feelings</strong></td>
+            <td>Drake</td>
+            <td>2018</td>
+            <td>97 / 99 / 88</td>
+            <td>
+              
+              
+              —
+            </td>
+            <td>club, high-energy</td>
+            <td>club-bounce</td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
