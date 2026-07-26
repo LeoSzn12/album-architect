@@ -83,34 +83,38 @@ export function getRecentExposurePenalty(song: Song, context: CandidateContext):
 
 /**
  * Enforces Cinematic Intro quality & credibility requirements.
+ * Replaces candidates in a loop until requirements (at least 2 actual openers and
+ * 2 high recognition/impact tracks) are satisfied or replacements run out.
  */
 function enforceCinematicIntroRequirements(selected: Song[], pool: Song[], context: CandidateContext, prng: () => number): Song[] {
   const result = [...selected];
 
-  const countActualOpeners = result.filter((s) => s.isActualAlbumOpener).length;
-  const countHighRecognized = result.filter((s) => s.recognition >= 65 || s.impact >= 65).length;
+  let countActualOpeners = result.filter((s) => s.isActualAlbumOpener).length;
+  let countHighRecognized = result.filter((s) => s.recognition >= 65 || s.impact >= 65).length;
 
-  if (countActualOpeners < 2 || countHighRecognized < 2) {
-    const replacements = pool.filter(
-      (s) => !result.some((r) => r.id === s.id) && getSlotAffinity(s, 'cinematic-intro') >= 60
-    );
+  const replacements = pool
+    .filter((s) => !result.some((r) => r.id === s.id) && getSlotAffinity(s, 'cinematic-intro') >= 60)
+    .map((s) => {
+      const pen = getRecentExposurePenalty(s, context);
+      const jitter = 0.7 + prng() * 0.6;
+      const score = ((s.isActualAlbumOpener ? 40 : 0) + s.recognition + s.impact) * pen * jitter;
+      return { song: s, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.song);
 
-    replacements.sort((a, b) => {
-      const penA = getRecentExposurePenalty(a, context);
-      const penB = getRecentExposurePenalty(b, context);
-      const randA = prng();
-      const randB = prng();
-      const scoreA = ((a.isActualAlbumOpener ? 40 : 0) + a.recognition + a.impact) * penA * (0.7 + randA * 0.6);
-      const scoreB = ((b.isActualAlbumOpener ? 40 : 0) + b.recognition + b.impact) * penB * (0.7 + randB * 0.6);
-      return scoreB - scoreA;
-    });
+  let replacementIdx = 0;
 
-    for (let i = result.length - 1; i >= 0 && replacements.length > 0; i--) {
-      if (!result[i].isActualAlbumOpener && result[i].recognition < 65) {
-        result[i] = replacements.shift()!;
-        break;
-      }
+  while ((countActualOpeners < 2 || countHighRecognized < 2) && replacementIdx < replacements.length) {
+    let targetIdx = result.findIndex((s) => !s.isActualAlbumOpener && s.recognition < 65);
+    if (targetIdx === -1) {
+      targetIdx = result.findIndex((s) => !s.isActualAlbumOpener);
     }
+    if (targetIdx === -1) break;
+
+    result[targetIdx] = replacements[replacementIdx++];
+    countActualOpeners = result.filter((s) => s.isActualAlbumOpener).length;
+    countHighRecognized = result.filter((s) => s.recognition >= 65 || s.impact >= 65).length;
   }
 
   return result;
@@ -118,34 +122,38 @@ function enforceCinematicIntroRequirements(selected: Song[], pool: Song[], conte
 
 /**
  * Enforces Cinematic Outro quality & credibility requirements.
+ * Replaces candidates in a loop until requirements (at least 2 actual outros and
+ * 2 high recognition/impact tracks) are satisfied or replacements run out.
  */
 function enforceCinematicOutroRequirements(selected: Song[], pool: Song[], context: CandidateContext, prng: () => number): Song[] {
   const result = [...selected];
 
-  const countActualOutros = result.filter((s) => s.isActualAlbumOutro).length;
-  const countHighRecognized = result.filter((s) => s.recognition >= 65 || s.impact >= 65).length;
+  let countActualOutros = result.filter((s) => s.isActualAlbumOutro).length;
+  let countHighRecognized = result.filter((s) => s.recognition >= 65 || s.impact >= 65).length;
 
-  if (countActualOutros < 2 || countHighRecognized < 2) {
-    const replacements = pool.filter(
-      (s) => !result.some((r) => r.id === s.id) && getSlotAffinity(s, 'cinematic-outro') >= 50
-    );
+  const replacements = pool
+    .filter((s) => !result.some((r) => r.id === s.id) && getSlotAffinity(s, 'cinematic-outro') >= 50)
+    .map((s) => {
+      const pen = getRecentExposurePenalty(s, context);
+      const jitter = 0.7 + prng() * 0.6;
+      const score = ((s.isActualAlbumOutro ? 40 : 0) + s.recognition + s.impact) * pen * jitter;
+      return { song: s, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.song);
 
-    replacements.sort((a, b) => {
-      const penA = getRecentExposurePenalty(a, context);
-      const penB = getRecentExposurePenalty(b, context);
-      const randA = prng();
-      const randB = prng();
-      const scoreA = ((a.isActualAlbumOutro ? 40 : 0) + a.recognition + a.impact) * penA * (0.7 + randA * 0.6);
-      const scoreB = ((b.isActualAlbumOutro ? 40 : 0) + b.recognition + b.impact) * penB * (0.7 + randB * 0.6);
-      return scoreB - scoreA;
-    });
+  let replacementIdx = 0;
 
-    for (let i = result.length - 1; i >= 0 && replacements.length > 0; i--) {
-      if (!result[i].isActualAlbumOutro && result[i].recognition < 65) {
-        result[i] = replacements.shift()!;
-        break;
-      }
+  while ((countActualOutros < 2 || countHighRecognized < 2) && replacementIdx < replacements.length) {
+    let targetIdx = result.findIndex((s) => !s.isActualAlbumOutro && s.recognition < 65);
+    if (targetIdx === -1) {
+      targetIdx = result.findIndex((s) => !s.isActualAlbumOutro);
     }
+    if (targetIdx === -1) break;
+
+    result[targetIdx] = replacements[replacementIdx++];
+    countActualOutros = result.filter((s) => s.isActualAlbumOutro).length;
+    countHighRecognized = result.filter((s) => s.recognition >= 65 || s.impact >= 65).length;
   }
 
   return result;
@@ -182,22 +190,31 @@ export function generateCandidatePool(context: CandidateContext, count: number =
   const candidatePool = undraftedEligible.length >= count ? undraftedEligible : eligible;
 
   // 3. PRNG setup
-  const prngKey = seed ? `${seed}:${slotId}:${era}:reroll-${rerollIndex}` : `solo:${slotId}:${context.recentlyShownSongIds.length}:${rerollIndex}:${Math.random()}`;
+  const prngKey = seed
+    ? `${seed}:${slotId}:${era}:reroll-${rerollIndex}`
+    : `solo:${slotId}:${context.recentlyShownSongIds.length}:${rerollIndex}:${Math.random()}`;
   const prng = createPrng(prngKey);
 
-  // 4. Calculate sampling weights for each candidate
+  // 4. Pre-compute sampling weights & PRNG jitter BEFORE sorting (deterministic sort order)
   const scored = candidatePool.map((song) => {
     const affinity = getSlotAffinity(song, slotId);
     const recentPenalty = getRecentExposurePenalty(song, context);
+    const jitter = 0.7 + prng() * 0.6; // Computed once per candidate in array order
 
-    let weight = affinity * recentPenalty;
+    const baseWeight = affinity * recentPenalty;
+    const finalWeight = baseWeight * (draftedArtists.includes(song.artist) ? 0.5 : 1.0);
 
-    // Solo monopoly penalty for lead artist already drafted in current game
-    if (draftedArtists.includes(song.artist)) {
-      weight *= 0.5;
-    }
-
-    return { song, weight, affinity, recentPenalty };
+    return {
+      song,
+      affinity,
+      recentPenalty,
+      jitter,
+      baseWeight,
+      finalWeight,
+      headlinerScore: (song.recognition + song.impact) * recentPenalty * jitter,
+      bestFitScore: affinity * recentPenalty * jitter,
+      altScore: finalWeight * jitter,
+    };
   });
 
   // 5. Select 4 strategic candidates (Headliner, Best Fit, Alternative Style, Sleeper)
@@ -205,14 +222,8 @@ export function generateCandidatePool(context: CandidateContext, count: number =
   const usedArtists = new Set<string>();
   const usedArchetypes = new Set<string>();
 
-  // Bucket 1: Headliner (Highest recognition/impact with exposure penalty & PRNG jitter)
-  const headlinerCandidates = [...scored].sort((a, b) => {
-    const randA = prng();
-    const randB = prng();
-    const scoreA = (a.song.recognition + a.song.impact) * a.recentPenalty * (0.7 + randA * 0.6);
-    const scoreB = (b.song.recognition + b.song.impact) * b.recentPenalty * (0.7 + randB * 0.6);
-    return scoreB - scoreA;
-  });
+  // Bucket 1: Headliner
+  const headlinerCandidates = [...scored].sort((a, b) => b.headlinerScore - a.headlinerScore);
   const headliner = headlinerCandidates.find((c) => c.affinity >= 60) || headlinerCandidates[0];
   if (headliner) {
     selected.push(headliner.song);
@@ -220,14 +231,8 @@ export function generateCandidatePool(context: CandidateContext, count: number =
     headliner.song.archetypes.forEach((arch) => usedArchetypes.add(arch));
   }
 
-  // Bucket 2: Best Fit (Highest slot affinity weighted by recent exposure penalty & PRNG jitter)
-  const bestFitCandidates = [...scored].sort((a, b) => {
-    const randA = prng();
-    const randB = prng();
-    const scoreA = a.affinity * a.recentPenalty * (0.7 + randA * 0.6);
-    const scoreB = b.affinity * b.recentPenalty * (0.7 + randB * 0.6);
-    return scoreB - scoreA;
-  });
+  // Bucket 2: Best Fit
+  const bestFitCandidates = [...scored].sort((a, b) => b.bestFitScore - a.bestFitScore);
   const bestFit = bestFitCandidates.find((c) => !selected.some((s) => s.id === c.song.id) && !usedArtists.has(c.song.artist)) ||
                   bestFitCandidates.find((c) => !selected.some((s) => s.id === c.song.id));
   if (bestFit) {
@@ -236,12 +241,8 @@ export function generateCandidatePool(context: CandidateContext, count: number =
     bestFit.song.archetypes.forEach((arch) => usedArchetypes.add(arch));
   }
 
-  // Bucket 3: Alternative Style (Distinct archetype/energy with weight & PRNG jitter)
-  const altCandidates = [...scored].sort((a, b) => {
-    const randA = prng();
-    const randB = prng();
-    return b.weight * (0.7 + randB * 0.6) - a.weight * (0.7 + randA * 0.6);
-  }).filter(
+  // Bucket 3: Alternative Style
+  const altCandidates = [...scored].sort((a, b) => b.altScore - a.altScore).filter(
     (c) =>
       !selected.some((s) => s.id === c.song.id) &&
       !c.song.archetypes.some((arch) => usedArchetypes.has(arch))
@@ -256,12 +257,8 @@ export function generateCandidatePool(context: CandidateContext, count: number =
     alt.song.archetypes.forEach((arch) => usedArchetypes.add(arch));
   }
 
-  // Bucket 4: Sleeper (Value pick or lower recognition track weighted by penalty & PRNG jitter)
-  const sleeperCandidates = [...scored].sort((a, b) => {
-    const randA = prng();
-    const randB = prng();
-    return b.weight * (0.7 + randB * 0.6) - a.weight * (0.7 + randA * 0.6);
-  }).filter(
+  // Bucket 4: Sleeper
+  const sleeperCandidates = [...scored].sort((a, b) => b.altScore - a.altScore).filter(
     (c) =>
       !selected.some((s) => s.id === c.song.id) &&
       (c.song.recognition <= 85 || c.song.archetypes.includes('value-pick'))
@@ -274,11 +271,7 @@ export function generateCandidatePool(context: CandidateContext, count: number =
   }
 
   // Fill up if fewer than count
-  const sortedScored = [...scored].sort((a, b) => {
-    const randA = prng();
-    const randB = prng();
-    return b.weight * (0.7 + randB * 0.6) - a.weight * (0.7 + randA * 0.6);
-  });
+  const sortedScored = [...scored].sort((a, b) => b.altScore - a.altScore);
   for (const c of sortedScored) {
     if (selected.length >= count) break;
     if (!selected.some((s) => s.id === c.song.id)) {

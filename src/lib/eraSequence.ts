@@ -28,8 +28,8 @@ export function getEligibleCount(slotId: SlotId, era: EraFilter): number {
 }
 
 /**
- * Deterministically substitutes a sparse era (< 8 eligible songs) with a better-covered era.
- * Returns 'all' or another era with >= 8 candidates.
+ * Deterministically substitutes a sparse era (< 8 eligible songs) with another
+ * sufficiently covered era (>= 8 candidates). Uses 'all' ONLY when no single era has >= 8 candidates.
  */
 export function resolveSufficientEra(slotId: SlotId, requestedEra: EraFilter): EraFilter {
   if (requestedEra === 'all') return 'all';
@@ -37,15 +37,22 @@ export function resolveSufficientEra(slotId: SlotId, requestedEra: EraFilter): E
   const count = getEligibleCount(slotId, requestedEra);
   if (count >= 8) return requestedEra;
 
-  // Substitute 'all' which aggregates catalog coverage
+  // Try other specific eras with >= 8 candidates
+  const candidates: EraFilter[] = ['2010s', '2000s', '2020s'];
+  for (const era of candidates) {
+    if (era !== requestedEra && getEligibleCount(slotId, era) >= 8) {
+      return era;
+    }
+  }
+
+  // Fallback to 'all' only when no individual era has >= 8 candidates
   return 'all';
 }
 
 /**
  * Returns the era assignment for each slot in order.
  * When a seed is provided the result is 100% deterministic and identical for
- * both players using the same seed. Enforces minimum 8-song catalog coverage
- * via deterministic substitution.
+ * both players using the same seed.
  */
 export function generateEraSequence(
   slots: DraftSlot[],
@@ -54,7 +61,7 @@ export function generateEraSequence(
   const possibleEras: EraFilter[] = ['2000s', '2010s', '2020s', 'all'];
 
   if (!seed) {
-    // Solo mode: sample uniformly across eras and substitute sparse pools
+    // Solo mode: sample across eras and resolve substitutions for sparse pools
     return slots.map((s) => {
       const idx = Math.floor(Math.random() * possibleEras.length);
       return resolveSufficientEra(s.id, possibleEras[idx]);

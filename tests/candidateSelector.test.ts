@@ -33,8 +33,18 @@ describe('Candidate Selector Engine Tests', () => {
     const openers = candidates.filter((s) => s.isActualAlbumOpener || s.originalAlbumTrackNumber === 1);
     const highImpact = candidates.filter((s) => (s.recognition ?? 70) >= 70 || s.impact >= 70);
 
-    assert.ok(openers.length >= 1, 'Cinematic Intro candidate pool should contain at least 1 actual album opener track.');
+    assert.ok(openers.length >= 2, 'Cinematic Intro pool must contain at least 2 actual album opener tracks when catalog permits.');
     assert.ok(highImpact.length >= 2, 'Cinematic Intro pool should contain at least 2 high recognition/impact options.');
+  });
+
+  test('Cinematic Outro strongly prefers actual outros or high-impact options', () => {
+    const outroContext: CandidateContext = { ...baseContext, slotId: 'cinematic-outro' };
+    const candidates = generateCandidatePool(outroContext, 4);
+    const outros = candidates.filter((s) => s.isActualAlbumOutro);
+    const highImpact = candidates.filter((s) => (s.recognition ?? 70) >= 70 || s.impact >= 70);
+
+    assert.ok(outros.length >= 2, 'Cinematic Outro pool must contain at least 2 actual album outro tracks when catalog permits.');
+    assert.ok(highImpact.length >= 2, 'Cinematic Outro pool should contain at least 2 high recognition/impact options.');
   });
 
   test('Candidate pools contain 4 unique songs with distinct lead artists when possible', () => {
@@ -54,7 +64,7 @@ describe('Candidate Selector Engine Tests', () => {
     assert.ok(archetypes.size >= 2, `Candidate pool should represent at least 2-3 distinct archetypes. Got ${archetypes.size}.`);
   });
 
-  test('Same challenge seed produces 100% identical candidate choices', () => {
+  test('Same challenge seed produces 100% identical candidate choices and ordering', () => {
     const context1: CandidateContext = { ...baseContext, seed: 'VERIFIED_1V1_SEED_99' };
     const context2: CandidateContext = { ...baseContext, seed: 'VERIFIED_1V1_SEED_99' };
 
@@ -64,7 +74,7 @@ describe('Candidate Selector Engine Tests', () => {
     assert.deepStrictEqual(
       pool1.map((s) => s.id),
       pool2.map((s) => s.id),
-      'Identical challenge seed must produce exact same candidate pool.'
+      'Identical challenge seed must produce exact same candidate pool and order.'
     );
   });
 

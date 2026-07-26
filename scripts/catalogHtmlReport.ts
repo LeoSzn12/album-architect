@@ -127,7 +127,12 @@ function generateHtmlReport() {
 </body>
 </html>`;
 
-  const outputPath = path.join(process.cwd(), 'public', 'catalog-dev-inspector.html');
+  const reportsDir = path.join(process.cwd(), '.reports');
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir, { recursive: true });
+  }
+
+  const outputPath = path.join(reportsDir, 'catalog-dev-inspector.html');
   fs.writeFileSync(outputPath, htmlContent, 'utf-8');
   console.log(`\n✅ Dev Catalog Inspector HTML generated successfully at:\n   ${outputPath}\n`);
 }
