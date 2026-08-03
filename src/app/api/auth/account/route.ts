@@ -13,10 +13,13 @@ export async function DELETE() {
   const admin = createSupabaseAdminClient();
   if (!admin) return NextResponse.json({ error: 'Account deletion is not enabled until SUPABASE_SERVICE_ROLE_KEY is configured.' }, { status: 503 });
 
+  const client = await createSupabaseServerClient();
+  // Supabase's global sign-out revokes the current user's refresh sessions
+  // before the Auth row and its cascaded application data are removed.
+  await client?.auth.signOut();
+
   const { error } = await admin.auth.admin.deleteUser(identity.user.id, false);
   if (error) return NextResponse.json({ error: 'Account deletion could not be completed.' }, { status: 503 });
 
-  const client = await createSupabaseServerClient();
-  await client?.auth.signOut();
   return NextResponse.json({ deleted: true });
 }

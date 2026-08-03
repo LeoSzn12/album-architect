@@ -5,7 +5,7 @@ This runbook covers the remaining credential-gated work from the original TrackD
 ## 1. Supabase
 
 1. Create or select the production Supabase project.
-2. Apply [`supabase/migrations/20260803000000_trackdraft_foundation.sql`](../supabase/migrations/20260803000000_trackdraft_foundation.sql) using the Supabase SQL editor or a linked Supabase CLI project.
+2. Apply all migrations in [`supabase/migrations/`](../supabase/migrations/) using the Supabase SQL editor or a linked Supabase CLI project. The final `data_api_grants` migration is required for current Supabase Data API behavior.
 3. Confirm all tables have RLS enabled and run an authenticated smoke test for session creation, picks, reorder, submit, library import, scorecards, shares, and challenges.
 4. In Supabase Auth URL Configuration:
    - Site URL: the deployed app origin.
