@@ -45,10 +45,10 @@ export const DraftCard: React.FC<DraftCardProps> = ({ song, onDraft }) => {
   return (
     <div
       onMouseEnter={() => playHoverSound(audioEnabled)}
-      className={`group relative rounded-2xl p-5 border transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer backdrop-blur-md ${
+      className={`group relative min-h-[312px] rounded-2xl p-5 border transition-colors duration-300 flex flex-col justify-between overflow-hidden cursor-pointer backdrop-blur-md ${
         hasMonopolyWarning
           ? 'bg-gradient-to-b from-gray-900 via-gray-900 to-red-950/40 border-red-900/60 hover:border-red-500 shadow-lg shadow-red-950/20'
-          : 'bg-gray-900/90 border-gray-800 hover:border-purple-500/80 hover:shadow-2xl hover:shadow-purple-950/50 hover:-translate-y-1'
+          : 'bg-gray-900/90 border-gray-800 hover:border-purple-500/80 hover:shadow-2xl hover:shadow-purple-950/50'
       }`}
     >
       {/* Background Subtle Gradient Overlay */}
@@ -95,7 +95,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({ song, onDraft }) => {
       {/* Main Track Info */}
       <div className="my-3 z-10">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xl font-extrabold text-white group-hover:text-purple-300 transition-colors line-clamp-1">
+          <h3 className="font-display text-xl font-extrabold text-white group-hover:text-purple-300 transition-colors line-clamp-1">
             {song.title}
           </h3>
 
@@ -149,7 +149,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({ song, onDraft }) => {
           className={`w-full py-2.5 rounded-xl font-extrabold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
             hasMonopolyWarning
               ? 'bg-gradient-to-r from-red-700 to-pink-700 hover:from-red-600 hover:to-pink-600 text-white shadow-red-950/50'
-              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-purple-900/40 group-hover:scale-[1.02]'
+              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-purple-900/40'
           }`}
         >
           <Plus className="w-4 h-4" />

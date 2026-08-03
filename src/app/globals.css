@@ -1,12 +1,50 @@
 @import "tailwindcss";
 
+:root {
+  --td-bg: #0d1016;
+  --td-surface: #151a24;
+  --td-surface-raised: #1b2230;
+  --td-border: rgba(148, 163, 184, 0.18);
+  --td-border-strong: rgba(196, 181, 253, 0.42);
+  --td-ink: #f8fafc;
+  --td-muted: #a7b0c0;
+  --td-accent: #d946ef;
+  --td-accent-cool: #22d3ee;
+  --td-accent-warm: #fbbf24;
+  --td-font-body: "Avenir Next", "Segoe UI", sans-serif;
+  --td-font-display: Georgia, "Times New Roman", serif;
+}
+
 @layer base {
+  html {
+    background: var(--td-bg);
+    color-scheme: dark;
+  }
+
   body {
-    background-color: #0f1117;
-    color: #f8fafc;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--td-bg);
+    color: var(--td-ink);
+    font-family: var(--td-font-body);
     overflow-x: hidden;
   }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--td-accent-cool);
+    outline-offset: 3px;
+  }
+}
+
+.font-display {
+  font-family: var(--td-font-display);
+  letter-spacing: -0.03em;
 }
 
 @keyframes spinSlow {
@@ -35,6 +73,17 @@
 
 .animate-fade-in {
   animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Custom Scrollbars */

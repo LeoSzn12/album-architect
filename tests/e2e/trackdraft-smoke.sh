@@ -45,7 +45,7 @@ trap cleanup EXIT
 
 echo "[1/5] home surface"
 pw open "$BASE_URL"
-assert_text "Fantasy Music Draft Game"
+assert_text "Curate the project. Defend the sequence."
 assert_text "Start Draft"
 
 echo "[2/5] setup, library, and profile surfaces"

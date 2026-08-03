@@ -82,7 +82,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         <span className="text-xs font-extrabold uppercase tracking-widest text-purple-400 mb-1">
           {completionLabel}
         </span>
-        <h2 className="text-3xl font-extrabold text-white mb-2">
+        <h2 className="font-display text-3xl font-extrabold text-white mb-2">
           {gameMode === 'draft' ? 'Tracklist Locked In!' : `${projectLabel} Tracklist Locked In`}
         </h2>
         <p className="text-sm text-gray-300 max-w-lg mb-6 leading-relaxed">
@@ -101,7 +101,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             onEvaluateTrigger();
           }}
           onMouseEnter={() => playHoverSound(audioEnabled)}
-          className="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold rounded-2xl shadow-xl shadow-purple-900/40 text-base tracking-wide transition-all transform hover:scale-105 cursor-pointer flex items-center gap-2"
+          className="min-h-14 px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold rounded-2xl shadow-xl shadow-purple-900/40 text-base tracking-wide transition-colors cursor-pointer flex items-center gap-2"
         >
           <Sparkles className="w-5 h-5 text-amber-300 animate-spin-slow" />
           <span>{reviewActionLabel}</span>
@@ -116,7 +116,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
       <ProgressStrip />
 
       {/* Current Draft Slot Banner */}
-      <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-5 sm:p-6 backdrop-blur-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+      <section aria-labelledby="current-slot-heading" className="bg-gray-900/80 border border-gray-800 rounded-2xl p-5 sm:p-6 backdrop-blur-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl shadow-black/10">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="px-2.5 py-0.5 rounded bg-purple-950 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-800">
@@ -147,7 +147,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             )}
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+          <h2 id="current-slot-heading" className="font-display text-xl sm:text-2xl font-extrabold text-white tracking-tight">
             {gameMode === 'draft' ? 'Pick your' : `Select a track for your ${projectLabel.toLowerCase()}:`} <span className="text-purple-300">{currentSlot.name}</span>
           </h2>
           <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-xl leading-relaxed">
@@ -185,7 +185,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             <span>Reroll ({rerollTokens})</span>
           </button>
         </div>
-      </div>
+      </section>
 
       {/* Draft mode reveals the AI choice only after the human locks a pick. */}
       {gameMode === 'draft' && lastOpponentReveal && (
@@ -226,7 +226,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           </button>
         </div>
       ) : (
-        <div className={`grid grid-cols-1 ${currentOptions.length >= 5 ? 'md:grid-cols-5' : 'sm:grid-cols-2'} gap-4`}>
+        <div aria-label={`${currentOptions.length} candidate tracks`} className={`grid grid-cols-1 ${currentOptions.length >= 5 ? 'md:grid-cols-5' : 'sm:grid-cols-2'} gap-4`}>
           {currentOptions.map((song) => (
             <DraftCard key={song.id} song={song} onDraft={draftSong} />
           ))}

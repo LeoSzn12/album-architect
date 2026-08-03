@@ -32,50 +32,55 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-8 py-8 px-4">
+    <div className="w-full flex flex-col items-center gap-10 px-4 py-10 sm:py-14">
       {/* Hero Section */}
-      <div className="flex flex-col items-center text-center gap-4 max-w-2xl">
+      <section aria-labelledby="landing-title" className="flex max-w-3xl flex-col items-center gap-5 text-center">
         {/* Animated Logo */}
-        <div className="relative w-20 h-20 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-cyan-500 animate-pulse opacity-40 blur-xl" />
-          <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-purple-900/60 border border-purple-400/20">
+        <div className="relative flex h-20 w-20 items-center justify-center">
+          <div className="absolute inset-2 rounded-3xl border border-fuchsia-300/30 bg-fuchsia-500/10" />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl border border-fuchsia-300/30 bg-gradient-to-br from-fuchsia-600 to-slate-900 shadow-xl shadow-fuchsia-950/40">
             <Disc3 className="w-10 h-10 text-white animate-spin-slow" />
           </div>
         </div>
 
         <div>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-wider bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm leading-tight">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-cyan-300/80">A&R playground for people with opinions</p>
+          <h1 id="landing-title" className="font-display text-5xl font-black leading-tight text-white sm:text-7xl">
             TRACKDRAFT
           </h1>
-          <p className="text-lg font-bold text-gray-300 mt-2 tracking-wide">
-          {isBuilder ? `${projectLabel} Builder` : 'Fantasy Music Draft Game'}
+          <p className="mt-3 text-xl font-bold tracking-tight text-slate-200">
+            {isBuilder ? `${projectLabel} Builder` : 'Curate the project. Defend the sequence.'}
           </p>
         </div>
 
-        <p className="text-base text-gray-400 leading-relaxed max-w-lg">
+        <p className="max-w-xl text-base leading-7 text-slate-400 sm:text-lg">
           {isBuilder ? (
             <>Build a <span className="text-white font-bold">{slots.length}-track {projectLabel}</span> across curated positions. Review the arc, reorder the final sequence, and submit when the project is ready.</>
           ) : (
-            <>Draft <span className="text-white font-bold">7 tracks</span> across curated slots. Read the A&R logic, beat the AI, and turn your tracklist into a shareable project.</>
+            <>Draft <span className="font-bold text-white">7 tracks</span> from a constrained pool. Make the safe pick, find the left turn, and see whether your sequence beats the AI.</>
           )}
         </p>
 
         {/* Primary CTA */}
         <button
           onClick={handleStart}
-          className="mt-2 px-10 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold text-lg rounded-2xl shadow-2xl shadow-purple-900/50 transition-all transform hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-3"
+          className="mt-2 flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-cyan-500 px-10 py-4 text-lg font-extrabold text-white shadow-xl shadow-fuchsia-950/40 transition-transform hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0"
         >
           <Zap className="w-5 h-5 text-amber-300" />
           <span>{startLabel}</span>
           <ChevronRight className="w-5 h-5 opacity-70" />
         </button>
-      </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">No account or provider connection required</p>
+      </section>
 
       {/* Rules Summary */}
-      <div className="w-full max-w-2xl bg-gray-900/80 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm">
-        <h2 className="text-sm font-extrabold uppercase tracking-widest text-purple-400 mb-4">
+      <section aria-labelledby="how-to-play" className="w-full max-w-3xl rounded-[1.75rem] border border-slate-700/70 bg-slate-900/70 p-6 shadow-xl shadow-black/10 backdrop-blur-sm sm:p-8">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-2 border-b border-slate-700/70 pb-4">
+          <h2 id="how-to-play" className="text-sm font-extrabold uppercase tracking-[0.2em] text-fuchsia-300">
           {isBuilder ? `How to build your ${projectLabel}` : 'How to Draft'}
-        </h2>
+          </h2>
+          <span className="text-xs font-semibold text-slate-500">Four moves, one finished project</span>
+        </div>
         <ol className="flex flex-col gap-3">
           {[
             {
@@ -104,23 +109,23 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             },
           ].map((rule) => (
             <li key={rule.num} className="flex items-start gap-4">
-              <span className="w-7 h-7 rounded-lg bg-purple-950 border border-purple-800 text-purple-300 text-xs font-extrabold flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 text-xs font-extrabold text-fuchsia-200">
                 {rule.num}
               </span>
               <div>
-                <span className="text-sm font-bold text-white">{rule.title}</span>
-                <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{rule.desc}</p>
+                <span className="text-sm font-bold text-slate-100">{rule.title}</span>
+                <p className="mt-0.5 text-sm leading-6 text-slate-400">{rule.desc}</p>
               </div>
             </li>
           ))}
         </ol>
-      </div>
+      </section>
 
       {/* Secondary Actions */}
       <div className="flex flex-wrap items-center justify-center gap-3">
         <button
           onClick={onOpenFriendsModal}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-950/80 to-purple-950/80 hover:from-pink-900 hover:to-purple-900 border border-pink-700/60 text-pink-200 font-bold text-sm flex items-center gap-2 transition cursor-pointer"
+          className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-pink-500/50 bg-pink-950/30 px-5 py-2.5 text-sm font-bold text-pink-100 transition hover:-translate-y-0.5 hover:bg-pink-900/50"
         >
           <Swords className="w-4 h-4 text-pink-400" />
           <span>1v1 Challenge</span>
@@ -128,7 +133,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
         <button
           onClick={onScrollToLeaderboard}
-          className="px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-amber-300 font-bold text-sm flex items-center gap-2 transition cursor-pointer"
+          className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-amber-400/40 bg-slate-900/80 px-5 py-2.5 text-sm font-bold text-amber-200 transition hover:-translate-y-0.5 hover:bg-slate-800"
         >
           <Trophy className="w-4 h-4 text-amber-400" />
           <span>Leaderboard</span>
