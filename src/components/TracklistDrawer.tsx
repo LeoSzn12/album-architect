@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
-import { X, Music, Flame, Play, Radio, Music2 } from 'lucide-react';
+import { X, Music, Flame, Play, Radio, Music2, ArrowUp, ArrowDown } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 import { generateBulkPlaylistUrl } from '@/lib/musicBridge';
 
@@ -24,6 +24,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
     monopolyReport,
     audioEnabled,
     openRealSongPlayer,
+    reorderDraftedTracks,
   } = useDraftStore();
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
@@ -152,6 +153,30 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
                     <span className="text-[10px] text-pink-400 font-bold flex items-center gap-0.5">
                       <Flame className="w-3 h-3 inline" /> {dt.song.energy}%
                     </span>
+                    <div className="flex gap-1 mt-1">
+                      <button
+                        aria-label={`Move ${dt.song.title} up`}
+                        disabled={idx === 0}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          reorderDraftedTracks(idx, idx - 1);
+                        }}
+                        className="p-1 rounded bg-gray-950 border border-gray-800 text-gray-400 hover:text-white disabled:opacity-30"
+                      >
+                        <ArrowUp className="w-3 h-3" />
+                      </button>
+                      <button
+                        aria-label={`Move ${dt.song.title} down`}
+                        disabled={idx === draftedTracks.length - 1}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          reorderDraftedTracks(idx, idx + 1);
+                        }}
+                        className="p-1 rounded bg-gray-950 border border-gray-800 text-gray-400 hover:text-white disabled:opacity-30"
+                      >
+                        <ArrowDown className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

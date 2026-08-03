@@ -71,6 +71,15 @@ export async function POST(req: NextRequest) {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
+    const deterministicEvaluation = generateFallbackEvaluation(
+      gameMode,
+      draftedTracks,
+      monopolyReport,
+      energyMetrics,
+      (selectedEra === 'all' || selectedEra === '2020s' || selectedEra === '2010s' || selectedEra === '2000s')
+        ? selectedEra
+        : 'all'
+    );
 
     if (apiKey) {
       try {
@@ -86,7 +95,7 @@ export async function POST(req: NextRequest) {
 
         const prompt = `
 You are an elite music A&R board consisting of 3 critics evaluating a ${
-          gameMode === 'ep' ? '7-track Quick EP' : '14-track Full Album'
+          gameMode === 'draft' ? 'seven-round TrackDraft match' : gameMode === 'ep' ? 'seven-track EP Builder' : '12–14-track Album Builder'
         } fantasy draft.
 
 Drafted Tracklist:
@@ -180,6 +189,19 @@ Return ONLY a valid JSON object with these EXACT fields:
           parsed.monopolyReport = monopolyReport;
           parsed.energyMetrics = energyMetrics;
           parsed.source = 'gemini';
+          // AI is commentary only. Competitive scores and evidence remain
+          // deterministic so a model response cannot change the result.
+          parsed.overallScore = deterministicEvaluation.overallScore;
+          parsed.rawScore = deterministicEvaluation.rawScore;
+          parsed.monopolyPenalty = deterministicEvaluation.monopolyPenalty;
+          parsed.subScores = deterministicEvaluation.subScores;
+          parsed.categoryScores = deterministicEvaluation.categoryScores;
+          parsed.weightedScoreBeforePenalties = deterministicEvaluation.weightedScoreBeforePenalties;
+          parsed.appliedPenalties = deterministicEvaluation.appliedPenalties;
+          parsed.gradeBadge = deterministicEvaluation.gradeBadge;
+          parsed.bestPossibleScore = deterministicEvaluation.bestPossibleScore;
+          parsed.draftEfficiency = deterministicEvaluation.draftEfficiency;
+          parsed.bestPossibleTracklist = deterministicEvaluation.bestPossibleTracklist;
 
           // Attach optimizer results if available
           if (optimizerResult) {

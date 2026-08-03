@@ -26,6 +26,8 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     draftSeed,
     audioEnabled,
     eraSequence,
+    gameMode,
+    lastOpponentReveal,
   } = useDraftStore();
 
   const isCompleted = currentRoundIndex >= slots.length;
@@ -173,7 +175,27 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       </div>
 
-      {/* 4-Card Draft Options Grid */}
+      {/* Draft mode reveals the AI choice only after the human locks a pick. */}
+      {gameMode === 'draft' && lastOpponentReveal && (
+        <div className="rounded-2xl border border-cyan-800/70 bg-cyan-950/30 p-4 flex flex-col sm:flex-row sm:items-center gap-3 animate-fade-in">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+            <Swords className="w-5 h-5 text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest font-black text-cyan-300">AI pick revealed</span>
+              <span className="text-[10px] text-gray-500">Round {lastOpponentReveal.roundIndex + 1}</span>
+            </div>
+            <p className="text-sm font-extrabold text-white truncate">
+              {lastOpponentReveal.song.title} <span className="text-gray-400 font-normal">— {lastOpponentReveal.song.rawArtistString}</span>
+            </p>
+            <p className="text-xs text-cyan-200/80">{lastOpponentReveal.reason}</p>
+          </div>
+          <span className="text-xs font-black text-cyan-300 whitespace-nowrap">{lastOpponentReveal.song.energy}% energy</span>
+        </div>
+      )}
+
+      {/* Five-card recommendation pool in TrackDraft mode; legacy EP/LP stays compact. */}
       {currentOptions.length === 0 ? (
         <div className="w-full bg-gray-950 border border-purple-900/40 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
           <AlertCircle className="w-8 h-8 text-amber-400 animate-pulse" />
@@ -190,7 +212,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className={`grid grid-cols-1 ${currentOptions.length >= 5 ? 'md:grid-cols-5' : 'sm:grid-cols-2'} gap-4`}>
           {currentOptions.map((song) => (
             <DraftCard key={song.id} song={song} onDraft={draftSong} />
           ))}

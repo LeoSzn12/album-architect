@@ -18,7 +18,7 @@
  * The same draft always produces the same score. No randomness after input.
  */
 
-import { DraftedTrack, MonopolyReport, EnergyMetrics, ScoringBreakdown } from '@/types/draft';
+import type { DraftedTrack, MonopolyReport, EnergyMetrics, ScoringBreakdown } from '../types/draft.ts';
 
 // ---------------------------------------------------------------------------
 // Internal helpers

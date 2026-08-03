@@ -42,6 +42,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
     versusMatchup,
     setVersusMatchup,
     audioEnabled,
+    slots,
   } = useDraftStore();
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
@@ -55,15 +56,27 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [generatedSeed, setGeneratedSeed] = useState(() => generateChallengeSeed());
+  const [durableChallengeCode, setDurableChallengeCode] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const challengeUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?seed=${generatedSeed}&mode=${gameMode}&diff=${difficulty}&era=${selectedEra}`
-    : `https://album-architect.vercel.app/?seed=${generatedSeed}&mode=${gameMode}&diff=${difficulty}&era=${selectedEra}`;
+    ? `${window.location.origin}/?seed=${generatedSeed}&mode=${gameMode}&diff=${difficulty}&era=${selectedEra}${durableChallengeCode ? `&challenge=${durableChallengeCode}` : ''}`
+    : `https://album-architect.vercel.app/?seed=${generatedSeed}&mode=${gameMode}&diff=${difficulty}&era=${selectedEra}${durableChallengeCode ? `&challenge=${durableChallengeCode}` : ''}`;
 
-  const handleCreateAndStart = () => {
+  const handleCreateAndStart = async () => {
     playDraftLockSound(audioEnabled);
+    try {
+      const response = await fetch('/api/challenges', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ mode: gameMode, trackCount: slots.length, alias: playerAlias, seed: generatedSeed }),
+      });
+      const body = await response.json() as { challenge?: { challenge_code?: string } };
+      if (response.ok && body.challenge?.challenge_code) setDurableChallengeCode(body.challenge.challenge_code);
+    } catch {
+      // Guest/unenrolled users keep the deterministic seed flow.
+    }
     // Pass seed directly to startNewDraft — do NOT also call setDraftSeed,
     // which would trigger a second startNewDraft internally. Audit H1.
     startNewDraft(gameMode, selectedEra, difficulty, generatedSeed);
@@ -157,7 +170,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
           impact:    clampNum(rawSub.impact     ?? rawSub.starPower, 0, 10, 7.5),
         },
         seed: sanitizeString(decoded.seed, 'ARCH-1v1', 12),
-        gameMode: decoded.mode === 'album' ? 'album' : 'ep',
+        gameMode: decoded.mode === 'album' ? 'album' : decoded.mode === 'draft' ? 'draft' : 'ep',
         difficulty:
           decoded.diff === 'veteran' || decoded.diff === 'hardcore'
             ? decoded.diff

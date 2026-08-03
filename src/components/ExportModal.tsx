@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { X, ExternalLink, Copy, Check, Download, Disc, Sparkles, Music } from 'lucide-react';
 import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
 
 import { useModalA11y } from '@/hooks/useModalA11y';
+import { encodeSharePayload, type SharePayload } from '@/lib/sharePayload';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -13,17 +14,60 @@ interface ExportModalProps {
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
-  const { draftedTracks, gameMode, evaluationResult, audioEnabled } = useDraftStore();
+  const { draftedTracks, gameMode, evaluationResult, opponentEvaluationResult, playerAlias, draftSeed, audioEnabled } = useDraftStore();
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [durableShareToken, setDurableShareToken] = useState<string | null>(null);
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
     isOpen,
     onClose,
   });
 
-  if (!isOpen) return null;
+  const titleText = gameMode === 'draft' ? 'TrackDraft Seven-Round Build' : gameMode === 'ep' ? 'TrackDraft EP Builder' : 'TrackDraft Album Builder';
 
-  const titleText = gameMode === 'ep' ? 'Album Architect Quick EP' : 'Album Architect Full LP';
+  const sharePayload = useMemo<SharePayload>(() => {
+    const tracks = draftedTracks.slice(0, 3).map((track) => ({
+      title: track.song.title,
+      artist: track.song.rawArtistString || track.song.artist,
+    }));
+    while (tracks.length < 3) tracks.push({ title: 'Unfilled slot', artist: 'TrackDraft' });
+
+    const categories = evaluationResult?.categoryScores
+      ? Object.entries(evaluationResult.categoryScores).map(([key, category]) => ({
+          label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase()),
+          score: Math.round(category.score),
+        }))
+      : [{ label: 'Overall', score: Math.round((evaluationResult?.overallScore ?? 0) * 10) }];
+
+    return {
+      version: 1,
+      projectTitle: titleText,
+      creator: playerAlias,
+      score: evaluationResult?.overallScore ?? 0,
+      grade: evaluationResult?.gradeBadge ?? 'Unscored',
+      topTracks: tracks as SharePayload['topTracks'],
+      ...(opponentEvaluationResult ? { opponentScore: opponentEvaluationResult.overallScore } : {}),
+      challengeCode: draftSeed || 'TRACKDRAFT-DEMO',
+      categories,
+    };
+  }, [draftSeed, draftedTracks, evaluationResult, opponentEvaluationResult, playerAlias, titleText]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    void fetch('/api/share', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(sharePayload) })
+      .then(async (response) => response.ok ? response.json() as Promise<{ token?: string }> : null)
+      .then((body) => { if (body?.token) setDurableShareToken(body.token); })
+      .catch(() => { /* URL-encoded share remains available in guest mode. */ });
+  }, [isOpen, sharePayload]);
+
+  const shareUrl = typeof window !== 'undefined'
+    ? durableShareToken
+      ? `${window.location.origin}/share?token=${durableShareToken}`
+      : `${window.location.origin}/share?data=${encodeSharePayload(sharePayload)}`
+    : '';
+
+  if (!isOpen) return null;
 
   // Construct YouTube Music query URL
   const searchQuery = draftedTracks.map((t) => `${t.song.artist} ${t.song.title}`).join(' ');
@@ -45,6 +89,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     navigator.clipboard.writeText(formattedText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleCopyShare = () => {
+    if (!shareUrl) return;
+    playDraftLockSound(audioEnabled);
+    navigator.clipboard.writeText(shareUrl);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2500);
   };
 
   const handleDownloadM3u = () => {
@@ -89,7 +141,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             <span className="text-xs font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-pink-400" /> Real-World Playlist Export
             </span>
-            <h2 className="text-2xl font-extrabold text-white">Export Your Drafted EP</h2>
+            <h2 className="text-2xl font-extrabold text-white">Export Your TrackDraft</h2>
           </div>
           <button
             onClick={onClose}
@@ -156,6 +208,27 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               <Download className="w-4 h-4 text-purple-400" />
               <span>Download .M3U File</span>
             </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleCopyShare}
+              onMouseEnter={() => playHoverSound(audioEnabled)}
+              className="py-3 px-4 bg-purple-950/70 hover:bg-purple-900/80 text-purple-100 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-purple-700/70 cursor-pointer"
+            >
+              {shareCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              <span>{shareCopied ? 'Copied Share Link!' : 'Copy Share Link'}</span>
+            </button>
+            <a
+              href={shareUrl || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => playDraftLockSound(audioEnabled)}
+              className="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-gray-700"
+            >
+              <ExternalLink className="w-4 h-4 text-cyan-300" />
+              <span>Open Share Card</span>
+            </a>
           </div>
         </div>
 

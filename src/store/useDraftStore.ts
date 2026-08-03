@@ -15,20 +15,24 @@ import {
   LeaderboardEntry,
   VersusMatchup,
   CandidateRound,
+  OpponentReveal,
+  SlotId,
 } from '@/types/draft';
-import { EP_SLOTS, ALBUM_SLOTS } from '@/data/slots';
+import { DRAFT_SLOTS, EP_SLOTS, ALBUM_SLOTS } from '@/data/slots';
 import { getOptionsForSlot } from '@/data/songs';
 import { generateFallbackEvaluation } from '@/lib/fallbackEvaluator';
 import { generateEraSequence } from '@/lib/eraSequence';
 import { computeMonopolyReport, computeEnergyMetrics } from '@/lib/draftMetrics';
+import { reorderTracklist } from '@/lib/tracklistOrder';
 
 /**
  * Current persisted-state schema version. Bump on any breaking shape change.
  *   v1 → v2: added rerollCount; removed slots & currentOptions from partialize.
  *   v2 → v3: added eraSequence, candidateHistory; replaced subScores shape
  *             (pacing/synergy/cohesion/starPower → slotFit/albumFlow/cohesion/impact).
+ *   v3 → v4: added explicit Draft opponent state and transparent scorecard fields.
  */
-const PERSIST_VERSION = 3;
+const PERSIST_VERSION = 4;
 
 interface DraftStoreState {
   gameMode: GameMode;
@@ -50,6 +54,7 @@ interface DraftStoreState {
   monopolyReport: MonopolyReport;
   energyMetrics: EnergyMetrics;
   evaluationResult: EvaluationResult | null;
+  opponentEvaluationResult: EvaluationResult | null;
   isEvaluating: boolean;
   audioEnabled: boolean;
   activePlayingSongId: string | null;
@@ -59,6 +64,8 @@ interface DraftStoreState {
   pastDrafts: PastDraft[];
   leaderboard: LeaderboardEntry[];
   versusMatchup: VersusMatchup | null;
+  opponentDraftedTracks: DraftedTrack[];
+  lastOpponentReveal: OpponentReveal | null;
 
   // Actions
   setGameMode: (mode: GameMode) => void;
@@ -84,6 +91,7 @@ interface DraftStoreState {
   addLeaderboardEntry: (entry: LeaderboardEntry) => void;
   clearLeaderboard: () => void;
   setVersusMatchup: (matchup: VersusMatchup | null) => void;
+  reorderDraftedTracks: (fromIndex: number, toIndex: number) => void;
 }
 
 const EMPTY_MONOPOLY: MonopolyReport = {
@@ -104,17 +112,17 @@ const EMPTY_ENERGY: EnergyMetrics = {
 export const useDraftStore = create<DraftStoreState>()(
   persist(
     (set, get) => ({
-      gameMode: 'ep',
+      gameMode: 'draft',
       difficulty: 'standard',
       draftSeed: null,
       playerAlias: 'Executive Architect',
-      slots: EP_SLOTS,
+      slots: DRAFT_SLOTS,
       currentRoundIndex: 0,
       draftedTracks: [],
-      currentOptions: getOptionsForSlot(EP_SLOTS[0].id, 4, EP_SLOTS[0].defaultEra, null),
+      currentOptions: getOptionsForSlot(DRAFT_SLOTS[0].id, 5, DRAFT_SLOTS[0].defaultEra, null),
       rerollTokens: 2,
       rerollCount: 0,
-      eraSequence: generateEraSequence(EP_SLOTS, null),
+      eraSequence: generateEraSequence(DRAFT_SLOTS, null),
       candidateHistory: [],
       selectedEra: 'all',
       recentlyShownSongIds: [],
@@ -123,6 +131,7 @@ export const useDraftStore = create<DraftStoreState>()(
       monopolyReport: EMPTY_MONOPOLY,
       energyMetrics: EMPTY_ENERGY,
       evaluationResult: null,
+      opponentEvaluationResult: null,
       isEvaluating: false,
       audioEnabled: true,
       activePlayingSongId: null,
@@ -132,13 +141,15 @@ export const useDraftStore = create<DraftStoreState>()(
       pastDrafts: [],
       leaderboard: [],
       versusMatchup: null,
+      opponentDraftedTracks: [],
+      lastOpponentReveal: null,
 
       fetchOptions: (slotId: SlotId, era: EraFilter, seed: string | null, rerollIndex: number = 0) => {
         const { draftedTracks, recentlyShownSongIds, recentlyShownArtists, soloDraftNonce } = get();
         const draftedSongIds = draftedTracks.map((d) => d.song.id);
         const draftedArtists = draftedTracks.map((d) => d.song.artist);
 
-        const options = getOptionsForSlot(slotId, 4, era, seed, {
+        const options = getOptionsForSlot(slotId, get().gameMode === 'draft' ? 5 : 4, era, seed, {
           rerollIndex: seed ? rerollIndex : rerollIndex + soloDraftNonce * 10,
           draftedSongIds,
           draftedArtists,
@@ -194,9 +205,9 @@ export const useDraftStore = create<DraftStoreState>()(
         const newEra  = era  ?? get().selectedEra;
         const newDiff = diff ?? get().difficulty;
         const newSeed = seed !== undefined ? seed : get().draftSeed;
-        const slots   = newMode === 'ep' ? EP_SLOTS : ALBUM_SLOTS;
+        const slots   = newMode === 'draft' ? DRAFT_SLOTS : newMode === 'ep' ? EP_SLOTS : ALBUM_SLOTS;
 
-        let tokens = newMode === 'ep' ? 2 : 3;
+        let tokens = newMode === 'album' ? 3 : 2;
         if (newDiff === 'veteran' || newDiff === 'hardcore') tokens = 1;
 
         const nextNonce = newSeed === null ? get().soloDraftNonce + 1 : get().soloDraftNonce;
@@ -206,6 +217,9 @@ export const useDraftStore = create<DraftStoreState>()(
 
         const eraSequence = generateEraSequence(slots, newSeed);
         const slot0Era    = eraSequence[0];
+        // Set the mode before fetching the first pool so Draft mode receives
+        // its required five recommendations even when switching from EP/LP.
+        set({ gameMode: newMode, slots });
         const initialOptions = get().fetchOptions(slots[0].id, slot0Era, newSeed, 0);
 
         const initialHistory: CandidateRound[] = [{
@@ -231,10 +245,13 @@ export const useDraftStore = create<DraftStoreState>()(
           monopolyReport: EMPTY_MONOPOLY,
           energyMetrics: EMPTY_ENERGY,
           evaluationResult: null,
+          opponentEvaluationResult: null,
           isEvaluating: false,
           activePlayingSongId: null,
           selectedRealSong: null,
           isPlayerModalOpen: false,
+          opponentDraftedTracks: [],
+          lastOpponentReveal: null,
         });
       },
 
@@ -242,10 +259,16 @@ export const useDraftStore = create<DraftStoreState>()(
         const {
           slots, currentRoundIndex, draftedTracks,
           eraSequence, draftSeed, candidateHistory,
+          gameMode,
         } = get();
         if (currentRoundIndex >= slots.length) return;
 
         const currentSlot   = slots[currentRoundIndex];
+        const opponentSong = gameMode === 'draft'
+          ? [...get().currentOptions]
+              .filter((candidate) => candidate.id !== song.id)
+              .sort((a, b) => (b.slotAffinity[currentSlot.id] ?? 0) - (a.slotAffinity[currentSlot.id] ?? 0) || b.impact - a.impact)[0]
+          : null;
         const newDraftedTrack: DraftedTrack = {
           slot: currentSlot,
           song,
@@ -260,6 +283,9 @@ export const useDraftStore = create<DraftStoreState>()(
 
         let nextOptions: Song[] = [];
         let updatedHistory      = candidateHistory;
+        const opponentTracks = opponentSong
+          ? [...get().opponentDraftedTracks, { slot: currentSlot, song: opponentSong, roundDrafted: currentRoundIndex + 1, isWildcard: false }]
+          : get().opponentDraftedTracks;
 
         if (nextRoundIndex < slots.length) {
           const nextSlot  = slots[nextRoundIndex];
@@ -285,6 +311,10 @@ export const useDraftStore = create<DraftStoreState>()(
           monopolyReport,
           energyMetrics,
           candidateHistory: updatedHistory,
+          opponentDraftedTracks: opponentTracks,
+          lastOpponentReveal: opponentSong
+            ? { slot: currentSlot, song: opponentSong, reason: 'Selected from the same pool for slot fit, project balance, and future variety.', roundIndex: currentRoundIndex }
+            : null,
         });
       },
 
@@ -311,7 +341,10 @@ export const useDraftStore = create<DraftStoreState>()(
           monopolyReport,
           energyMetrics,
           evaluationResult: null,
+          opponentEvaluationResult: null,
           candidateHistory: trimmedHistory,
+          opponentDraftedTracks: get().opponentDraftedTracks.slice(0, -1),
+          lastOpponentReveal: null,
         });
 
         return true;
@@ -403,7 +436,9 @@ export const useDraftStore = create<DraftStoreState>()(
           playerAlias,
           selectedEra,
           eraSequence,
+          slots,
         } = get();
+        const opponentTracksSnapshot = get().opponentDraftedTracks;
 
         // Snapshot draftedTracks BEFORE the await so we can detect if the user
         // starts a new draft while the request is in flight. Fixes audit M4.
@@ -489,8 +524,31 @@ export const useDraftStore = create<DraftStoreState>()(
           .sort((a, b) => b.overallScore - a.overallScore)
           .slice(0, 50);
 
+        // Persist the completed scorecard when Supabase auth is available.
+        // Guest mode intentionally remains local and does not block the result UI.
+        void fetch('/api/scorecards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: gameMode,
+            trackCount: draftedTracksSnapshot.length,
+            alias: playerAlias,
+            evaluation: result,
+          }),
+        }).catch((persistError) => console.warn('Scorecard persistence unavailable:', persistError));
+
         set({
           evaluationResult: result,
+          opponentEvaluationResult:
+            gameMode === 'draft' && opponentTracksSnapshot.length === slots.length
+              ? generateFallbackEvaluation(
+                  'draft',
+                  opponentTracksSnapshot,
+                  computeMonopolyReport(opponentTracksSnapshot),
+                  computeEnergyMetrics(opponentTracksSnapshot),
+                  selectedEra
+                )
+              : null,
           isEvaluating: false,
           pastDrafts: updatedHistory,
           leaderboard: updatedLeaderboard,
@@ -517,6 +575,18 @@ export const useDraftStore = create<DraftStoreState>()(
       setVersusMatchup: (matchup: VersusMatchup | null) => {
         set({ versusMatchup: matchup });
       },
+
+      reorderDraftedTracks: (fromIndex: number, toIndex: number) => {
+        const { draftedTracks } = get();
+        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= draftedTracks.length || toIndex >= draftedTracks.length) return;
+        const reordered = reorderTracklist(draftedTracks, fromIndex, toIndex);
+        set({
+          draftedTracks: reordered,
+          monopolyReport: computeMonopolyReport(reordered),
+          energyMetrics: computeEnergyMetrics(reordered),
+          evaluationResult: null,
+        });
+      },
     }),
     {
       name: 'album-architect-draft-v1',
@@ -533,22 +603,23 @@ export const useDraftStore = create<DraftStoreState>()(
       }),
       /**
        * Schema migrations. Each branch brings persisted state up to PERSIST_VERSION.
-       * v1→v2: added rerollCount; recomputed slots+currentOptions.
-       * v2→v3: added eraSequence, candidateHistory; updated subScores shape.
+      * v1→v2: added rerollCount; recomputed slots+currentOptions.
+      * v2→v3: added eraSequence, candidateHistory; updated subScores shape.
+       * v3→v4: added Draft opponent state.
        */
       migrate: (persistedState, version) => {
         const persisted = (persistedState ?? {}) as Partial<DraftStoreState>;
 
         if (version < 2) {
           if (persisted.rerollCount === undefined) persisted.rerollCount = 0;
-          const mode  = persisted.gameMode ?? 'ep';
-          const slots = mode === 'album' ? ALBUM_SLOTS : EP_SLOTS;
+          const mode  = persisted.gameMode ?? 'draft';
+          const slots = mode === 'album' ? ALBUM_SLOTS : mode === 'draft' ? DRAFT_SLOTS : EP_SLOTS;
           persisted.slots = slots;
         }
 
         if (version < 3) {
-          const mode  = persisted.gameMode ?? 'ep';
-          const slots = mode === 'album' ? ALBUM_SLOTS : EP_SLOTS;
+          const mode  = persisted.gameMode ?? 'draft';
+          const slots = mode === 'album' ? ALBUM_SLOTS : mode === 'draft' ? DRAFT_SLOTS : EP_SLOTS;
           const seed  = persisted.draftSeed ?? null;
           persisted.eraSequence     = generateEraSequence(slots, seed);
           persisted.candidateHistory = [];
@@ -557,11 +628,17 @@ export const useDraftStore = create<DraftStoreState>()(
           const slotIdx  = Math.min(roundIdx, slots.length - 1);
           const slot     = slots[slotIdx];
           const era      = persisted.eraSequence[slotIdx] ?? 'all';
-          persisted.currentOptions  = getOptionsForSlot(slot.id, 4, era, seed);
+          persisted.currentOptions  = getOptionsForSlot(slot.id, mode === 'draft' ? 5 : 4, era, seed);
           // Reset subScores to new shape if present (old shape had pacing/synergy)
           if (persisted.evaluationResult && 'pacing' in (persisted.evaluationResult.subScores ?? {})) {
             persisted.evaluationResult = null;
           }
+        }
+
+        if (version < 4) {
+          persisted.opponentDraftedTracks = persisted.opponentDraftedTracks ?? [];
+          persisted.opponentEvaluationResult = persisted.opponentEvaluationResult ?? null;
+          persisted.lastOpponentReveal = null;
         }
 
         return persisted;
@@ -588,11 +665,14 @@ export const useDraftStore = create<DraftStoreState>()(
         monopolyReport: state.monopolyReport,
         energyMetrics: state.energyMetrics,
         evaluationResult: state.evaluationResult,
+        opponentEvaluationResult: state.opponentEvaluationResult,
         audioEnabled: state.audioEnabled,
         audioSourcePreference: state.audioSourcePreference,
         pastDrafts: state.pastDrafts,
         leaderboard: state.leaderboard,
         versusMatchup: state.versusMatchup,
+        opponentDraftedTracks: state.opponentDraftedTracks,
+        lastOpponentReveal: state.lastOpponentReveal,
       }),
     }
   )

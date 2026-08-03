@@ -103,7 +103,7 @@ describe('Catalog & Candidate Selector Simulation Tests (1,000 Drafts)', () => {
       .slice(0, 10)
       .map(([artist, count]) => `${artist} (${count} impressions)`);
 
-    const neverAppeared = Object.entries(songAppearanceCount).filter(([_, count]) => count === 0);
+    const neverAppeared = Object.entries(songAppearanceCount).filter(([, count]) => count === 0);
 
     console.log('\n--- SIMULATION RESULTS (1,000 Solo Drafts: EP + Album) ---');
     console.log(`Total Drafts Run: ${TOTAL_DRAFTS}`);

@@ -57,7 +57,7 @@ export const LeaderboardPanel: React.FC = () => {
           <Filter className="w-3.5 h-3.5 text-pink-400" />
           <span>Format:</span>
           <div className="flex gap-1 ml-1">
-            {(['all', 'ep', 'album'] as const).map((m) => (
+            {(['all', 'draft', 'ep', 'album'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => {
@@ -70,7 +70,7 @@ export const LeaderboardPanel: React.FC = () => {
                     : 'bg-gray-900 text-gray-400 hover:text-white'
                 }`}
               >
-                {m === 'all' ? 'All Formats' : m === 'ep' ? 'EP (7)' : 'LP (14)'}
+                {m === 'all' ? 'All Formats' : m === 'draft' ? 'Draft (7)' : m === 'ep' ? 'EP (7)' : 'LP (14)'}
               </button>
             ))}
           </div>
@@ -151,7 +151,7 @@ export const LeaderboardPanel: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <h4 className="font-black text-sm text-white">{entry.playerAlias}</h4>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 uppercase">
-                        {entry.gameMode === 'ep' ? 'EP' : 'LP'} • {entry.difficulty}
+                        {entry.gameMode === 'draft' ? 'DRAFT' : entry.gameMode === 'ep' ? 'EP' : 'LP'} • {entry.difficulty}
                       </span>
                       {entry.draftSeed && (
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1">
