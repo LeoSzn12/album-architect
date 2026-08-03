@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
-import { Volume2, VolumeX, RotateCcw, Sliders, Disc3, Swords, Trophy } from 'lucide-react';
+import { Volume2, VolumeX, RotateCcw, Sliders, Disc3, Swords, Trophy, Library, UserRound, Settings2 } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 import { ConfirmModal } from './ConfirmModal';
 
@@ -11,6 +11,9 @@ interface HeaderProps {
   onToggleTracklist: () => void;
   onOpenFriendsModal: () => void;
   onScrollToLeaderboard: () => void;
+  onOpenSetup: () => void;
+  onOpenLibrary: () => void;
+  onOpenProfile: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,6 +21,9 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTracklist,
   onOpenFriendsModal,
   onScrollToLeaderboard,
+  onOpenSetup,
+  onOpenLibrary,
+  onOpenProfile,
 }) => {
   const {
     gameMode,
@@ -45,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-wider bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm">
-              ALBUM ARCHITECT
+              TRACKDRAFT
             </h1>
             <p className="text-[11px] text-gray-400 font-medium tracking-wide">
               Fantasy Music Curation & A&R Draft
@@ -54,6 +60,15 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-3 flex-wrap justify-center">
+          <button onClick={onOpenSetup} onMouseEnter={() => playHoverSound(audioEnabled)} className="px-2.5 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Open session setup">
+            <Settings2 className="w-3.5 h-3.5 text-cyan-300" /><span className="hidden md:inline">Setup</span>
+          </button>
+          <button onClick={onOpenLibrary} onMouseEnter={() => playHoverSound(audioEnabled)} className="px-2.5 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Open track library">
+            <Library className="w-3.5 h-3.5 text-purple-300" /><span className="hidden md:inline">Library</span>
+          </button>
+          <button onClick={onOpenProfile} onMouseEnter={() => playHoverSound(audioEnabled)} className="px-2.5 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Open curator profile">
+            <UserRound className="w-3.5 h-3.5 text-pink-300" /><span className="hidden md:inline">Profile</span>
+          </button>
           {/* Round Progress Badge */}
           <div className="px-3 py-1.5 rounded-lg bg-gray-900/90 border border-gray-800 flex items-center gap-2 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping" />
@@ -80,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sliders className="w-3.5 h-3.5" />
             <span>
-              {gameMode === 'ep' ? 'Quick EP (7)' : 'Full LP (14)'}
+              {gameMode === 'draft' ? 'Draft Mode (7)' : gameMode === 'ep' ? 'EP Builder (7)' : 'Album Builder (14)'}
               {difficulty !== 'standard' && ` • ${difficulty.toUpperCase()}`}
             </span>
           </button>

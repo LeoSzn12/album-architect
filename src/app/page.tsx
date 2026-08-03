@@ -17,6 +17,9 @@ import { DraftHistoryPanel } from '@/components/DraftHistoryPanel';
 import { LeaderboardPanel } from '@/components/LeaderboardPanel';
 import { PlayAgainstFriendsModal } from '@/components/PlayAgainstFriendsModal';
 import { GameMode, DifficultyTier, EraFilter } from '@/types/draft';
+import { SetupPanel, type SetupPreferences } from '@/components/SetupPanel';
+import { LibraryPanel } from '@/components/LibraryPanel';
+import { ProfilePanel } from '@/components/ProfilePanel';
 
 export default function Home() {
   const {
@@ -26,6 +29,9 @@ export default function Home() {
     evaluationResult,
     evaluateDraft,
     startNewDraft,
+    pastDrafts,
+    playerAlias,
+    setPlayerAlias,
   } = useDraftStore();
 
   const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
@@ -35,6 +41,8 @@ export default function Home() {
   const [hasStarted, setHasStarted] = useState(
     () => draftedTracks.length > 0 || currentRoundIndex > 0 || evaluationResult !== null
   );
+  const [activeSurface, setActiveSurface] = useState<'game' | 'setup' | 'library' | 'profile'>('game');
+  const [setupPreferences, setSetupPreferences] = useState<SetupPreferences>({ tasteTags: [], sourceScope: 'all' });
 
   const leaderboardRef = useRef<HTMLDivElement>(null);
   const isCompleted = currentRoundIndex >= slots.length;
@@ -57,7 +65,7 @@ export default function Home() {
 
     if (urlSeed) {
       startNewDraft(
-        urlMode === 'ep' || urlMode === 'album' ? urlMode : undefined,
+        urlMode === 'draft' || urlMode === 'ep' || urlMode === 'album' ? urlMode : undefined,
         urlEra === 'all' || urlEra === '2020s' || urlEra === '2010s' || urlEra === '2000s'
           ? urlEra
           : undefined,
@@ -80,6 +88,7 @@ export default function Home() {
     // startNewDraft without args uses current mode/era/difficulty
     startNewDraft();
     setHasStarted(true);
+    setActiveSurface('game');
   };
 
   // Show landing screen only for brand-new sessions
@@ -94,16 +103,39 @@ export default function Home() {
 
       {/* Header — always visible */}
       <Header
-        onOpenModeSelector={() => setIsModeSelectorOpen(true)}
-        onToggleTracklist={() => setIsTracklistOpen(true)}
-        onOpenFriendsModal={() => setIsFriendsModalOpen(true)}
+        onOpenModeSelector={() => { setActiveSurface('game'); setIsModeSelectorOpen(true); }}
+        onToggleTracklist={() => { setActiveSurface('game'); setIsTracklistOpen(true); }}
+        onOpenFriendsModal={() => { setActiveSurface('game'); setIsFriendsModalOpen(true); }}
         onScrollToLeaderboard={handleScrollToLeaderboard}
+        onOpenSetup={() => setActiveSurface('setup')}
+        onOpenLibrary={() => setActiveSurface('library')}
+        onOpenProfile={() => setActiveSurface('profile')}
       />
 
       {/* Main Container */}
       <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 flex-grow flex flex-col gap-6 relative z-10">
 
-        {showLanding ? (
+        {activeSurface === 'setup' ? (
+          <SetupPanel
+            initialTasteTags={setupPreferences.tasteTags}
+            initialSourceScope={setupPreferences.sourceScope}
+            onPreferencesChange={setSetupPreferences}
+            onContinue={() => setActiveSurface('library')}
+          />
+        ) : activeSurface === 'library' ? (
+          <LibraryPanel sourceScope={setupPreferences.sourceScope} onSelectSong={() => setActiveSurface('game')} />
+        ) : activeSurface === 'profile' ? (
+          <ProfilePanel
+            displayName={playerAlias}
+            stats={{
+              draftsCompleted: pastDrafts.length,
+              wins: pastDrafts.filter((draft) => draft.overallScore >= 8).length,
+              tracksDrafted: pastDrafts.reduce((total, draft) => total + draft.trackCount, 0),
+              averageScore: pastDrafts.length ? pastDrafts.reduce((total, draft) => total + draft.overallScore, 0) / pastDrafts.length : 0,
+            }}
+            onProfileChange={({ displayName }) => setPlayerAlias(displayName)}
+          />
+        ) : showLanding ? (
           /* ── Landing (first-time experience) ── */
           <LandingScreen
             onStart={handleStartDraft}
@@ -146,10 +178,10 @@ export default function Home() {
       <footer className="w-full max-w-6xl mx-auto text-center text-xs text-gray-500 py-6 border-t border-gray-800/80 mt-12 relative z-10 flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Album Architect v3.0 • Fantasy Music Draft</span>
+          <span>TrackDraft • Fantasy Music Game</span>
         </div>
         <div className="text-gray-400">
-          Built with Next.js & Zustand
+          Built with Next.js, Zustand & a seeded demo catalog
         </div>
       </footer>
 

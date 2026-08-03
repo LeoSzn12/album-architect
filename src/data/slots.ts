@@ -1,5 +1,83 @@
 import type { DraftSlot } from '../types/draft.ts';
 
+/**
+ * TrackDraft's seven-round competitive format. It intentionally reuses the
+ * normalized slot IDs already understood by the catalog/recommender while
+ * giving the player the A&R language from the product specification.
+ */
+export const DRAFT_SLOTS: DraftSlot[] = [
+  {
+    id: 'cinematic-intro',
+    name: 'Intro / Statement',
+    roundNumber: 1,
+    description: 'Establish the identity and sonic world in one decisive opening move.',
+    targetEnergy: { min: 60, max: 85, ideal: 75 },
+    iconName: 'Sparkles',
+    defaultEra: '2010s',
+    eraLabel: '2010s Intro',
+  },
+  {
+    id: 'statement-banger',
+    name: 'Lead Single',
+    roundNumber: 2,
+    description: 'Choose the undeniable hook—the song that makes the project easy to recommend.',
+    targetEnergy: { min: 80, max: 100, ideal: 92 },
+    iconName: 'Flame',
+    defaultEra: '2020s',
+    eraLabel: '2020s Lead Single',
+  },
+  {
+    id: 'club-bounce',
+    name: 'Club Banger / Energy Peak',
+    roundNumber: 3,
+    description: 'Create momentum and replay value with a high-energy centerpiece.',
+    targetEnergy: { min: 75, max: 100, ideal: 90 },
+    iconName: 'Radio',
+    defaultEra: '2000s',
+    eraLabel: 'Classics Club Peak',
+  },
+  {
+    id: 'vibe-shift',
+    name: 'Feature / Collaboration',
+    roundNumber: 4,
+    description: 'Expand the palette with chemistry, contrast, or a strategic guest appearance.',
+    targetEnergy: { min: 60, max: 85, ideal: 75 },
+    iconName: 'Users',
+    defaultEra: '2000s',
+    eraLabel: '2000s Collaboration',
+  },
+  {
+    id: 'late-night-rnb',
+    name: 'R&B / Emotional Turn',
+    roundNumber: 5,
+    description: 'Add vulnerability and melodic depth without losing the project thread.',
+    targetEnergy: { min: 35, max: 65, ideal: 50 },
+    iconName: 'Moon',
+    defaultEra: '2010s',
+    eraLabel: '2010s Emotional Turn',
+  },
+  {
+    id: 'experimental-flex',
+    name: 'Deep Cut / Risk',
+    roundNumber: 6,
+    description: 'Reward taste with a left-field choice that gives the project its own fingerprint.',
+    targetEnergy: { min: 50, max: 80, ideal: 68 },
+    iconName: 'Cpu',
+    defaultEra: 'all',
+    eraLabel: 'Wildcard Deep Cut',
+  },
+  {
+    id: 'cinematic-outro',
+    name: 'Outro / Resolution',
+    roundNumber: 7,
+    description: 'Close the story memorably and leave a reason to press replay.',
+    targetEnergy: { min: 50, max: 75, ideal: 62 },
+    iconName: 'Sunset',
+    defaultEra: 'all',
+    eraLabel: 'Any-Era Resolution',
+  },
+];
+
 export const EP_SLOTS: DraftSlot[] = [
   {
     id: 'cinematic-intro',

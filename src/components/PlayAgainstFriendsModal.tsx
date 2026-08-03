@@ -157,7 +157,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
           impact:    clampNum(rawSub.impact     ?? rawSub.starPower, 0, 10, 7.5),
         },
         seed: sanitizeString(decoded.seed, 'ARCH-1v1', 12),
-        gameMode: decoded.mode === 'album' ? 'album' : 'ep',
+        gameMode: decoded.mode === 'album' ? 'album' : decoded.mode === 'draft' ? 'draft' : 'ep',
         difficulty:
           decoded.diff === 'veteran' || decoded.diff === 'hardcore'
             ? decoded.diff

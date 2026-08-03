@@ -19,8 +19,9 @@ import {
   EvaluationResult,
   EraFilter,
 } from '@/types/draft';
-import { scoreDraft, scoreToGradeBadge, scoreToVerdict } from '@/lib/scoringEngine';
+import { scoreDraft, scoreToGradeBadge } from '@/lib/scoringEngine';
 import { findOptimalPickForSlot } from '@/data/songs';
+import { buildTransparentScorecard } from '@/lib/transparentScorecard';
 
 export function generateFallbackEvaluation(
   mode: GameMode,
@@ -36,6 +37,7 @@ export function generateFallbackEvaluation(
   );
 
   const gradeBadge = scoreToGradeBadge(finalScore);
+  const transparent = buildTransparentScorecard(draftedTracks, monopolyReport, energyMetrics);
 
   // Specific track references for persona quotes
   const openerSong = draftedTracks[0]?.song.title || 'Track 1';
@@ -170,6 +172,28 @@ export function generateFallbackEvaluation(
       artist: p.bestArtist,
       scoreDelta: 0,
     })),
+    categoryScores: transparent.categoryScores,
+    weightedScoreBeforePenalties: transparent.weightedScoreBeforePenalties,
+    appliedPenalties: transparent.appliedPenalties,
+    executiveSummary: `This ${mode === 'album' ? 'album' : 'project'} scores ${Math.round(transparent.weightedScoreBeforePenalties)}/100 before disclosed penalties. The strongest signal is ${transparent.categoryScores.slotFit.score >= transparent.categoryScores.sequencingFlow.score ? 'slot fit' : 'sequencing flow'}; the next gain is to sharpen the weakest transition while preserving the project’s identity.`,
+    strongestChoice: {
+      position: draftedTracks.findIndex((track) => track.song.impact >= 85) + 1 || 1,
+      reason: 'This choice combines strong catalog impact with a clear positional role.',
+    },
+    weakestTransition: {
+      fromPosition: Math.max(1, energyMetrics.bpmTransitions.findIndex((transition) => transition.status === 'abrupt') + 1),
+      toPosition: Math.max(2, energyMetrics.bpmTransitions.findIndex((transition) => transition.status === 'abrupt') + 2),
+      reason: energyMetrics.bpmTransitions.some((transition) => transition.status === 'abrupt')
+        ? 'This is the sharpest available tempo transition; make the contrast feel intentional with mood or texture.'
+        : 'No single transition is a clear weak point; preserve the current sequencing logic.',
+    },
+    recommendedChange: {
+      action: energyMetrics.bpmTransitions.some((transition) => transition.status === 'abrupt') ? 'move' : 'keep',
+      position: 1,
+      suggestion: energyMetrics.bpmTransitions.some((transition) => transition.status === 'abrupt')
+        ? 'Try moving the most contrasting track next to the project’s emotional turn or interlude.'
+        : 'Keep the current order and consider one tasteful discovery pick on the next build.',
+    },
     source: 'fallback',
   };
 }

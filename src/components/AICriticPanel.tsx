@@ -54,6 +54,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     draftedTracks,
     openRealSongPlayer,
     evaluateDraft,
+    opponentEvaluationResult,
   } = useDraftStore();
 
   const [showCriticBoard, setShowCriticBoard] = useState(false);
@@ -138,6 +139,8 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     biggestMistake,
     smartestPick,
     source,
+    categoryScores,
+    executiveSummary,
   } = evaluationResult;
 
   const verdict = scoreToVerdict(overallScore);
@@ -147,6 +150,17 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     { label: 'Cohesion', weight: '20%', score: subScores.cohesion, icon: Layers, color: 'text-cyan-300' },
     { label: 'Impact', weight: '20%', score: subScores.impact, icon: Music2, color: 'text-amber-300' },
   ];
+  const transparentCategoryItems = categoryScores
+    ? [
+        ['Slot Fit', categoryScores.slotFit],
+        ['Sequencing & Flow', categoryScores.sequencingFlow],
+        ['Narrative / Concept', categoryScores.narrativeConcept],
+        ['Variety & Balance', categoryScores.varietyBalance],
+        ['Energy Curve', categoryScores.energyCurve],
+        ['Originality / Taste', categoryScores.originalityTaste],
+        ['Replay Value', categoryScores.replayValue],
+      ] as const
+    : [];
 
   return (
     <div className="w-full bg-gray-900/95 border border-purple-500/40 rounded-3xl p-6 sm:p-8 flex flex-col gap-6 shadow-2xl my-6 backdrop-blur-md relative overflow-hidden animate-fade-in">
@@ -172,6 +186,23 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           </span>
         )}
       </div>
+
+      {opponentEvaluationResult && (
+        <div className="rounded-2xl border border-cyan-800/70 bg-cyan-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-[10px] uppercase tracking-widest font-black text-cyan-300">Draft Mode head-to-head</span>
+            <h3 className="text-lg font-extrabold text-white mt-1">
+              {overallScore > opponentEvaluationResult.overallScore ? 'You beat the AI.' : overallScore < opponentEvaluationResult.overallScore ? 'The AI wins this round.' : 'It’s a tie.'}
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">Same configured candidate pool • hidden pick revealed after lock</p>
+          </div>
+          <div className="flex items-center gap-5 text-right">
+            <div><span className="block text-[10px] text-gray-500 uppercase">You</span><span className="text-2xl font-black text-white">{overallScore.toFixed(1)}</span></div>
+            <span className="text-gray-600 font-black">vs</span>
+            <div><span className="block text-[10px] text-gray-500 uppercase">AI</span><span className="text-2xl font-black text-cyan-300">{opponentEvaluationResult.overallScore.toFixed(1)}</span></div>
+          </div>
+        </div>
+      )}
 
       {/* ── 2. Score Breakdown ── */}
       <div>
@@ -211,6 +242,33 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
             </>
           )}
         </div>
+
+        {categoryScores && (
+          <div className="mt-5 rounded-2xl border border-cyan-900/50 bg-cyan-950/20 p-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-3">
+              <div>
+                <h3 className="text-xs font-extrabold uppercase tracking-widest text-cyan-300">Transparent A&R Scorecard</h3>
+                <p className="text-xs text-gray-400 mt-1">Every category is scored 0–100 with evidence; penalties are shown separately.</p>
+              </div>
+              <span className="text-xs font-black text-white">{evaluationResult.weightedScoreBeforePenalties ?? '—'} / 100 before penalties</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {transparentCategoryItems.map(([label, item]) => (
+                <div key={label} className="rounded-xl bg-gray-950/80 border border-gray-800 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-white">{label}</span>
+                    <span className="text-sm font-black text-cyan-300">{item.score}</span>
+                  </div>
+                  <div className="h-1 bg-gray-800 rounded-full overflow-hidden mt-2">
+                    <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${item.score}%` }} />
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">{item.evidence[0]}</p>
+                </div>
+              ))}
+            </div>
+            {executiveSummary && <p className="text-xs text-gray-300 mt-3 leading-relaxed">{executiveSummary}</p>}
+          </div>
+        )}
       </div>
 
       {/* ── 3. Monopoly Warning ── */}

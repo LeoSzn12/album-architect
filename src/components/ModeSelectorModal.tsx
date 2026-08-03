@@ -3,7 +3,7 @@
 import React from 'react';
 import { GameMode, DifficultyTier } from '@/types/draft';
 import { useDraftStore } from '@/store/useDraftStore';
-import { Zap, Disc, Check, X, ShieldAlert, Sparkles, Flame, EyeOff, Award } from 'lucide-react';
+import { Zap, Disc, Check, X, ShieldAlert, Sparkles, Flame, EyeOff, Award, Swords } from 'lucide-react';
 import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
 import { useModalA11y } from '@/hooks/useModalA11y';
 
@@ -117,7 +117,41 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
         </div>
 
         {/* Game Mode Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Competitive Draft Mode Card */}
+          <div
+            onClick={() => handleSelectMode('draft')}
+            onMouseEnter={() => playHoverSound(audioEnabled)}
+            className={`p-5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between relative group ${
+              gameMode === 'draft'
+                ? 'bg-gradient-to-b from-cyan-950/80 to-gray-900 border-cyan-500 ring-2 ring-cyan-500/50 shadow-lg shadow-cyan-900/30'
+                : 'bg-gray-950/80 border-gray-800 hover:border-cyan-800/80 hover:bg-gray-900/90'
+            }`}
+          >
+            {gameMode === 'draft' && (
+              <span className="absolute top-3 right-3 px-2 py-0.5 bg-cyan-500 text-gray-950 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Check className="w-3 h-3" /> Active
+              </span>
+            )}
+            <div>
+              <div className="w-10 h-10 rounded-lg bg-cyan-900/50 border border-cyan-500/30 flex items-center justify-center text-cyan-300 mb-3 group-hover:scale-105 transition-transform">
+                <Swords className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Draft Mode</h3>
+              <p className="text-xs text-gray-400 leading-relaxed mb-4">
+                The core seven-round A&R battle. You and the AI draft from the same five-card pool.
+              </p>
+              <ul className="space-y-1.5 text-xs text-gray-300 mb-4">
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-cyan-400" /><span>5 cards per round</span></li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-cyan-400" /><span>Hidden AI pick + reveal</span></li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-cyan-400" /><span>Winner and rematch ready</span></li>
+              </ul>
+            </div>
+            <button className={`w-full py-2.5 rounded-lg text-xs font-bold transition ${gameMode === 'draft' ? 'bg-cyan-500 text-gray-950 shadow-md' : 'bg-gray-800 text-gray-300 group-hover:bg-cyan-900 group-hover:text-white'}`}>
+              Select Draft Mode
+            </button>
+          </div>
+
           {/* Quick EP Mode Card */}
           <div
             onClick={() => handleSelectMode('ep')}

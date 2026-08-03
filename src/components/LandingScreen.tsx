@@ -42,16 +42,16 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
         <div>
           <h1 className="text-4xl sm:text-5xl font-black tracking-wider bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm leading-tight">
-            ALBUM ARCHITECT
+            TRACKDRAFT
           </h1>
           <p className="text-lg font-bold text-gray-300 mt-2 tracking-wide">
-            Fantasy Music Draft Game
+          Fantasy Music Draft Game
           </p>
         </div>
 
         <p className="text-base text-gray-400 leading-relaxed max-w-lg">
           Draft <span className="text-white font-bold">7 tracks</span> across curated slots.
-          Avoid over-using artists. Build a classic album. Beat your friends.
+          Read the A&R logic, beat the AI, and turn your tracklist into a shareable project.
         </p>
 
         {/* Primary CTA */}
@@ -75,22 +75,22 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             {
               num: '1',
               title: 'Pick a track each round',
-              desc: '7 rounds. Each slot has a vibe role: Intro, Banger, Anthem, Late-Night, Climax…',
+              desc: '7 rounds. Each slot has a clear role: Intro, Lead Single, Peak, Emotional Turn, Risk, Resolution.',
             },
             {
               num: '2',
               title: 'Manage your artists',
-              desc: 'Having the same solo artist on 2+ tracks costs penalty points. Diversity wins.',
+              desc: 'Having the same solo artist on 2+ tracks costs penalty points. Featured guests are exempt.',
             },
             {
               num: '3',
               title: 'Use rerolls wisely',
-              desc: 'Not feeling the 4 options? Burn a reroll token for a fresh pool.',
+              desc: 'Not feeling the 5 recommendations? Burn a reroll token for a fresh pool.',
             },
             {
               num: '4',
               title: 'Get your score',
-              desc: 'Slot Fit (35%), Album Flow (25%), Cohesion (20%), Impact (20%). AI narrates.',
+              desc: 'Seven weighted categories explain fit, flow, narrative, variety, energy, taste, and replay value.',
             },
           ].map((rule) => (
             <li key={rule.num} className="flex items-start gap-4">

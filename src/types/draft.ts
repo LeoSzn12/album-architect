@@ -1,4 +1,4 @@
-export type GameMode = 'ep' | 'album';
+export type GameMode = 'draft' | 'ep' | 'album';
 
 export type SlotId =
   | 'cinematic-intro'
@@ -48,6 +48,7 @@ export type SongArchetype =
   | 'introspective'
   | 'rnb'
   | 'experimental'
+  | 'vibe-shift'
   | 'storytelling'
   | 'climax'
   | 'outro'
@@ -244,6 +245,45 @@ export interface EvaluationResult {
    * Used by the scorecard/leaderboard for transparency.
    */
   source?: 'gemini' | 'fallback';
+  /** Product-facing seven-category scorecard (0–100), kept separate from the legacy /10 UI scores. */
+  categoryScores?: CategoryScorecard;
+  weightedScoreBeforePenalties?: number;
+  appliedPenalties?: AppliedPenalty[];
+  executiveSummary?: string;
+  strongestChoice?: { position: number; reason: string };
+  weakestTransition?: { fromPosition: number; toPosition: number; reason: string };
+  recommendedChange?: { action: 'swap' | 'move' | 'keep'; position: number; suggestion: string };
+}
+
+export type ScoreCategoryKey =
+  | 'slotFit'
+  | 'sequencingFlow'
+  | 'narrativeConcept'
+  | 'varietyBalance'
+  | 'energyCurve'
+  | 'originalityTaste'
+  | 'replayValue';
+
+export interface CategoryScore {
+  score: number;
+  weight: number;
+  evidence: string[];
+  note: string;
+}
+
+export type CategoryScorecard = Record<ScoreCategoryKey, CategoryScore>;
+
+export interface AppliedPenalty {
+  code: string;
+  points: number;
+  explanation: string;
+}
+
+export interface OpponentReveal {
+  slot: DraftSlot;
+  song: Song;
+  reason: string;
+  roundIndex: number;
 }
 
 export type DifficultyTier = 'standard' | 'veteran' | 'hardcore';

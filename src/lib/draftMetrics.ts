@@ -4,7 +4,7 @@
  * and the scoring/optimizer modules without circular dependencies.
  */
 
-import { DraftedTrack, MonopolyReport, EnergyMetrics, Song } from '@/types/draft';
+import type { DraftedTrack, MonopolyReport, EnergyMetrics, Song } from '../types/draft.ts';
 
 export function computeMonopolyReport(drafted: DraftedTrack[]): MonopolyReport {
   const counts: Record<

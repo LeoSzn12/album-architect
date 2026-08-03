@@ -57,7 +57,7 @@ export const DraftHistoryPanel: React.FC = () => {
               <div>
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-purple-950 text-purple-300 border border-purple-800 rounded">
-                    {draft.gameMode === 'ep' ? '7-Track EP' : '14-Track LP'} • {draft.difficulty.toUpperCase()}
+                    {draft.gameMode === 'draft' ? 'TrackDraft Match' : draft.gameMode === 'ep' ? '7-Track EP' : '14-Track LP'} • {draft.difficulty.toUpperCase()}
                   </span>
                   <span className="text-[10px] text-gray-500 font-medium">{draft.completedAt}</span>
                 </div>

@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://album-architect.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Album Architect — Fantasy Music Curation & A&R Draft",
-    template: "%s · Album Architect",
+    default: "TrackDraft — Fantasy Music Curation & A&R Game",
+    template: "%s · TrackDraft",
   },
   description:
-    "Draft your dream EP or LP across positional slots, dodge the Artist Monopoly penalty, and get reviewed by an AI A&R critic panel. Powered by YouTube Music, Spotify, and Web Audio.",
+    "Draft seven-song projects, EPs, and albums across positional slots, then get a transparent A&R scorecard and critique.",
   keywords: [
     "music draft",
     "A&R game",
@@ -29,21 +29,19 @@ export const metadata: Metadata = {
     "hip-hop draft",
     "music game",
   ],
-  applicationName: "Album Architect",
-  authors: [{ name: "Album Architect" }],
+  applicationName: "TrackDraft",
+  authors: [{ name: "TrackDraft" }],
   openGraph: {
     type: "website",
-    url: "https://album-architect.vercel.app",
-    title: "Album Architect — Fantasy Music Curation & A&R Draft",
-    description:
-      "Draft your dream EP or LP, balance energy pacing, and get reviewed by an AI A&R critic panel.",
-    siteName: "Album Architect",
+    url: "/",
+    title: "TrackDraft — Fantasy Music Curation & A&R Game",
+    description: "Draft your dream project, balance energy pacing, and receive an explainable A&R scorecard.",
+    siteName: "TrackDraft",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Album Architect — Fantasy Music Curation & A&R Draft",
-    description:
-      "Draft your dream EP or LP, balance energy pacing, and get reviewed by an AI A&R critic panel.",
+    title: "TrackDraft — Fantasy Music Curation & A&R Game",
+    description: "Draft your dream project, balance energy pacing, and receive an explainable A&R scorecard.",
   },
   icons: {
     icon: "/favicon.ico",
