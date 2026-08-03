@@ -11,17 +11,17 @@
  * Generates AI-style commentary from the deterministic scoring breakdown.
  */
 
-import {
+import type {
   GameMode,
   DraftedTrack,
   MonopolyReport,
   EnergyMetrics,
   EvaluationResult,
   EraFilter,
-} from '@/types/draft';
-import { scoreDraft, scoreToGradeBadge } from '@/lib/scoringEngine';
-import { findOptimalPickForSlot } from '@/data/songs';
-import { buildTransparentScorecard } from '@/lib/transparentScorecard';
+} from '../types/draft.ts';
+import { scoreDraft, scoreToGradeBadge } from './scoringEngine.ts';
+import { findOptimalPickForSlot } from '../data/songs.ts';
+import { buildTransparentScorecard } from './transparentScorecard.ts';
 
 export function generateFallbackEvaluation(
   mode: GameMode,

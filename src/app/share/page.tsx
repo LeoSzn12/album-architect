@@ -2,24 +2,40 @@
 
 import { useEffect, useState } from 'react';
 import { ShareCard } from '@/components/ShareCard';
-import { decodeSharePayload, type SharePayload } from '@/lib/sharePayload';
+import { assertSharePayload, decodeSharePayload, type SharePayload } from '@/lib/sharePayload';
 
 export default function SharePage() {
   const [payload, setPayload] = useState<SharePayload | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const encoded = new URLSearchParams(window.location.search).get('data');
-    if (!encoded) {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('data');
+    const token = params.get('token');
+    if (encoded) {
+      try {
+        const decoded = decodeSharePayload(encoded);
+        queueMicrotask(() => setPayload(decoded));
+      } catch {
+        queueMicrotask(() => setError('This share link is invalid or has been truncated.'));
+      }
+      return;
+    }
+    if (!token) {
       queueMicrotask(() => setError('This share link is missing its result data.'));
       return;
     }
-    try {
-      const decoded = decodeSharePayload(encoded);
-      queueMicrotask(() => setPayload(decoded));
-    } catch {
-      queueMicrotask(() => setError('This share link is invalid or has been truncated.'));
-    }
+    void fetch(`/api/share?token=${encodeURIComponent(token)}`)
+      .then(async (response) => {
+        const body = await response.json() as { payload?: unknown; error?: string };
+        if (!response.ok || !body.payload) throw new Error(body.error ?? 'Share not found.');
+        return body.payload;
+      })
+      .then((value) => {
+        assertSharePayload(value);
+        setPayload(value);
+      })
+      .catch(() => setError('This share link is invalid, expired, or unavailable.'));
   }, []);
 
   return (

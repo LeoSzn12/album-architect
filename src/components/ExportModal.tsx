@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { X, ExternalLink, Copy, Check, Download, Disc, Sparkles, Music } from 'lucide-react';
 import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
@@ -17,6 +17,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const { draftedTracks, gameMode, evaluationResult, opponentEvaluationResult, playerAlias, draftSeed, audioEnabled } = useDraftStore();
   const [copied, setCopied] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [durableShareToken, setDurableShareToken] = useState<string | null>(null);
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
     isOpen,
@@ -52,8 +53,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     };
   }, [draftSeed, draftedTracks, evaluationResult, opponentEvaluationResult, playerAlias, titleText]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    void fetch('/api/share', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(sharePayload) })
+      .then(async (response) => response.ok ? response.json() as Promise<{ token?: string }> : null)
+      .then((body) => { if (body?.token) setDurableShareToken(body.token); })
+      .catch(() => { /* URL-encoded share remains available in guest mode. */ });
+  }, [isOpen, sharePayload]);
+
   const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/share?data=${encodeSharePayload(sharePayload)}`
+    ? durableShareToken
+      ? `${window.location.origin}/share?token=${durableShareToken}`
+      : `${window.location.origin}/share?data=${encodeSharePayload(sharePayload)}`
     : '';
 
   if (!isOpen) return null;

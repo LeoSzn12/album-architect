@@ -97,7 +97,7 @@ src/
 
 ## Supabase configuration
 
-The Supabase production foundation is opt-in. Create a Supabase project, apply `supabase/migrations/20260803000000_trackdraft_foundation.sql`, and configure `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key). Configure Google or GitHub in Supabase Auth and add `/api/auth/supabase/callback` to the provider redirect URLs. The app uses verified Supabase Auth claims for ownership and the migration enables RLS on user-owned tables. The repository intentionally keeps guest demo mode available when these variables are absent.
+The Supabase production foundation is opt-in. Create a Supabase project, apply `supabase/migrations/20260803000000_trackdraft_foundation.sql`, and configure `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key). Configure Google or GitHub in Supabase Auth and add the deployed URL plus `/api/auth/supabase/callback` to the provider redirect URLs; set the Supabase Auth Site URL to the deployed origin. Spotify and YouTube provider OAuth callbacks are `/api/auth/provider/spotify/callback` and `/api/auth/provider/youtube/callback`, and must also be registered with their respective provider consoles. The app uses verified Supabase Auth claims for ownership and the migration enables RLS on user-owned tables. The repository intentionally keeps guest demo mode available when these variables are absent.
 
 ## Provider configuration
 

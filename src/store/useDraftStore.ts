@@ -23,6 +23,7 @@ import { getOptionsForSlot } from '@/data/songs';
 import { generateFallbackEvaluation } from '@/lib/fallbackEvaluator';
 import { generateEraSequence } from '@/lib/eraSequence';
 import { computeMonopolyReport, computeEnergyMetrics } from '@/lib/draftMetrics';
+import { reorderTracklist } from '@/lib/tracklistOrder';
 
 /**
  * Current persisted-state schema version. Bump on any breaking shape change.
@@ -523,6 +524,19 @@ export const useDraftStore = create<DraftStoreState>()(
           .sort((a, b) => b.overallScore - a.overallScore)
           .slice(0, 50);
 
+        // Persist the completed scorecard when Supabase auth is available.
+        // Guest mode intentionally remains local and does not block the result UI.
+        void fetch('/api/scorecards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: gameMode,
+            trackCount: draftedTracksSnapshot.length,
+            alias: playerAlias,
+            evaluation: result,
+          }),
+        }).catch((persistError) => console.warn('Scorecard persistence unavailable:', persistError));
+
         set({
           evaluationResult: result,
           opponentEvaluationResult:
@@ -565,9 +579,7 @@ export const useDraftStore = create<DraftStoreState>()(
       reorderDraftedTracks: (fromIndex: number, toIndex: number) => {
         const { draftedTracks } = get();
         if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= draftedTracks.length || toIndex >= draftedTracks.length) return;
-        const reordered = [...draftedTracks];
-        const [moved] = reordered.splice(fromIndex, 1);
-        reordered.splice(toIndex, 0, moved);
+        const reordered = reorderTracklist(draftedTracks, fromIndex, toIndex);
         set({
           draftedTracks: reordered,
           monopolyReport: computeMonopolyReport(reordered),

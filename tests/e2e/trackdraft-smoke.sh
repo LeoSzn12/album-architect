@@ -91,11 +91,11 @@ pw press Tab
 run_code "(() => { const dialog = document.querySelector('[role=\"dialog\"]'); const first = dialog?.querySelector('button'); if (document.activeElement !== first) throw new Error('Tab did not wrap to the first modal control'); return true; })()"
 pw press Escape
 sleep 1
-run_code "if (document.querySelector('[role=\"dialog\"]')) throw new Error('Escape did not close the modal'); if (!document.activeElement?.textContent?.includes('Draft Mode (7)')) throw new Error('focus was not restored to the opener'); true"
+run_code "(() => { if (document.querySelector('[role=\"dialog\"]')) throw new Error('Escape did not close the modal'); if (!document.activeElement?.textContent?.includes('Draft Mode (7)')) throw new Error('focus was not restored to the opener'); return true; })()"
 
 echo "[7/7] mobile viewport has no horizontal overflow"
 pw resize 390 844
-run_code "if (window.innerWidth !== 390) throw new Error('mobile viewport was not applied')"
-run_code "if (document.documentElement.scrollWidth > document.documentElement.clientWidth + 1) throw new Error('mobile page has horizontal overflow')"
+run_code "(() => { if (window.innerWidth !== 390) throw new Error('mobile viewport was not applied'); return true; })()"
+run_code "(() => { if (document.documentElement.scrollWidth > document.documentElement.clientWidth + 1) throw new Error('mobile page has horizontal overflow'); return true; })()"
 
 echo "TrackDraft E2E smoke checks passed."

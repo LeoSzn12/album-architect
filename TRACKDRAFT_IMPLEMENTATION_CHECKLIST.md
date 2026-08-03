@@ -30,10 +30,11 @@ This note records the first executable vertical slice from the July 31, 2026 han
 - [x] Optional Supabase SSR clients, Auth link/callback/status routes, and verified-claims identity helper.
 - [x] RLS-first Supabase foundation migration for users, provider accounts, libraries, sessions, rounds, picks, scorecards, challenges, and moderation submissions.
 - [x] Session create/read/pick/submit routes switch to authenticated Supabase persistence when configured, while preserving guest demo fallback.
+- [x] Authenticated provider accounts, imported playlist libraries, scorecards, durable shares, and challenge/rematch records have Supabase repositories and API routes.
 
 ## Deliberate prototype boundaries
 
-- Provider operations return a safe `503` until deployment credentials and `PROVIDER_SESSION_SECRET` are configured. OAuth tokens are encrypted in httpOnly cookies for the current prototype; a durable account/session store is still required for multi-instance production deployments.
+- Provider operations return a safe `503` until deployment credentials and `PROVIDER_SESSION_SECRET` are configured. OAuth tokens use encrypted httpOnly cookies for the guest/local path and encrypted Supabase provider-account storage for authenticated multi-instance deployments.
 - The seeded demo catalog is the gameplay source of truth; no audio is hosted or stored.
 - AI narration is optional. Competitive scores are deterministic even when Gemini is enabled.
 - EP and Album continue to use the existing legacy UI path while sharing the normalized catalog, slots, scoring, persistence, and reorder behavior.
@@ -41,7 +42,6 @@ This note records the first executable vertical slice from the July 31, 2026 han
 ## Next implementation tranche
 
 1. Apply the Supabase migration in a real project and complete Auth/provider redirect configuration.
-2. Persist provider accounts, imported library items, scorecards, and stable share/challenge records in Supabase.
-3. Connect manual URL resolution and library search to user-owned imported Spotify/YouTube libraries.
-4. Finish EP Builder and Album Builder end-to-end paths, including save/resume and final reorder.
-5. Expand automated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.
+2. Finish EP Builder and Album Builder end-to-end paths, including save/resume and final reorder.
+3. Run live Spotify/YouTube OAuth and import/export tests with real credentials.
+4. Expand automated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.

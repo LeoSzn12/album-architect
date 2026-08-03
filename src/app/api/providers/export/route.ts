@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   }
   const songs = body.songs.map(exportSong);
   if (songs.some((song) => song === null)) return NextResponse.json({ error: 'Every song must include an id, title, and artist.' }, { status: 400 });
-  const result = await createRemoteProvider(body.provider, accessTokenFromRequest(request, body.provider)).exportPlaylist(body.name, songs as Song[]);
+  const result = await createRemoteProvider(body.provider, await accessTokenFromRequest(request, body.provider)).exportPlaylist(body.name, songs as Song[]);
   return result.ok
     ? NextResponse.json({ provider: body.provider, playlist: result.data })
     : NextResponse.json({ provider: body.provider, error: result.error }, { status: result.error.code === 'invalid-request' ? 400 : 503 });

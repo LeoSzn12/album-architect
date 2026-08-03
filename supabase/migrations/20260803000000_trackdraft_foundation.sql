@@ -149,6 +149,15 @@ create table if not exists public.scorecards (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.share_records (
+  id uuid primary key default gen_random_uuid(),
+  token text unique not null,
+  creator_id uuid references public.users(id) on delete set null,
+  payload_json jsonb not null,
+  expires_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.challenges (
   id uuid primary key default gen_random_uuid(),
   source_session_id text not null references public.game_sessions(id) on delete cascade,
@@ -156,7 +165,11 @@ create table if not exists public.challenges (
   recipient_id uuid references public.users(id) on delete set null,
   challenge_code text unique not null,
   status text not null default 'open',
+  rematch_of uuid references public.challenges(id) on delete set null,
+  accepted_by uuid references public.users(id) on delete set null,
+  matchup_json jsonb not null default '{}'::jsonb,
   expires_at timestamptz,
+  completed_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -179,6 +192,7 @@ create index if not exists rounds_session_idx on public.rounds(session_id);
 create index if not exists picks_session_idx on public.picks(session_id);
 create index if not exists picks_creator_idx on public.picks(creator_id);
 create index if not exists scorecards_session_idx on public.scorecards(session_id);
+create index if not exists share_records_token_idx on public.share_records(token);
 
 alter table public.users enable row level security;
 alter table public.provider_accounts enable row level security;
@@ -192,6 +206,7 @@ alter table public.rounds enable row level security;
 alter table public.recommendations enable row level security;
 alter table public.picks enable row level security;
 alter table public.scorecards enable row level security;
+alter table public.share_records enable row level security;
 alter table public.challenges enable row level security;
 alter table public.moderation_items enable row level security;
 
@@ -206,6 +221,8 @@ create policy "users can read songs in their picks" on public.songs for select t
 create policy "authenticated users can add song snapshots" on public.songs for insert to authenticated with check ((select auth.uid()) is not null);
 create policy "authenticated users can update song snapshots" on public.songs for update to authenticated using ((select auth.uid()) is not null) with check ((select auth.uid()) is not null);
 create policy "users can read provider refs in their library" on public.song_provider_refs for select to authenticated using (exists (select 1 from public.library_items where library_items.song_id = song_provider_refs.song_id and library_items.user_id = (select auth.uid())));
+create policy "authenticated users can add provider refs" on public.song_provider_refs for insert to authenticated with check ((select auth.uid()) is not null);
+create policy "authenticated users can update provider refs" on public.song_provider_refs for update to authenticated using ((select auth.uid()) is not null) with check ((select auth.uid()) is not null);
 
 create policy "users own library items" on public.library_items for all to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 create policy "users own sessions" on public.game_sessions for all to authenticated using ((select auth.uid()) = creator_id) with check ((select auth.uid()) = creator_id);
@@ -214,6 +231,12 @@ create policy "users own rounds" on public.rounds for all to authenticated using
 create policy "users own recommendations" on public.recommendations for all to authenticated using (exists (select 1 from public.rounds join public.game_sessions on game_sessions.id = rounds.session_id where rounds.id = recommendations.round_id and game_sessions.creator_id = (select auth.uid()))) with check (exists (select 1 from public.rounds join public.game_sessions on game_sessions.id = rounds.session_id where rounds.id = recommendations.round_id and game_sessions.creator_id = (select auth.uid())));
 create policy "users own picks" on public.picks for all to authenticated using ((select auth.uid()) = creator_id) with check ((select auth.uid()) = creator_id);
 create policy "users own scorecards" on public.scorecards for all to authenticated using ((select auth.uid()) = creator_id) with check ((select auth.uid()) = creator_id);
+create policy "users can create share records" on public.share_records for insert to authenticated with check ((select auth.uid()) = creator_id);
+create policy "public can read share records" on public.share_records for select to anon, authenticated using (expires_at is null or expires_at > now());
 create policy "users own challenges" on public.challenges for all to authenticated using ((select auth.uid()) = sender_id or (select auth.uid()) = recipient_id) with check ((select auth.uid()) = sender_id);
+drop policy if exists "users own challenges" on public.challenges;
+create policy "users own challenges" on public.challenges for select to authenticated using ((select auth.uid()) = sender_id or (select auth.uid()) = recipient_id or status = 'open');
+create policy "users can create challenges" on public.challenges for insert to authenticated with check ((select auth.uid()) = sender_id);
+create policy "participants can update challenges" on public.challenges for update to authenticated using ((select auth.uid()) = sender_id or (select auth.uid()) = recipient_id) with check ((select auth.uid()) = sender_id or (select auth.uid()) = recipient_id);
 create policy "users own moderation submissions" on public.moderation_items for insert to authenticated with check ((select auth.uid()) = submitted_by);
 create policy "users can read their moderation submissions" on public.moderation_items for select to authenticated using ((select auth.uid()) = submitted_by);

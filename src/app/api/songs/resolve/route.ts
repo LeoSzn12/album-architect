@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   try { parsed = new URL(body.url); } catch { return NextResponse.json({ error: 'Invalid URL.' }, { status: 400 }); }
   if (parsed.protocol !== 'https:' || !allowedHosts.has(parsed.hostname.toLowerCase())) return NextResponse.json({ error: 'Only official Spotify or YouTube URLs are accepted.' }, { status: 400 });
   const provider: ProviderId = body.provider ?? (parsed.hostname.includes('spotify') ? 'spotify' : 'youtube');
-  const adapter = provider === 'demo' ? getProvider('demo') : createRemoteProvider(provider, accessTokenFromRequest(request, provider));
+  const adapter = provider === 'demo' ? getProvider('demo') : createRemoteProvider(provider, await accessTokenFromRequest(request, provider));
   const result = await adapter.resolveUrl(parsed.toString());
   return result.ok
     ? NextResponse.json({ song: result.data })

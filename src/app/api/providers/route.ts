@@ -4,10 +4,10 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'nodejs';
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const runtimeProviders = {
-    spotify: createRemoteProvider('spotify', accessTokenFromRequest(request, 'spotify')),
-    youtube: createRemoteProvider('youtube', accessTokenFromRequest(request, 'youtube')),
+    spotify: createRemoteProvider('spotify', await accessTokenFromRequest(request, 'spotify')),
+    youtube: createRemoteProvider('youtube', await accessTokenFromRequest(request, 'youtube')),
   };
   return Response.json({
     providers: providers.map(({ id, name, capabilities }) => {

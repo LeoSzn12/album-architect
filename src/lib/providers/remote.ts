@@ -340,16 +340,17 @@ export function providerHasCredentials(provider: RemoteProviderId) {
   return Boolean(process.env.YOUTUBE_ACCESS_TOKEN?.trim() || process.env.YOUTUBE_DATA_API_KEY?.trim());
 }
 
-export function accessTokenFromRequest(request: Request, provider: RemoteProviderId) {
+export async function accessTokenFromRequest(request: Request, provider: RemoteProviderId) {
   const bearer = request.headers.get('authorization')?.match(/^Bearer\s+(.+)$/iu)?.[1]?.trim();
   if (bearer) return bearer;
   const cookie = request.headers.get('cookie')?.match(new RegExp(`(?:^|;\\s*)${providerCookieName(provider)}=([^;]+)`))?.[1];
   const sealed = openProviderSession(cookie);
-  if (!sealed) return undefined;
-  try {
-    const parsed = JSON.parse(sealed) as { accessToken?: unknown };
-    return typeof parsed.accessToken === 'string' ? parsed.accessToken : undefined;
-  } catch {
-    return undefined;
+  if (sealed) {
+    try {
+      const parsed = JSON.parse(sealed) as { accessToken?: unknown; expiresAt?: unknown };
+      if (typeof parsed.accessToken === 'string' && (!parsed.expiresAt || (typeof parsed.expiresAt === 'number' && parsed.expiresAt > Date.now() + 30_000))) return parsed.accessToken;
+    } catch { /* fall through to the durable account */ }
   }
+  const { accessTokenFromStoredProviderAccount } = await import('../supabase/providerAccounts.ts');
+  return (await accessTokenFromStoredProviderAccount(provider)) ?? undefined;
 }
