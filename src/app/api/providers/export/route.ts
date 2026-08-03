@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { accessTokenFromRequest, createRemoteProvider } from '@/lib/providers/remote';
 import type { Song } from '@/types/draft';
 import type { ProviderId } from '@/lib/providers/types';
+import { rateLimit, rateLimitHeaders, requestRateLimitKey } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -34,6 +35,8 @@ function exportSong(value: unknown): Song | null {
 }
 
 export async function POST(request: NextRequest) {
+  const limiter = rateLimit(requestRateLimitKey(request, 'provider-export'), { limit: 8, windowMs: 60_000 });
+  if (!limiter.allowed) return NextResponse.json({ error: 'Export is temporarily rate limited. Please retry shortly.' }, { status: 429, headers: rateLimitHeaders(limiter) });
   const body = await request.json().catch(() => null) as { provider?: ProviderId; name?: string; songs?: unknown[] } | null;
   if ((body?.provider !== 'spotify' && body?.provider !== 'youtube') || typeof body.name !== 'string' || !body.name.trim() || !Array.isArray(body.songs) || body.songs.length > 100) {
     return NextResponse.json({ error: 'Expected a provider, playlist name, and up to 100 songs.' }, { status: 400 });
@@ -42,6 +45,6 @@ export async function POST(request: NextRequest) {
   if (songs.some((song) => song === null)) return NextResponse.json({ error: 'Every song must include an id, title, and artist.' }, { status: 400 });
   const result = await createRemoteProvider(body.provider, await accessTokenFromRequest(request, body.provider)).exportPlaylist(body.name, songs as Song[]);
   return result.ok
-    ? NextResponse.json({ provider: body.provider, playlist: result.data })
-    : NextResponse.json({ provider: body.provider, error: result.error }, { status: result.error.code === 'invalid-request' ? 400 : 503 });
+    ? NextResponse.json({ provider: body.provider, playlist: result.data }, { headers: rateLimitHeaders(limiter) })
+    : NextResponse.json({ provider: body.provider, error: result.error }, { status: result.error.code === 'invalid-request' ? 400 : 503, headers: rateLimitHeaders(limiter) });
 }

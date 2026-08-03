@@ -9,6 +9,9 @@ Updated 2026-08-03 after re-auditing the original handoff documents.
 - EP/Album-specific builder labels, act progress, review language, and saved/resume indicators.
 - Unit coverage for all Draft, EP, and Album template flows plus provider/challenge/share fallback behavior.
 - Production launch runbook covering Supabase, OAuth callbacks, deployment variables, smoke verification, and rollback.
+- UI/UX foundation refresh covering typography, focus states, reduced-motion behavior, landing hierarchy, and responsive navigation grouping.
+- In-process burst protection for high-cost evaluation and provider search/import/export routes, with explicit `429` and `Retry-After` responses.
+- Gap-focused full-mode browser suite stabilized around the final evaluation transition and passing in local production mode.
 
 ## Remaining work
 
@@ -27,9 +30,17 @@ Updated 2026-08-03 after re-auditing the original handoff documents.
 
 ### P1 — browser QA stabilization
 
-1. Stabilize the gap-focused full-mode browser suite around the final evaluation transition.
+1. Keep the gap-focused full-mode browser suite green around the final evaluation transition.
 2. Add authenticated refresh/resume and reorder-before-submit browser coverage.
 3. Run screen-reader and reduced-motion checks on a real browser/device matrix.
+
+### P1 — UI/UX refresh
+
+1. Establish a consistent visual system for typography, surfaces, borders, focus states, and motion.
+2. Clarify the landing-page hierarchy and primary actions so a new player understands the loop immediately.
+3. Reduce header density and make navigation/status controls easier to scan on desktop and mobile.
+4. Polish active Draft, EP, Album, review, library, and profile surfaces with consistent spacing and responsive behavior.
+5. Re-run visual QA at desktop, tablet, and mobile sizes after each design pass.
 
 ### P2 — launch hardening
 

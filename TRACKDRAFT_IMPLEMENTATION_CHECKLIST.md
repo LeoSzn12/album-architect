@@ -31,6 +31,9 @@ This note records the first executable vertical slice from the July 31, 2026 han
 - [x] RLS-first Supabase foundation migration for users, provider accounts, libraries, sessions, rounds, picks, scorecards, challenges, and moderation submissions.
 - [x] Session create/read/pick/submit routes switch to authenticated Supabase persistence when configured, while preserving guest demo fallback.
 - [x] Authenticated provider accounts, imported playlist libraries, scorecards, durable shares, and challenge/rematch records have Supabase repositories and API routes.
+- [x] UI/UX foundation refresh: display typography, visible keyboard focus, reduced-motion support, clearer landing hierarchy, and grouped responsive header navigation.
+- [x] In-process burst protection for evaluation and provider search/import/export routes with explicit retry metadata.
+- [x] Full-mode browser gap suite stabilized around final evaluation timing.
 
 ## Deliberate prototype boundaries
 
@@ -42,9 +45,10 @@ This note records the first executable vertical slice from the July 31, 2026 han
 ## Next implementation tranche
 
 1. Apply the Supabase migration in a real project and complete Auth/provider redirect configuration.
-2. Finish EP Builder and Album Builder end-to-end paths, including save/resume and final reorder.
-3. Run live Spotify/YouTube OAuth and import/export tests with real credentials.
-4. Expand automated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.
+2. Run live Spotify/YouTube OAuth and import/export tests with real credentials.
+3. Expand authenticated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.
+4. Complete the visual pass across active Draft, EP, Album, review, library, and profile surfaces.
+5. Deploy, run production smoke tests, and configure monitoring/error alerts.
 
 ## Current execution notes
 
