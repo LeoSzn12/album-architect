@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000"),
   title: {
     default: "TrackDraft — Fantasy Music Curation & A&R Game",
     template: "%s · TrackDraft",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     description: "Draft your dream project, balance energy pacing, and receive an explainable A&R scorecard.",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.svg",
   },
 };
 

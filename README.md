@@ -19,6 +19,7 @@ Built with **Next.js 16**, **Tailwind CSS v4**, **Zustand**, **Web Audio API**, 
 - **Draft History:** Past drafts are saved locally — your Hall of Fame persists across sessions.
 - **Setup, Library, Profile:** Configure taste tags and provider scope, search the curated catalog, maintain local favorites/tags, and review your curator record.
 - **Share cards:** Export a compact, validated result URL at `/share` with the top three tracks, scorecard categories, grade, and challenge code.
+- **Provider bridge:** Connect Spotify or YouTube with PKCE, search/import playlists, resolve tracks, and export the current draft as a private playlist. Provider operations remain unavailable until the deployment has the required OAuth/API credentials.
 
 ## In-app audio bridge
 
@@ -37,6 +38,8 @@ Preview any candidate or drafted track through one of three sources:
 - `canvas-confetti` (draft-complete celebration)
 - Google Generative AI SDK (A&R critic evaluation)
 - Provider adapter boundary with demo, Spotify, and YouTube capability discovery (`GET /api/providers`)
+- Server-side provider adapters for Spotify Web API and YouTube Data API v3, with encrypted OAuth cookies and import/search/export routes
+- Playwright CLI smoke coverage under `tests/e2e/` and GitHub Actions CI under `.github/workflows/ci.yml`
 - lucide-react icons
 
 ## Getting started
@@ -62,6 +65,9 @@ src/
 ├── app/
 │   ├── api/critic-evaluate/   # AI critic endpoint (falls back to local evaluator)
 │   ├── api/providers/         # Provider capability/search endpoints
+│   │   ├── import/             # Import Spotify/YouTube playlists
+│   │   └── export/             # Export a drafted list to a private playlist
+│   ├── api/auth/provider/      # PKCE link/callback handlers
 │   ├── api/sessions/          # Prototype session/pick/submit API boundary
 │   ├── api/songs/resolve/      # Strict official-URL resolution boundary
 │   ├── api/auth/provider/     # PKCE link scaffold; disabled without credentials
@@ -86,6 +92,21 @@ src/
 └── types/
     └── draft.ts               # Shared types (Song, DraftSlot, EvaluationResult, ...)
 ```
+
+## Provider configuration
+
+Copy `.env.example` to your deployment environment. `PROVIDER_SESSION_SECRET` must be a random secret of at least 32 characters; it encrypts short-lived OAuth state and access-token cookies. Spotify requires OAuth client credentials and playlist scopes. YouTube search/resolution can use `YOUTUBE_DATA_API_KEY`, while playlist import/export requires OAuth with the YouTube `force-ssl` scope. Access-token environment variables are supported for local/server-to-server testing only; production should use the OAuth callback cookies.
+
+The provider endpoints are:
+
+- `GET /api/providers/search?provider=spotify|youtube&q=...`
+- `POST /api/providers/import` with `{ "provider", "reference" }`
+- `POST /api/providers/export` with `{ "provider", "name", "songs" }`
+- `POST /api/songs/resolve` with `{ "provider", "url" }`
+
+## Automated browser smoke test
+
+With the app running, execute `npm run test:e2e`. The CLI smoke flow covers landing, Setup, Library search, Profile, share-link degradation, provider capability discovery, and disabled-provider behavior. GitHub Actions runs it after lint, unit tests, and the production build.
 
 ## Deployment
 

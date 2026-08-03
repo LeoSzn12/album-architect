@@ -20,12 +20,17 @@ This note records the first executable vertical slice from the July 31, 2026 han
 - [x] In-memory session repository boundary with create, pick, and submit API routes.
 - [x] Provider search/URL-resolve routes with strict host validation and graceful disabled behavior.
 - [x] OAuth/PKCE configuration scaffold and capability-safe link endpoint.
+- [x] Encrypted OAuth state/access-token cookies plus provider callback handler.
+- [x] Spotify and YouTube server adapters for search, playlist import, URL resolution, playlist creation, and ordered export.
+- [x] Provider desk UI with search, import, and export controls.
+- [x] Playwright CLI smoke flow and GitHub Actions lint/test/build/E2E workflow.
+- [x] Deployment environment template and Node runtime declarations for provider routes.
 - [x] Local persistence continues to support resume and now includes Draft/opponent state.
 - [x] README, unit tests, API smoke checks, browser QA, simulation test, lint, and production build updated.
 
 ## Deliberate prototype boundaries
 
-- Provider token exchange/storage, playlist import/export, accounts, and hosted database persistence remain adapter-ready but disabled. OAuth link requests return a safe `503` until deployment credentials and an encrypted short-lived state store are configured.
+- Provider operations return a safe `503` until deployment credentials and `PROVIDER_SESSION_SECRET` are configured. OAuth tokens are encrypted in httpOnly cookies for the current prototype; a durable account/session store is still required for multi-instance production deployments.
 - The seeded demo catalog is the gameplay source of truth; no audio is hosted or stored.
 - AI narration is optional. Competitive scores are deterministic even when Gemini is enabled.
 - EP and Album continue to use the existing legacy UI path while sharing the normalized catalog, slots, scoring, persistence, and reorder behavior.

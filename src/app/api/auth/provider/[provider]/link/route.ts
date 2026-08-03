@@ -1,10 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createPkceRequest, getOAuthProviderConfig } from '@/lib/providers/oauth';
+import { providerOAuthCookieName, sealProviderSession } from '@/lib/providers/session';
 import type { ProviderId } from '@/lib/providers/types';
 
 const supported = new Set<ProviderId>(['spotify', 'youtube']);
 
-export function GET(_request: Request, context: { params: Promise<{ provider: string }> }) {
+export const runtime = 'nodejs';
+
+export function GET(request: NextRequest, context: { params: Promise<{ provider: string }> }) {
   return context.params.then(({ provider: rawProvider }) => {
     if (!supported.has(rawProvider as ProviderId)) {
       return NextResponse.json({ error: 'Unsupported provider.' }, { status: 400 });
@@ -19,15 +22,10 @@ export function GET(_request: Request, context: { params: Promise<{ provider: st
     }
     const request = createPkceRequest(provider);
     if (!request) return NextResponse.json({ error: 'Unable to create OAuth request.' }, { status: 503 });
-    // The verifier/state must be stored in an encrypted, short-lived session before
-    // production use. Returning it here keeps this local prototype secret-free.
-    return NextResponse.json({
-      provider,
-      status: 'ready',
-      authorizationUrl: request.authorizationUrl,
-      state: request.state,
-      codeVerifier: request.codeVerifier,
-      notice: 'Complete the callback/token exchange with a server-side session store before enabling provider data access.',
-    });
+    const sealedState = sealProviderSession(JSON.stringify({ state: request.state, codeVerifier: request.codeVerifier }));
+    if (!sealedState) return NextResponse.json({ provider, status: 'not-configured', notice: 'Set PROVIDER_SESSION_SECRET to enable encrypted OAuth state.' }, { status: 503 });
+    const response = NextResponse.redirect(request.authorizationUrl);
+    response.cookies.set(providerOAuthCookieName(provider), sealedState, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 600, path: '/api/auth/provider' });
+    return response;
   });
 }

@@ -4,6 +4,7 @@ import type { ProviderId } from './types';
 export interface OAuthProviderConfig {
   provider: Exclude<ProviderId, 'demo'>;
   clientId: string;
+  clientSecret?: string;
   redirectUri: string;
   authorizationEndpoint: string;
   scopes: string[];
@@ -20,12 +21,12 @@ const configs: Record<Exclude<ProviderId, 'demo'>, Omit<OAuthProviderConfig, 'cl
   spotify: {
     provider: 'spotify',
     authorizationEndpoint: 'https://accounts.spotify.com/authorize',
-    scopes: ['playlist-read-private', 'user-read-private'],
+    scopes: ['playlist-read-private', 'playlist-modify-public', 'playlist-modify-private', 'user-read-private'],
   },
   youtube: {
     provider: 'youtube',
     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-    scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
+    scopes: ['https://www.googleapis.com/auth/youtube.force-ssl'],
   },
 };
 
@@ -38,7 +39,8 @@ export function getOAuthProviderConfig(provider: Exclude<ProviderId, 'demo'>): O
   const clientId = env(`${prefix}_CLIENT_ID`);
   const redirectUri = env(`${prefix}_REDIRECT_URI`);
   if (!clientId || !redirectUri) return null;
-  return { ...configs[provider], clientId, redirectUri };
+  const clientSecret = env(`${prefix}_CLIENT_SECRET`);
+  return { ...configs[provider], clientId, redirectUri, ...(clientSecret ? { clientSecret } : {}) };
 }
 
 function base64Url(value: Buffer) {

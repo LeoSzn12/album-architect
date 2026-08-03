@@ -86,6 +86,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
           <div className="mt-3 flex flex-wrap gap-2" aria-label="Provider availability">
             {providers.map((provider) => <span key={provider.id} className={`rounded-lg border px-2 py-1 text-[10px] font-black uppercase tracking-wide ${provider.capabilities.search.enabled ? 'border-emerald-500/30 bg-emerald-950/30 text-emerald-300' : 'border-gray-700 bg-gray-950 text-gray-500'}`}>{provider.name}: {provider.capabilities.search.enabled ? 'ready' : 'scaffolded'}</span>)}
           </div>
+          {sourceScope !== 'all' && <button type="button" onClick={() => { window.location.assign(`/api/auth/provider/${sourceScope}/link`); }} className="mt-3 rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-900/60">Connect {providers.find((provider) => provider.id === sourceScope)?.name ?? sourceScope}</button>}
         </fieldset>
       </div>
 

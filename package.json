@@ -8,6 +8,7 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "lint": "eslint",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:e2e": "tests/e2e/trackdraft-smoke.sh",
     "test:simulation": "node --experimental-strip-types --test tests/simulation.test.ts",
     "report:catalog": "node --experimental-strip-types scripts/catalogReport.ts",
     "report:catalog-html": "node --experimental-strip-types scripts/catalogHtmlReport.ts"

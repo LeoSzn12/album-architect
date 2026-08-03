@@ -123,7 +123,7 @@ export default function Home() {
             onContinue={() => setActiveSurface('library')}
           />
         ) : activeSurface === 'library' ? (
-          <LibraryPanel sourceScope={setupPreferences.sourceScope} onSelectSong={() => setActiveSurface('game')} />
+          <LibraryPanel sourceScope={setupPreferences.sourceScope} exportSongs={draftedTracks.map((track) => track.song)} onSelectSong={() => setActiveSurface('game')} />
         ) : activeSurface === 'profile' ? (
           <ProfilePanel
             displayName={playerAlias}
