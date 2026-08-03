@@ -91,4 +91,5 @@ jobs:
       - name: Run browser QA gap flow
         env:
           BASE_URL: http://127.0.0.1:3000
+          PWCLI: ${{ github.workspace }}/scripts/playwright-cli.sh
         run: npm run test:e2e:gaps
