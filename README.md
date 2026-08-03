@@ -20,6 +20,7 @@ Built with **Next.js 16**, **Tailwind CSS v4**, **Zustand**, **Web Audio API**, 
 - **Setup, Library, Profile:** Configure taste tags and provider scope, search the curated catalog, maintain local favorites/tags, and review your curator record.
 - **Share cards:** Export a compact, validated result URL at `/share` with the top three tracks, scorecard categories, grade, and challenge code.
 - **Provider bridge:** Connect Spotify or YouTube with PKCE, search/import playlists, resolve tracks, and export the current draft as a private playlist. Provider operations remain unavailable until the deployment has the required OAuth/API credentials.
+- **Supabase persistence boundary:** When Supabase Auth and Postgres variables are configured, session create/read/pick/submit routes require an authenticated user and use the RLS-first migration under `supabase/migrations/`. Without those variables, the guest demo continues using the local in-memory session boundary.
 
 ## In-app audio bridge
 
@@ -85,13 +86,18 @@ src/
 │   ├── audioEngine.ts         # Web Audio UI FX + synth preview
 │   ├── musicBridge.ts         # YouTube / Spotify / bulk URL builders
 │   ├── providers/             # Normalized adapters, OAuth/PKCE scaffold
-│   ├── sessionRepository.ts   # Swappable in-memory session boundary
+│   ├── sessionRepository.ts   # Guest/demo in-memory session boundary
+│   ├── supabase/               # Optional SSR Auth, clients, and persistence adapter
 │   └── sharePayload.ts        # Strict URL-safe share contract
 ├── store/
 │   └── useDraftStore.ts       # Zustand store: draft state, monopoly/energy math, evaluation
 └── types/
     └── draft.ts               # Shared types (Song, DraftSlot, EvaluationResult, ...)
 ```
+
+## Supabase configuration
+
+The Supabase production foundation is opt-in. Create a Supabase project, apply `supabase/migrations/20260803000000_trackdraft_foundation.sql`, and configure `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key). Configure Google or GitHub in Supabase Auth and add `/api/auth/supabase/callback` to the provider redirect URLs. The app uses verified Supabase Auth claims for ownership and the migration enables RLS on user-owned tables. The repository intentionally keeps guest demo mode available when these variables are absent.
 
 ## Provider configuration
 

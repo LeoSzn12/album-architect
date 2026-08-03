@@ -27,6 +27,9 @@ This note records the first executable vertical slice from the July 31, 2026 han
 - [x] Deployment environment template and Node runtime declarations for provider routes.
 - [x] Local persistence continues to support resume and now includes Draft/opponent state.
 - [x] README, unit tests, API smoke checks, browser QA, simulation test, lint, and production build updated.
+- [x] Optional Supabase SSR clients, Auth link/callback/status routes, and verified-claims identity helper.
+- [x] RLS-first Supabase foundation migration for users, provider accounts, libraries, sessions, rounds, picks, scorecards, challenges, and moderation submissions.
+- [x] Session create/read/pick/submit routes switch to authenticated Supabase persistence when configured, while preserving guest demo fallback.
 
 ## Deliberate prototype boundaries
 
@@ -37,7 +40,8 @@ This note records the first executable vertical slice from the July 31, 2026 han
 
 ## Next implementation tranche
 
-1. Replace the in-memory session repository with the SQL schema in `db/schema.sql` and add authenticated ownership.
-2. Add server-side encrypted OAuth state/token storage, callback routes, and provider feature flags.
-3. Connect manual URL resolution and library search to authenticated Spotify/YouTube adapters.
-4. Expand automated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.
+1. Apply the Supabase migration in a real project and complete Auth/provider redirect configuration.
+2. Persist provider accounts, imported library items, scorecards, and stable share/challenge records in Supabase.
+3. Connect manual URL resolution and library search to user-owned imported Spotify/YouTube libraries.
+4. Finish EP Builder and Album Builder end-to-end paths, including save/resume and final reorder.
+5. Expand automated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.
