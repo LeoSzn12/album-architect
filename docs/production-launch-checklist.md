@@ -40,6 +40,7 @@ npm test
 npm run lint
 npm run build
 BASE_URL=https://<production-origin> npm run test:e2e
+curl --fail https://<production-origin>/api/health
 ```
 
 Then manually verify:
@@ -53,6 +54,7 @@ Then manually verify:
 7. Expire/revoke a provider token and confirm reconnect or demo mode preserves the game.
 8. Disconnect Spotify/YouTube and verify the encrypted provider account and cookie are removed.
 9. Delete a test account and verify cascading user-owned data removal, Auth sign-out, and re-registration.
+10. Confirm `/api/health` reports the expected build SHA and configuration checks without exposing secrets.
 
 ## 4. Rollback
 

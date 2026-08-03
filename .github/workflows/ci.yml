@@ -41,6 +41,9 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Production dependency audit
+        run: npm audit --omit=dev
+
   e2e:
     name: Playwright smoke
     runs-on: ubuntu-latest
@@ -79,3 +82,13 @@ jobs:
           BASE_URL: http://127.0.0.1:3000
           PWCLI: ${{ github.workspace }}/scripts/playwright-cli.sh
         run: npm run test:e2e
+
+      - name: Check production health contract
+        run: |
+          curl --fail --silent http://127.0.0.1:3000/api/health | tee /tmp/trackdraft-health.json
+          grep -q '"status":"ok"' /tmp/trackdraft-health.json
+
+      - name: Run browser QA gap flow
+        env:
+          BASE_URL: http://127.0.0.1:3000
+        run: npm run test:e2e:gaps

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "test:e2e": "tests/e2e/trackdraft-smoke.sh",
+    "test:e2e:gaps": "tests/e2e/trackdraft-qa-gaps.sh",
     "test:simulation": "node --experimental-strip-types --test tests/simulation.test.ts",
     "report:catalog": "node --experimental-strip-types scripts/catalogReport.ts",
     "report:catalog-html": "node --experimental-strip-types scripts/catalogHtmlReport.ts"
