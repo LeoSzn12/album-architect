@@ -45,7 +45,7 @@ trap cleanup EXIT
 
 echo "[1/5] home surface"
 pw open "$BASE_URL"
-assert_text "Fantasy Music Draft Game"
+assert_text "Curate the project. Defend the sequence."
 assert_text "Start Draft"
 
 echo "[2/5] setup, library, and profile surfaces"
@@ -85,7 +85,7 @@ assert_text "Tune the room before you draft"
 run_code "(() => { const mode = [...document.querySelectorAll('button')].find((button) => button.textContent?.includes('Draft Mode (7)')); if (!mode) throw new Error('mode selector missing'); mode.focus(); if (document.activeElement !== mode) throw new Error('mode selector did not receive focus'); return true; })()"
 pw press Enter
 sleep 1
-assert_text "Choose Format & Difficulty"
+assert_text "Choose Build Format & Difficulty"
 run_code "(() => { const dialog = document.querySelector('[role=\"dialog\"]'); if (!dialog) throw new Error('mode dialog missing'); const focusables = [...dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])')]; if (focusables.length < 2) throw new Error('dialog has too few focusable controls'); focusables.at(-1).focus(); return true; })()"
 pw press Tab
 run_code "(() => { const dialog = document.querySelector('[role=\"dialog\"]'); const first = dialog?.querySelector('button'); if (document.activeElement !== first) throw new Error('Tab did not wrap to the first modal control'); return true; })()"

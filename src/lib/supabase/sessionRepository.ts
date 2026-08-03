@@ -244,3 +244,44 @@ export async function submitPersistentSession(id: string): Promise<PersistentRes
   if (error || !data) return { configured: true, data: null, error: error?.message ?? 'Session was not submitted.' };
   return { configured: true, ...(await hydrateSession(context.client, data as SessionRow, context.userId)) };
 }
+
+export async function reorderPersistentSession(id: string, positions: number[]): Promise<PersistentResult<GameSessionRecord>> {
+  const context = await authenticatedClient();
+  if (!context.configured) return { configured: false, data: null };
+  if (!context.userId || !context.client) return { configured: true, data: null, unauthenticated: true };
+
+  const session = await fetchOwnedSession(context.client, id, context.userId);
+  if (session.error) return { configured: true, data: null, error: session.error };
+  if (!session.row) return { configured: true, data: null };
+  if (session.row.status !== 'drafting') return { configured: true, data: null, error: 'Session is not accepting reorder changes.' };
+
+  const { data: rows, error: picksError } = await context.client
+    .from('picks')
+    .select('id, position, slot_key, song_id, selection_source, locked_at')
+    .eq('session_id', id)
+    .eq('creator_id', context.userId)
+    .order('position', { ascending: true });
+  if (picksError) return { configured: true, data: null, error: picksError.message };
+
+  const picks = (rows ?? []) as PickRow[];
+  if (positions.length !== picks.length || new Set(positions).size !== positions.length || positions.some((position) => !picks.some((pick) => pick.position === position))) {
+    return { configured: true, data: null, error: 'Invalid reorder positions.' };
+  }
+
+  // Move to temporary negative positions first so the unique (session_id, position)
+  // constraint cannot reject a valid swap.
+  for (const [index, pick] of picks.entries()) {
+    const { error } = await context.client.from('picks').update({ position: -(index + 1) }).eq('id', pick.id).eq('creator_id', context.userId);
+    if (error) return { configured: true, data: null, error: error.message };
+  }
+  for (const [index, originalPosition] of positions.entries()) {
+    const pick = picks.find((candidate) => candidate.position === originalPosition);
+    if (!pick) return { configured: true, data: null, error: 'Invalid reorder positions.' };
+    const { error } = await context.client.from('picks').update({ position: index + 1 }).eq('id', pick.id).eq('creator_id', context.userId);
+    if (error) return { configured: true, data: null, error: error.message };
+  }
+
+  const updated = await fetchOwnedSession(context.client, id, context.userId);
+  if (updated.error || !updated.row) return { configured: true, data: null, error: updated.error ?? 'Session not found.' };
+  return { configured: true, ...(await hydrateSession(context.client, updated.row, context.userId)) };
+}

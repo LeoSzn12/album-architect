@@ -118,6 +118,9 @@ With the app running, execute `npm run test:e2e`. The CLI smoke flow covers land
 
 The easiest deployment path is the [Vercel Platform](https://vercel.com/new). Provider credentials are not required for demo mode. Optional AI narration uses `GEMINI_API_KEY`; without it, deterministic scoring remains fully functional. Set `NEXT_PUBLIC_SITE_URL` in production so metadata and share URLs use the deployed origin.
 
+For the credentialed launch sequence, use the [production launch checklist](docs/production-launch-checklist.md).
+The current delivery status and remaining work are tracked in the [remaining-work execution plan](docs/remaining-work-plan.md).
+
 ## License
 
 Personal/educational project. Song metadata and YouTube/Spotify links belong to their respective rights holders — this app only links to official streams.

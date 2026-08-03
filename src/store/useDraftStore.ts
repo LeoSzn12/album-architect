@@ -25,6 +25,34 @@ import { generateEraSequence } from '@/lib/eraSequence';
 import { computeMonopolyReport, computeEnergyMetrics } from '@/lib/draftMetrics';
 import { reorderTracklist } from '@/lib/tracklistOrder';
 
+let sessionRequestCounter = 0;
+let sessionWriteQueue = Promise.resolve();
+
+function enqueueSessionWrite(work: () => Promise<void>) {
+  sessionWriteQueue = sessionWriteQueue.then(work, work);
+  return sessionWriteQueue;
+}
+
+async function createGameSession(input: { mode: GameMode; trackCount: number; creatorAlias: string; seed: string | null }) {
+  const response = await fetch('/api/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) return null;
+  const body = await response.json().catch(() => null) as { session?: { id?: string } } | null;
+  return typeof body?.session?.id === 'string' ? body.session.id : null;
+}
+
+async function saveGameSessionPick(sessionId: string, track: DraftedTrack) {
+  const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/picks`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ position: track.roundDrafted, slotId: track.slot.id, song: track.song, selectionSource: 'recommendation' }),
+  });
+  if (!response.ok) throw new Error(`pick persistence returned ${response.status}`);
+}
+
 /**
  * Current persisted-state schema version. Bump on any breaking shape change.
  *   v1 → v2: added rerollCount; removed slots & currentOptions from partialize.
@@ -32,7 +60,7 @@ import { reorderTracklist } from '@/lib/tracklistOrder';
  *             (pacing/synergy/cohesion/starPower → slotFit/albumFlow/cohesion/impact).
  *   v3 → v4: added explicit Draft opponent state and transparent scorecard fields.
  */
-const PERSIST_VERSION = 4;
+const PERSIST_VERSION = 5;
 
 interface DraftStoreState {
   gameMode: GameMode;
@@ -66,6 +94,7 @@ interface DraftStoreState {
   versusMatchup: VersusMatchup | null;
   opponentDraftedTracks: DraftedTrack[];
   lastOpponentReveal: OpponentReveal | null;
+  sessionId: string | null;
 
   // Actions
   setGameMode: (mode: GameMode) => void;
@@ -92,6 +121,7 @@ interface DraftStoreState {
   clearLeaderboard: () => void;
   setVersusMatchup: (matchup: VersusMatchup | null) => void;
   reorderDraftedTracks: (fromIndex: number, toIndex: number) => void;
+  resumePersistedSession: () => Promise<void>;
 }
 
 const EMPTY_MONOPOLY: MonopolyReport = {
@@ -143,6 +173,7 @@ export const useDraftStore = create<DraftStoreState>()(
       versusMatchup: null,
       opponentDraftedTracks: [],
       lastOpponentReveal: null,
+      sessionId: null,
 
       fetchOptions: (slotId: SlotId, era: EraFilter, seed: string | null, rerollIndex: number = 0) => {
         const { draftedTracks, recentlyShownSongIds, recentlyShownArtists, soloDraftNonce } = get();
@@ -201,6 +232,7 @@ export const useDraftStore = create<DraftStoreState>()(
         diff?: DifficultyTier,
         seed?: string | null
       ) => {
+        const sessionRequestId = ++sessionRequestCounter;
         const newMode = mode ?? get().gameMode;
         const newEra  = era  ?? get().selectedEra;
         const newDiff = diff ?? get().difficulty;
@@ -252,7 +284,19 @@ export const useDraftStore = create<DraftStoreState>()(
           isPlayerModalOpen: false,
           opponentDraftedTracks: [],
           lastOpponentReveal: null,
+          sessionId: null,
         });
+
+        void createGameSession({
+          mode: newMode,
+          trackCount: slots.length,
+          creatorAlias: get().playerAlias,
+          seed: newSeed,
+        }).then(async (sessionId) => {
+          if (!sessionId || sessionRequestId !== sessionRequestCounter) return;
+          set({ sessionId });
+          for (const track of get().draftedTracks) await saveGameSessionPick(sessionId, track);
+        }).catch((error) => console.warn('Session persistence unavailable:', error));
       },
 
       draftSong: (song: Song, isWildcard = false) => {
@@ -316,6 +360,9 @@ export const useDraftStore = create<DraftStoreState>()(
             ? { slot: currentSlot, song: opponentSong, reason: 'Selected from the same pool for slot fit, project balance, and future variety.', roundIndex: currentRoundIndex }
             : null,
         });
+
+        const sessionId = get().sessionId;
+        if (sessionId) void enqueueSessionWrite(() => saveGameSessionPick(sessionId, newDraftedTrack)).catch((error) => console.warn('Pick persistence unavailable:', error));
       },
 
       undoLastPick: () => {
@@ -537,6 +584,14 @@ export const useDraftStore = create<DraftStoreState>()(
           }),
         }).catch((persistError) => console.warn('Scorecard persistence unavailable:', persistError));
 
+        const sessionId = get().sessionId;
+        if (sessionId) {
+          void enqueueSessionWrite(() => fetch(`/api/sessions/${encodeURIComponent(sessionId)}/submit`, { method: 'POST' }).then((response) => {
+            if (!response.ok) throw new Error(`submit persistence returned ${response.status}`);
+          }))
+            .catch((persistError) => console.warn('Session submit persistence unavailable:', persistError));
+        }
+
         set({
           evaluationResult: result,
           opponentEvaluationResult:
@@ -579,12 +634,59 @@ export const useDraftStore = create<DraftStoreState>()(
       reorderDraftedTracks: (fromIndex: number, toIndex: number) => {
         const { draftedTracks } = get();
         if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= draftedTracks.length || toIndex >= draftedTracks.length) return;
-        const reordered = reorderTracklist(draftedTracks, fromIndex, toIndex);
+        const reordered = reorderTracklist(draftedTracks, fromIndex, toIndex)
+          .map((track, index) => ({ ...track, roundDrafted: index + 1 }));
         set({
           draftedTracks: reordered,
           monopolyReport: computeMonopolyReport(reordered),
           energyMetrics: computeEnergyMetrics(reordered),
           evaluationResult: null,
+        });
+
+        const sessionId = get().sessionId;
+        if (sessionId) {
+          void enqueueSessionWrite(() => fetch(`/api/sessions/${encodeURIComponent(sessionId)}/reorder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ positions: reordered.map((track) => track.roundDrafted) }),
+          }).then((response) => {
+            if (!response.ok) throw new Error(`reorder persistence returned ${response.status}`);
+          })).catch((persistError) => console.warn('Reorder persistence unavailable:', persistError));
+        }
+      },
+
+      resumePersistedSession: async () => {
+        const sessionId = get().sessionId;
+        if (!sessionId) return;
+        const response = await fetch(`/api/sessions?id=${encodeURIComponent(sessionId)}`).catch(() => null);
+        if (!response?.ok) return;
+        const body = await response.json().catch(() => null) as { session?: { mode?: GameMode; seed?: string | null; status?: string; picks?: Array<{ position: number; slotId: string; song: Song }> } } | null;
+        const session = body?.session;
+        if (!session || session.status === 'submitted' || !Array.isArray(session.picks) || (session.mode !== 'draft' && session.mode !== 'ep' && session.mode !== 'album')) return;
+
+        const nextSlots = session.mode === 'draft' ? DRAFT_SLOTS : session.mode === 'ep' ? EP_SLOTS : ALBUM_SLOTS;
+        const restoredSeed = session.seed ?? get().draftSeed;
+        const restoredEraSequence = generateEraSequence(nextSlots, restoredSeed);
+        const restoredTracks = session.picks
+          .slice()
+          .sort((a, b) => a.position - b.position)
+          .flatMap((pick) => {
+            const slot = nextSlots[pick.position - 1] ?? nextSlots.find((candidate) => candidate.id === pick.slotId);
+            return slot && pick.song ? [{ slot, song: pick.song, roundDrafted: pick.position, isWildcard: false }] : [];
+          });
+        const nextIndex = restoredTracks.length;
+        set({
+          gameMode: session.mode,
+          draftSeed: restoredSeed,
+          slots: nextSlots,
+          eraSequence: restoredEraSequence,
+          draftedTracks: restoredTracks,
+          currentRoundIndex: nextIndex,
+          currentOptions: nextIndex < nextSlots.length
+            ? getOptionsForSlot(nextSlots[nextIndex].id, session.mode === 'draft' ? 5 : 4, restoredEraSequence[nextIndex] ?? 'all', restoredSeed)
+            : [],
+          monopolyReport: computeMonopolyReport(restoredTracks),
+          energyMetrics: computeEnergyMetrics(restoredTracks),
         });
       },
     }),
@@ -641,6 +743,8 @@ export const useDraftStore = create<DraftStoreState>()(
           persisted.lastOpponentReveal = null;
         }
 
+        if (version < 5) persisted.sessionId = null;
+
         return persisted;
       },
       /**
@@ -673,6 +777,7 @@ export const useDraftStore = create<DraftStoreState>()(
         versusMatchup: state.versusMatchup,
         opponentDraftedTracks: state.opponentDraftedTracks,
         lastOpponentReveal: state.lastOpponentReveal,
+        sessionId: state.sessionId,
       }),
     }
   )

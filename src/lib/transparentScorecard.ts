@@ -31,14 +31,14 @@ export function buildTransparentScorecard(
   const slotFit = draftedTracks.length
     ? draftedTracks.reduce((sum, track) => {
         const delta = Math.abs(track.song.energy - track.slot.targetEnergy.ideal);
-        const tagBonus = track.song.slots.includes(track.slot.id) ? 12 : 0;
+        const tagBonus = (track.song.slots ?? []).includes(track.slot.id) ? 12 : 0;
         return sum + Math.max(0, 100 - delta * 1.35 + tagBonus);
       }, 0) / count
     : 0;
 
   const uniqueArtists = new Set(draftedTracks.map((track) => track.song.artist)).size;
   const uniqueGenres = new Set(draftedTracks.map((track) => track.song.genre)).size;
-  const featureCount = draftedTracks.filter((track) => track.song.featuredArtists.length > 0).length;
+  const featureCount = draftedTracks.filter((track) => (track.song.featuredArtists ?? []).length > 0).length;
   const peakIndex = draftedTracks.reduce(
     (best, track, index, list) => (track.song.energy > (list[best]?.song.energy ?? -1) ? index : best),
     0
@@ -51,12 +51,12 @@ export function buildTransparentScorecard(
   const avgImpact = draftedTracks.length
     ? draftedTracks.reduce((sum, track) => sum + track.song.impact, 0) / draftedTracks.length
     : 0;
-  const riskCount = draftedTracks.filter((track) => track.song.archetypes.includes('experimental') || track.song.archetypes.includes('value-pick')).length;
+  const riskCount = draftedTracks.filter((track) => (track.song.archetypes ?? []).includes('experimental') || (track.song.archetypes ?? []).includes('value-pick')).length;
   const highImpactCount = draftedTracks.filter((track) => track.song.impact >= 85).length;
 
   const slot = evidence(
     slotFit,
-    `${draftedTracks.filter((track) => track.song.slots.includes(track.slot.id)).length}/${draftedTracks.length || 0} picks carry an explicit slot tag.`,
+    `${draftedTracks.filter((track) => (track.song.slots ?? []).includes(track.slot.id)).length}/${draftedTracks.length || 0} picks carry an explicit slot tag.`,
     `Average energy distance from the assigned slot target is ${draftedTracks.length ? Math.round(draftedTracks.reduce((sum, track) => sum + Math.abs(track.song.energy - track.slot.targetEnergy.ideal), 0) / count) : 0} points.`
   );
   const flow = evidence(

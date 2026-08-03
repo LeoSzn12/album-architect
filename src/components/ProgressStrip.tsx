@@ -20,12 +20,25 @@ export const ProgressStrip: React.FC = () => {
     evaluationResult,
     eraSequence,
     difficulty,
+    gameMode,
+    sessionId,
   } = useDraftStore();
 
   const isCompleted = currentRoundIndex >= slots.length;
   const tracksDrafted = draftedTracks.length;
   const total = slots.length;
-  const progressPct = Math.round((tracksDrafted / total) * 100);
+  const progressPct = total ? Math.round((tracksDrafted / total) * 100) : 0;
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const progressLabel = gameMode === 'draft' ? 'Round' : `${projectLabel} Track`;
+
+  const getAlbumAct = (trackNumber: number) => {
+    if (trackNumber <= Math.min(6, total)) return { label: 'Act I', range: `1–${Math.min(6, total)}` };
+    if (trackNumber <= Math.min(10, total)) return { label: 'Act II', range: `${Math.min(6, total) + 1}–${Math.min(10, total)}` };
+    return { label: 'Act III', range: `${Math.min(10, total) + 1}–${total}` };
+  };
+  const currentAct = gameMode === 'album' && total > 0
+    ? getAlbumAct(Math.min(currentRoundIndex + 1, total))
+    : null;
 
   // Provisional grade based on latest available score
   const provisionalScore = evaluationResult?.overallScore ?? null;
@@ -49,9 +62,9 @@ export const ProgressStrip: React.FC = () => {
       <div className="flex items-center gap-2">
         <Disc3 className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
         <span className="text-gray-200">
-          Track{' '}
-          <span className="font-extrabold text-white">
-            {isCompleted ? total : tracksDrafted + 1}
+            {progressLabel}{' '}
+            <span className="font-extrabold text-white">
+              {isCompleted ? total : tracksDrafted + 1}
           </span>
           {' '}of{' '}
           <span className="font-extrabold text-white">{total}</span>
@@ -69,6 +82,18 @@ export const ProgressStrip: React.FC = () => {
       {!isCompleted && eraText && (
         <div className="px-2 py-0.5 bg-purple-950/80 border border-purple-800/60 rounded-lg text-purple-300 font-bold text-[10px] uppercase tracking-wider">
           {eraText}
+        </div>
+      )}
+
+      {currentAct && !isCompleted && (
+        <div className="px-2 py-0.5 bg-pink-950/60 border border-pink-800/60 rounded-lg text-pink-300 font-bold text-[10px] uppercase tracking-wider">
+          {currentAct.label} · tracks {currentAct.range}
+        </div>
+      )}
+
+      {gameMode !== 'draft' && (
+        <div className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider" title="Your current builder is saved in local browser storage">
+          {sessionId ? 'Session saved' : 'Saved locally'}
         </div>
       )}
 

@@ -35,22 +35,27 @@ export const Header: React.FC<HeaderProps> = ({
     toggleAudio,
     startNewDraft,
     draftedTracks,
+    sessionId,
   } = useDraftStore();
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const isCompleted = currentRoundIndex >= slots.length;
   const activeSlot = slots[currentRoundIndex];
+  const formatLabel = gameMode === 'draft' ? 'Draft Mode' : gameMode === 'ep' ? 'EP Builder' : 'Album Builder';
+  const progressLabel = gameMode === 'draft' ? 'Round' : `${gameMode === 'ep' ? 'EP' : 'Album'} Track`;
+  const completionLabel = gameMode === 'draft' ? 'Draft Complete' : `${gameMode === 'ep' ? 'EP' : 'Album'} Ready for Review`;
+  const saveLabel = sessionId ? 'Session saved · resume ready' : 'Saved locally · resume ready';
 
   return (
     <>
-      <header className="w-full max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-4 sm:px-6 mb-6 border-b border-gray-800/80 bg-gray-950/60 backdrop-blur-md sticky top-0 z-40 rounded-b-2xl shadow-2xl">
-        <div className="flex items-center gap-3 mb-3 sm:mb-0">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-900/40 border border-purple-400/30">
+      <header className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 py-3 px-4 sm:px-6 mb-8 border border-gray-800/80 bg-gray-950/80 backdrop-blur-md sticky top-3 z-40 rounded-2xl shadow-2xl shadow-black/20">
+        <div className="flex items-center gap-3">
+          <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-900/30 border border-purple-300/30">
             <Disc3 className="w-6 h-6 text-white animate-spin-slow" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-wider bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm">
+            <h1 className="text-2xl font-extrabold tracking-[0.16em] bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm">
               TRACKDRAFT
             </h1>
             <p className="text-[11px] text-gray-400 font-medium tracking-wide">
@@ -59,7 +64,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap justify-center">
+        <div className="flex items-center gap-2 flex-wrap justify-center lg:justify-end max-w-full">
+          <nav aria-label="Workspace" className="flex items-center gap-2">
           <button onClick={onOpenSetup} onMouseEnter={() => playHoverSound(audioEnabled)} className="px-2.5 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Open session setup">
             <Settings2 className="w-3.5 h-3.5 text-cyan-300" /><span className="hidden md:inline">Setup</span>
           </button>
@@ -69,15 +75,20 @@ export const Header: React.FC<HeaderProps> = ({
           <button onClick={onOpenProfile} onMouseEnter={() => playHoverSound(audioEnabled)} className="px-2.5 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Open curator profile">
             <UserRound className="w-3.5 h-3.5 text-pink-300" /><span className="hidden md:inline">Profile</span>
           </button>
+          </nav>
+
+          <span className="hidden lg:block h-7 w-px bg-gray-800" aria-hidden="true" />
+
+          <div aria-label="Session status" className="flex items-center gap-2 flex-wrap justify-center">
           {/* Round Progress Badge */}
           <div className="px-3 py-1.5 rounded-lg bg-gray-900/90 border border-gray-800 flex items-center gap-2 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping" />
             <span className="text-gray-300">
               {isCompleted ? (
-                <span className="text-emerald-400 font-bold">Draft Complete</span>
+                <span className="text-emerald-400 font-bold">{completionLabel}</span>
               ) : (
                 <>
-                  Round <span className="text-purple-400 font-bold">{currentRoundIndex + 1}</span> / {slots.length}:{' '}
+                  {progressLabel} <span className="text-purple-400 font-bold">{currentRoundIndex + 1}</span> / {slots.length}:{' '}
                   <span className="text-gray-200">{activeSlot?.name}</span>
                 </>
               )}
@@ -95,10 +106,21 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sliders className="w-3.5 h-3.5" />
             <span>
-              {gameMode === 'draft' ? 'Draft Mode (7)' : gameMode === 'ep' ? 'EP Builder (7)' : 'Album Builder (14)'}
+              {formatLabel} ({slots.length})
               {difficulty !== 'standard' && ` • ${difficulty.toUpperCase()}`}
             </span>
           </button>
+
+          {gameMode !== 'draft' && draftedTracks.length > 0 && !isCompleted && (
+            <span className="px-3 py-1.5 rounded-lg border border-emerald-800/70 bg-emerald-950/30 text-emerald-300 text-xs font-bold" title="Return later to resume this builder">
+              {saveLabel}
+            </span>
+          )}
+          </div>
+
+          <span className="hidden lg:block h-7 w-px bg-gray-800" aria-hidden="true" />
+
+          <div aria-label="Session actions" className="flex items-center gap-2 flex-wrap justify-center">
 
           {/* Live Tracklist Counter */}
           <button
@@ -154,7 +176,7 @@ export const Header: React.FC<HeaderProps> = ({
               playHoverSound(audioEnabled);
               setIsResetConfirmOpen(true);
             }}
-            title="Restart Draft"
+            title={`Restart ${formatLabel}`}
             className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-400 hover:text-white transition cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
@@ -172,14 +194,15 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
+          </div>
         </div>
       </header>
 
       <ConfirmModal
         isOpen={isResetConfirmOpen}
-        title="Restart Draft Session?"
-        message="Your current draft tracklist will be reset. This action cannot be undone."
-        confirmText="Restart Draft"
+        title={`Restart ${formatLabel} Session?`}
+        message={`Your current ${formatLabel.toLowerCase()} tracklist will be reset. This action cannot be undone.`}
+        confirmText={`Restart ${formatLabel}`}
         isDestructive={true}
         onConfirm={() => {
           setIsResetConfirmOpen(false);

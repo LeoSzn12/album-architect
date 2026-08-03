@@ -10,6 +10,7 @@ import {
 } from '@/types/draft';
 import { generateFallbackEvaluation } from '@/lib/fallbackEvaluator';
 import { runBestPossibleOptimizer } from '@/lib/bestPossibleOptimizer';
+import { rateLimit, rateLimitHeaders, requestRateLimitKey } from '@/lib/rateLimit';
 
 /**
  * Minimal runtime shape guard. Throws on malformed payloads before they can
@@ -34,6 +35,8 @@ function isValidPayload(
 
 export async function POST(req: NextRequest) {
   try {
+    const limiter = rateLimit(requestRateLimitKey(req, 'critic-evaluate'), { limit: 12, windowMs: 60_000 });
+    if (!limiter.allowed) return NextResponse.json({ error: 'Evaluation is temporarily rate limited. Please retry shortly.' }, { status: 429, headers: rateLimitHeaders(limiter) });
     const body = await req.json();
     const {
       gameMode,

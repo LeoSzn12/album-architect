@@ -55,6 +55,23 @@ export function saveSessionPick(id: string, pick: SessionPick) {
   return updated;
 }
 
+export function reorderSessionPicks(id: string, positions: number[]) {
+  const session = sessions.get(id);
+  if (!session || session.status !== 'drafting') return null;
+  if (positions.length !== session.picks.length || new Set(positions).size !== positions.length) return null;
+
+  const byPosition = new Map(session.picks.map((pick) => [pick.position, pick]));
+  const reordered = positions.flatMap((position, index) => {
+    const pick = byPosition.get(position);
+    return pick ? [{ ...pick, position: index + 1 }] : [];
+  });
+  if (reordered.length !== session.picks.length) return null;
+
+  const updated = { ...session, picks: reordered, updatedAt: new Date().toISOString() };
+  sessions.set(id, updated);
+  return updated;
+}
+
 export function submitSession(id: string) {
   const session = sessions.get(id);
   if (!session || session.picks.length !== session.trackCount) return null;
