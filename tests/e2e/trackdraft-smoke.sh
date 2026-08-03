@@ -70,10 +70,32 @@ echo "[3/5] share page degradation"
 pw open "$BASE_URL/share"
 assert_text "This share link is missing its result data."
 
-echo "[4/5] provider capability discovery"
+echo "[4/7] provider capability discovery"
 run_code "(async () => { const res = await fetch('/api/providers'); const body = await res.json(); if (res.status !== 200) throw new Error('provider capability endpoint returned ' + res.status); if (!body.providers.some((provider) => provider.id === 'demo')) throw new Error('demo provider missing'); if (!body.providers.some((provider) => provider.id === 'spotify' && provider.capabilities.search.enabled === false)) throw new Error('spotify degradation missing'); return true; })()"
 
-echo "[5/5] disabled provider search remains graceful"
+echo "[5/7] disabled provider search remains graceful"
 run_code "fetch('/api/providers/search?provider=spotify&q=Kanye').then((response) => { if (response.status !== 503) throw new Error('expected disabled provider status 503, got ' + response.status); return true; })"
+
+echo "[6/7] keyboard focus and modal recovery"
+pw open "$BASE_URL"
+run_code "(() => { const setup = document.querySelector('button[title=\"Open session setup\"]'); if (!setup) throw new Error('setup button missing'); setup.focus(); if (document.activeElement !== setup) throw new Error('setup button did not receive focus'); return true; })()"
+pw press Enter
+sleep 1
+assert_text "Tune the room before you draft"
+run_code "(() => { const mode = [...document.querySelectorAll('button')].find((button) => button.textContent?.includes('Draft Mode (7)')); if (!mode) throw new Error('mode selector missing'); mode.focus(); if (document.activeElement !== mode) throw new Error('mode selector did not receive focus'); return true; })()"
+pw press Enter
+sleep 1
+assert_text "Choose Format & Difficulty"
+run_code "(() => { const dialog = document.querySelector('[role=\"dialog\"]'); if (!dialog) throw new Error('mode dialog missing'); const focusables = [...dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])')]; if (focusables.length < 2) throw new Error('dialog has too few focusable controls'); focusables.at(-1).focus(); return true; })()"
+pw press Tab
+run_code "(() => { const dialog = document.querySelector('[role=\"dialog\"]'); const first = dialog?.querySelector('button'); if (document.activeElement !== first) throw new Error('Tab did not wrap to the first modal control'); return true; })()"
+pw press Escape
+sleep 1
+run_code "if (document.querySelector('[role=\"dialog\"]')) throw new Error('Escape did not close the modal'); if (!document.activeElement?.textContent?.includes('Draft Mode (7)')) throw new Error('focus was not restored to the opener'); true"
+
+echo "[7/7] mobile viewport has no horizontal overflow"
+pw resize 390 844
+run_code "if (window.innerWidth !== 390) throw new Error('mobile viewport was not applied')"
+run_code "if (document.documentElement.scrollWidth > document.documentElement.clientWidth + 1) throw new Error('mobile page has horizontal overflow')"
 
 echo "TrackDraft E2E smoke checks passed."

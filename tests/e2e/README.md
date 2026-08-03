@@ -29,5 +29,7 @@ The smoke flow covers:
 - missing share-link degradation;
 - provider capability discovery;
 - disabled Spotify search returning a graceful `503`.
+- keyboard focus entering a modal, focus-trap wrapping, and Escape focus restoration;
+- a 390×844 mobile viewport with no horizontal overflow.
 
 The script uses a per-process Playwright session and closes it on exit. It does not create screenshots, traces, or other repository artifacts by default.
