@@ -64,7 +64,7 @@ jobs:
         run: |
           npm run dev > /tmp/trackdraft-vinext.log 2>&1 &
           echo $! > /tmp/trackdraft-vinext.pid
-          for attempt in {1..60}; do
+          for attempt in {1..180}; do
             curl --fail --silent http://127.0.0.1:3000/ > /dev/null && exit 0
             sleep 1
           done
