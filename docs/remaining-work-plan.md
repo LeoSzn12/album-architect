@@ -12,6 +12,8 @@ Updated 2026-08-03 after re-auditing the original handoff documents.
 - UI/UX foundation refresh covering typography, focus states, reduced-motion behavior, landing hierarchy, and responsive navigation grouping.
 - In-process burst protection for high-cost evaluation and provider search/import/export routes, with explicit `429` and `Retry-After` responses.
 - Gap-focused full-mode browser suite stabilized around the final evaluation transition and passing in local production mode.
+- Account deletion and provider disconnect routes added behind server-only Supabase service-role configuration.
+- Challenge state transitions now reject invalid orderings and the migration allows a signed-in recipient to accept an open challenge safely.
 
 ## Remaining work
 
@@ -20,13 +22,13 @@ Updated 2026-08-03 after re-auditing the original handoff documents.
 1. Apply the Supabase migration to the real project.
 2. Configure Supabase Auth Site URL and callback redirects.
 3. Register Spotify and YouTube callback URLs and add production secrets.
-4. Verify RLS and authenticated session persistence against the real database.
+4. Verify RLS, authenticated session persistence, provider disconnect, and account deletion against the real database.
 
 ### P1 — live provider and social validation
 
 1. Run Spotify OAuth, search, import, resolve, export, expiry, and reconnect tests.
 2. Run YouTube OAuth, search, import, resolve, export, quota, and unavailable-track tests.
-3. Verify durable share, challenge acceptance, completion, and rematch flows with signed-in users.
+3. Verify durable share, challenge acceptance, completion, invalid-transition rejection, and rematch flows with signed-in users.
 
 ### P1 — browser QA stabilization
 

@@ -4,6 +4,7 @@ import { DRAFT_SLOTS } from '../src/data/slots.ts';
 import { generateCandidatePool } from '../src/lib/candidateSelector.ts';
 import { generateEraSequence } from '../src/lib/eraSequence.ts';
 import { generateChallengeSeed } from '../src/lib/seededRandom.ts';
+import { canTransitionChallenge } from '../src/lib/challengeTransitions.ts';
 import { decodeSharePayload, encodeSharePayload, type SharePayload } from '../src/lib/sharePayload.ts';
 
 test('challenge seeds are shareable, constrained, and deterministic across every round', () => {
@@ -43,6 +44,14 @@ test('challenge seeds are shareable, constrained, and deterministic across every
   } finally {
     Math.random = originalRandom;
   }
+});
+
+test('durable challenge transitions only move forward through acceptance and completion', () => {
+  assert.equal(canTransitionChallenge('open', 'accepted'), true);
+  assert.equal(canTransitionChallenge('open', 'declined'), true);
+  assert.equal(canTransitionChallenge('accepted', 'completed'), true);
+  assert.equal(canTransitionChallenge('open', 'completed'), false);
+  assert.equal(canTransitionChallenge('completed', 'accepted'), false);
 });
 
 test('result shares preserve challenge and opponent context without exposing internal state', () => {

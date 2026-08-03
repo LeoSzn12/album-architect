@@ -19,6 +19,7 @@ Set these values in the production deployment environment:
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key)
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only; required for permanent account deletion)
 - `PROVIDER_SESSION_SECRET` (random, at least 32 characters)
 - `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`
 - `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `YOUTUBE_REDIRECT_URI`
@@ -50,6 +51,8 @@ Then manually verify:
 5. Create a share link, challenge, acceptance, completion, and rematch.
 6. Connect Spotify and YouTube, search, import, resolve a URL, and export a private playlist.
 7. Expire/revoke a provider token and confirm reconnect or demo mode preserves the game.
+8. Disconnect Spotify/YouTube and verify the encrypted provider account and cookie are removed.
+9. Delete a test account and verify cascading user-owned data removal, Auth sign-out, and re-registration.
 
 ## 4. Rollback
 

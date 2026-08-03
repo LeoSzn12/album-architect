@@ -1,5 +1,6 @@
 import type { GameMode } from '@/types/draft';
-import { createSupabaseServerClient } from './server';
+import { canTransitionChallenge, type ChallengeStatus } from '../challengeTransitions.ts';
+import { createSupabaseServerClient } from './server.ts';
 
 function challengeCode() {
   return crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
@@ -12,6 +13,8 @@ async function context() {
   const userId = !error && data?.claims?.sub ? String(data.claims.sub) : null;
   return userId ? { client, userId } : null;
 }
+
+export { canTransitionChallenge } from '../challengeTransitions.ts';
 
 export async function createChallenge(input: {
   mode: GameMode;
@@ -76,11 +79,15 @@ export async function getChallenge(code: string) {
 export async function updateChallenge(code: string, status: 'accepted' | 'declined' | 'completed') {
   const active = await context();
   if (!active) return { configured: false as const, data: null };
+  const existing = await active.client.from('challenges').select('id, status, recipient_id').eq('challenge_code', code).maybeSingle();
+  if (existing.error || !existing.data) return { configured: true as const, data: null, error: existing.error?.message ?? 'Challenge not found.' };
+  if (!canTransitionChallenge(existing.data.status as ChallengeStatus, status)) return { configured: true as const, data: null, error: `Challenge cannot move from ${existing.data.status} to ${status}.` };
+  if (status === 'accepted' && existing.data.recipient_id) return { configured: true as const, data: null, error: 'Challenge has already been accepted.' };
   const update = status === 'accepted'
     ? { status, recipient_id: active.userId, accepted_by: active.userId }
     : status === 'completed'
       ? { status, completed_at: new Date().toISOString() }
       : { status };
-  const { data, error } = await active.client.from('challenges').update(update).eq('challenge_code', code).select('id, source_session_id, challenge_code, status, rematch_of, matchup_json, expires_at, created_at, completed_at').single();
+  const { data, error } = await active.client.from('challenges').update(update).eq('challenge_code', code).eq('status', existing.data.status).select('id, source_session_id, challenge_code, status, rematch_of, matchup_json, expires_at, created_at, completed_at').single();
   return error || !data ? { configured: true as const, data: null, error: error?.message ?? 'Challenge not found.' } : { configured: true as const, data };
 }
