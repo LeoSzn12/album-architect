@@ -55,6 +55,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     openRealSongPlayer,
     evaluateDraft,
     opponentEvaluationResult,
+    gameMode,
   } = useDraftStore();
 
   const [showCriticBoard, setShowCriticBoard] = useState(false);
@@ -97,11 +98,12 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
   }, [isEvaluating]);
 
   if (isEvaluating) {
+    const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
     return (
       <div className="w-full bg-gray-900/90 border border-purple-500/40 rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-2xl my-6 backdrop-blur-md">
         <div className="w-16 h-16 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin mb-4" />
         <h3 className="text-xl font-extrabold text-white mb-1">
-          Scoring Your Draft…
+          Scoring Your {projectLabel}…
         </h3>
         <p className="text-xs text-gray-400 max-w-sm mb-4">
           Calculating Slot Fit, Album Flow, Cohesion, and Impact. Then the A&R critics narrate.
@@ -143,6 +145,9 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     executiveSummary,
   } = evaluationResult;
 
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const reviewTitle = gameMode === 'draft' ? 'TrackDraft Match Review' : `${projectLabel} Builder Review`;
+
   const verdict = scoreToVerdict(overallScore);
   const scoreCategoryItems = [
     { label: 'Slot Fit', weight: '35%', score: subScores.slotFit, icon: Target, color: 'text-purple-300' },
@@ -164,6 +169,19 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
 
   return (
     <div className="w-full bg-gray-900/95 border border-purple-500/40 rounded-3xl p-6 sm:p-8 flex flex-col gap-6 shadow-2xl my-6 backdrop-blur-md relative overflow-hidden animate-fade-in">
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Final review complete</span>
+          <h2 className="mt-1 text-xl font-extrabold text-white">{reviewTitle}</h2>
+          <p className="mt-1 text-xs text-gray-400">
+            {draftedTracks.length} tracks reviewed in final order. This scorecard is saved in your local history.
+          </p>
+        </div>
+        <span className="self-start rounded-full border border-emerald-800/70 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 sm:self-center">
+          {projectLabel} · {draftedTracks.length} tracks
+        </span>
+      </div>
 
       {/* ── 1. Verdict Banner ── */}
       <div className={`p-6 rounded-2xl bg-gradient-to-br ${verdictGradient(overallScore)} border text-center flex flex-col items-center gap-2`}>
@@ -287,7 +305,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
       {draftedTracks.length > 0 && (
         <div>
           <h3 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">
-            Your Draft
+            Final {projectLabel} Tracklist
           </h3>
           <div className="flex flex-col gap-2">
             {draftedTracks.map((dt, i) => (
@@ -434,7 +452,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:opacity-95 text-white font-extrabold text-xs transition shadow-lg shadow-purple-900/40 flex items-center gap-2 cursor-pointer"
         >
           <Sparkles className="w-4 h-4 text-amber-300" />
-          <span>Export Playlist</span>
+          <span>Export {projectLabel} Playlist</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

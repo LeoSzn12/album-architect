@@ -35,12 +35,17 @@ export const Header: React.FC<HeaderProps> = ({
     toggleAudio,
     startNewDraft,
     draftedTracks,
+    sessionId,
   } = useDraftStore();
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const isCompleted = currentRoundIndex >= slots.length;
   const activeSlot = slots[currentRoundIndex];
+  const formatLabel = gameMode === 'draft' ? 'Draft Mode' : gameMode === 'ep' ? 'EP Builder' : 'Album Builder';
+  const progressLabel = gameMode === 'draft' ? 'Round' : `${gameMode === 'ep' ? 'EP' : 'Album'} Track`;
+  const completionLabel = gameMode === 'draft' ? 'Draft Complete' : `${gameMode === 'ep' ? 'EP' : 'Album'} Ready for Review`;
+  const saveLabel = sessionId ? 'Session saved · resume ready' : 'Saved locally · resume ready';
 
   return (
     <>
@@ -74,10 +79,10 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping" />
             <span className="text-gray-300">
               {isCompleted ? (
-                <span className="text-emerald-400 font-bold">Draft Complete</span>
+                <span className="text-emerald-400 font-bold">{completionLabel}</span>
               ) : (
                 <>
-                  Round <span className="text-purple-400 font-bold">{currentRoundIndex + 1}</span> / {slots.length}:{' '}
+                  {progressLabel} <span className="text-purple-400 font-bold">{currentRoundIndex + 1}</span> / {slots.length}:{' '}
                   <span className="text-gray-200">{activeSlot?.name}</span>
                 </>
               )}
@@ -95,10 +100,16 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sliders className="w-3.5 h-3.5" />
             <span>
-              {gameMode === 'draft' ? 'Draft Mode (7)' : gameMode === 'ep' ? 'EP Builder (7)' : 'Album Builder (14)'}
+              {formatLabel} ({slots.length})
               {difficulty !== 'standard' && ` • ${difficulty.toUpperCase()}`}
             </span>
           </button>
+
+          {gameMode !== 'draft' && draftedTracks.length > 0 && !isCompleted && (
+            <span className="px-3 py-1.5 rounded-lg border border-emerald-800/70 bg-emerald-950/30 text-emerald-300 text-xs font-bold" title="Return later to resume this builder">
+              {saveLabel}
+            </span>
+          )}
 
           {/* Live Tracklist Counter */}
           <button
@@ -154,7 +165,7 @@ export const Header: React.FC<HeaderProps> = ({
               playHoverSound(audioEnabled);
               setIsResetConfirmOpen(true);
             }}
-            title="Restart Draft"
+            title={`Restart ${formatLabel}`}
             className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-400 hover:text-white transition cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
@@ -177,9 +188,9 @@ export const Header: React.FC<HeaderProps> = ({
 
       <ConfirmModal
         isOpen={isResetConfirmOpen}
-        title="Restart Draft Session?"
-        message="Your current draft tracklist will be reset. This action cannot be undone."
-        confirmText="Restart Draft"
+        title={`Restart ${formatLabel} Session?`}
+        message={`Your current ${formatLabel.toLowerCase()} tracklist will be reset. This action cannot be undone.`}
+        confirmText={`Restart ${formatLabel}`}
         isDestructive={true}
         onConfirm={() => {
           setIsResetConfirmOpen(false);

@@ -21,7 +21,10 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
   onOpenFriendsModal,
   onScrollToLeaderboard,
 }) => {
-  const { audioEnabled } = useDraftStore();
+  const { audioEnabled, gameMode, slots } = useDraftStore();
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const isBuilder = gameMode !== 'draft';
+  const startLabel = gameMode === 'draft' ? 'Start Draft' : `Start ${projectLabel} Builder`;
 
   const handleStart = () => {
     playDraftLockSound(audioEnabled);
@@ -45,13 +48,16 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             TRACKDRAFT
           </h1>
           <p className="text-lg font-bold text-gray-300 mt-2 tracking-wide">
-          Fantasy Music Draft Game
+          {isBuilder ? `${projectLabel} Builder` : 'Fantasy Music Draft Game'}
           </p>
         </div>
 
         <p className="text-base text-gray-400 leading-relaxed max-w-lg">
-          Draft <span className="text-white font-bold">7 tracks</span> across curated slots.
-          Read the A&R logic, beat the AI, and turn your tracklist into a shareable project.
+          {isBuilder ? (
+            <>Build a <span className="text-white font-bold">{slots.length}-track {projectLabel}</span> across curated positions. Review the arc, reorder the final sequence, and submit when the project is ready.</>
+          ) : (
+            <>Draft <span className="text-white font-bold">7 tracks</span> across curated slots. Read the A&R logic, beat the AI, and turn your tracklist into a shareable project.</>
+          )}
         </p>
 
         {/* Primary CTA */}
@@ -60,7 +66,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           className="mt-2 px-10 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold text-lg rounded-2xl shadow-2xl shadow-purple-900/50 transition-all transform hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-3"
         >
           <Zap className="w-5 h-5 text-amber-300" />
-          <span>Start Draft</span>
+          <span>{startLabel}</span>
           <ChevronRight className="w-5 h-5 opacity-70" />
         </button>
       </div>
@@ -68,14 +74,16 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       {/* Rules Summary */}
       <div className="w-full max-w-2xl bg-gray-900/80 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm">
         <h2 className="text-sm font-extrabold uppercase tracking-widest text-purple-400 mb-4">
-          How to Draft
+          {isBuilder ? `How to build your ${projectLabel}` : 'How to Draft'}
         </h2>
         <ol className="flex flex-col gap-3">
           {[
             {
               num: '1',
-              title: 'Pick a track each round',
-              desc: '7 rounds. Each slot has a clear role: Intro, Lead Single, Peak, Emotional Turn, Risk, Resolution.',
+              title: isBuilder ? `Fill each ${projectLabel.toLowerCase()} position` : 'Pick a track each round',
+              desc: isBuilder
+                ? `${slots.length} positions guide the arc from opener to closer. Album Builder also marks the three acts.`
+                : '7 rounds. Each slot has a clear role: Intro, Lead Single, Peak, Emotional Turn, Risk, Resolution.',
             },
             {
               num: '2',
@@ -89,8 +97,10 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             },
             {
               num: '4',
-              title: 'Get your score',
-              desc: 'Seven weighted categories explain fit, flow, narrative, variety, energy, taste, and replay value.',
+              title: isBuilder ? 'Review, reorder, then submit' : 'Get your score',
+              desc: isBuilder
+                ? 'Your build saves locally as you go. Use the tracklist arrows to set order before the final A&R review.'
+                : 'Seven weighted categories explain fit, flow, narrative, variety, energy, taste, and replay value.',
             },
           ].map((rule) => (
             <li key={rule.num} className="flex items-start gap-4">

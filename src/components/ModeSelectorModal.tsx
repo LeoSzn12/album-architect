@@ -76,7 +76,7 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
             <span className="text-xs font-bold uppercase tracking-widest text-purple-400">
               Executive Configuration
             </span>
-            <h2 className="text-2xl font-extrabold text-white">Choose Format & Difficulty</h2>
+            <h2 className="text-2xl font-extrabold text-white">Choose Build Format & Difficulty</h2>
           </div>
           <button
             onClick={onClose}
@@ -171,14 +171,14 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
               <div className="w-10 h-10 rounded-lg bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300 mb-3 group-hover:scale-105 transition-transform">
                 <Zap className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-1">Quick EP Draft</h3>
+              <h3 className="text-xl font-bold text-white mb-1">EP Builder</h3>
               <p className="text-xs text-gray-400 leading-relaxed mb-4">
-                Fast-paced 7-round curation sprint. Perfect for honing sequencing instincts across essential positional slots.
+                Shape a focused 7-track project with a clear opener, emotional turn, climax, and replay-ready outro.
               </p>
               <ul className="space-y-1.5 text-xs text-gray-300 mb-4">
                 <li className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  <span>7 Positional Rounds</span>
+                  <span>7 track positions</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
@@ -186,7 +186,7 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
                 </li>
                 <li className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Focused 7-Track EP Evaluation</span>
+                  <span>EP-specific review and grade</span>
                 </li>
               </ul>
             </div>
@@ -197,7 +197,7 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
                   : 'bg-gray-800 text-gray-300 group-hover:bg-purple-900 group-hover:text-white'
               }`}
             >
-              Select EP Mode
+                Start EP Builder
             </button>
           </div>
 
@@ -220,14 +220,14 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
               <div className="w-10 h-10 rounded-lg bg-pink-900/50 border border-pink-500/30 flex items-center justify-center text-pink-300 mb-3 group-hover:scale-105 transition-transform">
                 <Disc className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-1">Full LP Album Draft</h3>
+              <h3 className="text-xl font-bold text-white mb-1">Album Builder</h3>
               <p className="text-xs text-gray-400 leading-relaxed mb-4">
-                Master-level 14-round marathon. Craft multi-act narratives, handle interludes, and balance fatigue over a full project.
+                Build a full 14-track, three-act album with an interlude, a second-half lift, and a deliberate closing run.
               </p>
               <ul className="space-y-1.5 text-xs text-gray-300 mb-4">
                 <li className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                  <span>14 Positional Rounds</span>
+                  <span>14 track positions across 3 acts</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-pink-400" />
@@ -235,7 +235,7 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
                 </li>
                 <li className="flex items-center gap-2">
                   <ShieldAlert className="w-3.5 h-3.5 text-pink-400" />
-                  <span>High Monopoly Risk & Fatigue Mechanics</span>
+                  <span>Act pacing, fatigue, and artist balance</span>
                 </li>
               </ul>
             </div>
@@ -246,9 +246,13 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
                   : 'bg-gray-800 text-gray-300 group-hover:bg-pink-900 group-hover:text-white'
               }`}
             >
-              Select Full LP Mode
+                Start Album Builder
             </button>
           </div>
+        </div>
+
+        <div className="rounded-xl border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 text-center text-[11px] text-emerald-200">
+          EP and Album builds save automatically on this device. Leave and return to resume the current tracklist before review.
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { test, describe } from 'node:test';
-import { clearSessionsForTests, createSession, getSession, saveSessionPick, submitSession } from '../src/lib/sessionRepository.ts';
+import { clearSessionsForTests, createSession, getSession, reorderSessionPicks, saveSessionPick, submitSession } from '../src/lib/sessionRepository.ts';
 import { SONG_LIBRARY } from '../src/data/songs.ts';
 
 describe('prototype session repository contract', () => {
@@ -42,5 +42,22 @@ describe('prototype session repository contract', () => {
     clearSessionsForTests();
     const session = createSession({ mode: 'ep', trackCount: 6 });
     assert.strictEqual(submitSession(session.id), null);
+  });
+
+  test('reorders a drafting session by original positions', () => {
+    clearSessionsForTests();
+    const session = createSession({ mode: 'ep', trackCount: 3 });
+    for (const [index, song] of SONG_LIBRARY.slice(0, 3).entries()) {
+      saveSessionPick(session.id, {
+        position: index + 1,
+        slotId: `slot-${index + 1}`,
+        song,
+        selectionSource: 'recommendation',
+        lockedAt: new Date().toISOString(),
+      });
+    }
+    const reordered = reorderSessionPicks(session.id, [3, 1, 2]);
+    assert.deepStrictEqual(reordered?.picks.map((pick) => pick.song.id), SONG_LIBRARY.slice(0, 3).map((song) => song.id).reverse().slice(0, 1).concat(SONG_LIBRARY.slice(0, 2).map((song) => song.id)));
+    assert.deepStrictEqual(reordered?.picks.map((pick) => pick.position), [1, 2, 3]);
   });
 });

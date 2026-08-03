@@ -29,6 +29,7 @@ export default function Home() {
     evaluationResult,
     evaluateDraft,
     startNewDraft,
+    resumePersistedSession,
     pastDrafts,
     playerAlias,
     setPlayerAlias,
@@ -75,6 +76,12 @@ export default function Home() {
       queueMicrotask(() => setHasStarted(true));
     }
   }, [startNewDraft]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (new URLSearchParams(window.location.search).has('seed')) return;
+    void resumePersistedSession();
+  }, [resumePersistedSession]);
 
   const handleEvaluate = async () => {
     await evaluateDraft();

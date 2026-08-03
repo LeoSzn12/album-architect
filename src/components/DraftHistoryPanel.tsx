@@ -6,10 +6,22 @@ import { History, Trash2, Sparkles } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 
 export const DraftHistoryPanel: React.FC = () => {
-  const { pastDrafts, clearHistory, audioEnabled } = useDraftStore();
+  const { pastDrafts, clearHistory, audioEnabled, gameMode } = useDraftStore();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (pastDrafts.length === 0) return null;
+  const currentProjectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+
+  if (pastDrafts.length === 0) {
+    return (
+      <div className="w-full rounded-2xl border border-dashed border-gray-800 bg-gray-900/50 p-5 text-center">
+        <History className="mx-auto h-5 w-5 text-gray-600" />
+        <h3 className="mt-2 text-sm font-extrabold uppercase tracking-wider text-gray-300">No completed builds yet</h3>
+        <p className="mt-1 text-xs text-gray-500">
+          Your completed {currentProjectLabel.toLowerCase()} reviews will appear here after submission.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-gray-900/80 border border-gray-800 rounded-2xl p-5 backdrop-blur-md shadow-xl my-4">
@@ -17,7 +29,7 @@ export const DraftHistoryPanel: React.FC = () => {
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-purple-400" />
           <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">
-            Executive Hall of Fame ({pastDrafts.length})
+            Completed Build History ({pastDrafts.length})
           </h3>
         </div>
 
@@ -57,7 +69,7 @@ export const DraftHistoryPanel: React.FC = () => {
               <div>
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-purple-950 text-purple-300 border border-purple-800 rounded">
-                    {draft.gameMode === 'draft' ? 'TrackDraft Match' : draft.gameMode === 'ep' ? '7-Track EP' : '14-Track LP'} • {draft.difficulty.toUpperCase()}
+                    {draft.gameMode === 'draft' ? 'TrackDraft Match' : draft.gameMode === 'ep' ? `EP Builder · ${draft.trackCount} tracks` : `Album Builder · ${draft.trackCount} tracks`} • {draft.difficulty.toUpperCase()}
                   </span>
                   <span className="text-[10px] text-gray-500 font-medium">{draft.completedAt}</span>
                 </div>
@@ -82,7 +94,7 @@ export const DraftHistoryPanel: React.FC = () => {
               </div>
 
               <div className="mt-3 pt-2 border-t border-gray-900 flex justify-between items-center text-[10px] text-purple-300 font-semibold">
-                <span>{draft.trackCount} Tracks Locked</span>
+                <span>{draft.trackCount} Tracks Reviewed</span>
                 <Sparkles className="w-3 h-3 text-amber-400" />
               </div>
             </div>

@@ -25,6 +25,8 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
     audioEnabled,
     openRealSongPlayer,
     reorderDraftedTracks,
+    gameMode,
+    sessionId,
   } = useDraftStore();
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
@@ -35,6 +37,8 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
   if (!isOpen) return null;
 
   const draftedSongs = draftedTracks.map((t) => t.song);
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const builderLabel = gameMode === 'draft' ? 'Draft Stage' : `${projectLabel} Builder`;
   const ytBulkUrl = generateBulkPlaylistUrl(draftedSongs, 'youtube');
   const spotifyBulkUrl = generateBulkPlaylistUrl(draftedSongs, 'spotify');
 
@@ -52,7 +56,12 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
           <div className="flex justify-between items-center pb-4 mb-4 border-b border-gray-800">
             <div className="flex items-center gap-2">
               <Music className="w-5 h-5 text-purple-400" />
-              <h2 className="text-xl font-extrabold text-white">Live Tracklist</h2>
+              <div>
+                <h2 className="text-xl font-extrabold text-white">{projectLabel} Tracklist</h2>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                  {gameMode === 'draft' ? 'Live sequence' : sessionId ? 'Session saved · resume ready' : 'Autosaved locally'}
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
@@ -67,7 +76,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
             <div>
               <span className="text-gray-400 block">Progress</span>
               <span className="font-bold text-purple-300">
-                {draftedTracks.length} / {slots.length} Tracks
+                {draftedTracks.length} / {slots.length} {projectLabel === 'Draft' ? 'Tracks' : `${projectLabel} Tracks`}
               </span>
             </div>
             <div>
@@ -115,10 +124,19 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
             </div>
           )}
 
+          {draftedTracks.length > 0 && (
+            <div className="mb-4 rounded-xl border border-cyan-900/50 bg-cyan-950/20 px-3 py-2 text-[11px] leading-relaxed text-cyan-200">
+              Use the up/down arrows to set the final listening order. Reordering updates the sequence used by the review.
+            </div>
+          )}
+
           {/* List of Drafted Tracks */}
           {draftedTracks.length === 0 ? (
-            <div className="text-center text-xs text-gray-500 py-12 italic">
-              No tracks drafted yet. Pick a song to build your master sequence!
+            <div className="rounded-xl border border-dashed border-gray-800 px-4 py-12 text-center">
+              <p className="text-sm font-bold text-gray-300">No {projectLabel} tracks yet</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Return to the {builderLabel.toLowerCase()} to choose the first position.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -141,7 +159,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
                       </h4>
                       <p className="text-xs text-gray-400">{dt.song.rawArtistString}</p>
                       <span className="text-[10px] text-gray-500 font-semibold block mt-0.5">
-                        Slot: {dt.slot.name}
+                        Position {idx + 1} · Role: {dt.slot.name}
                       </span>
                     </div>
                   </div>
@@ -156,6 +174,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
                     <div className="flex gap-1 mt-1">
                       <button
                         aria-label={`Move ${dt.song.title} up`}
+                        title={`Move ${dt.song.title} to position ${idx}`}
                         disabled={idx === 0}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -167,6 +186,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
                       </button>
                       <button
                         aria-label={`Move ${dt.song.title} down`}
+                        title={`Move ${dt.song.title} to position ${idx + 2}`}
                         disabled={idx === draftedTracks.length - 1}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -189,7 +209,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
             onClick={onClose}
             className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-300 font-bold rounded-xl text-xs transition cursor-pointer"
           >
-            Back to Draft Stage
+            Back to {builderLabel}
           </button>
         </div>
       </div>

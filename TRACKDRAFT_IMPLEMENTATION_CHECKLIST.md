@@ -45,3 +45,10 @@ This note records the first executable vertical slice from the July 31, 2026 han
 2. Finish EP Builder and Album Builder end-to-end paths, including save/resume and final reorder.
 3. Run live Spotify/YouTube OAuth and import/export tests with real credentials.
 4. Expand automated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.
+
+## Current execution notes
+
+- Session creation, pick persistence, submit persistence, and a dedicated reorder API are now wired from the client store, with local guest fallback preserved.
+- The persistent-pick route now checks the configured Supabase path before the in-memory guest repository, allowing authenticated session IDs to work.
+- The remaining validation is intentionally environment-gated: the real Supabase migration, Auth redirects, and live provider OAuth still require deployment credentials.
+- See [`docs/production-launch-checklist.md`](docs/production-launch-checklist.md) for the exact production sequence.

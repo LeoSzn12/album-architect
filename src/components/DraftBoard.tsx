@@ -32,6 +32,10 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
   const isCompleted = currentRoundIndex >= slots.length;
   const currentSlot = slots[currentRoundIndex];
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const trackLabel = gameMode === 'draft' ? 'Round' : `${projectLabel} Track`;
+  const completionLabel = gameMode === 'draft' ? 'Draft Complete' : `${projectLabel} Ready for Review`;
+  const reviewActionLabel = gameMode === 'draft' ? 'Get Your Score' : `Review ${projectLabel}`;
 
   // Auto-assigned era for this round
   const currentEra = eraSequence[currentRoundIndex];
@@ -76,12 +80,20 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
 
         <span className="text-xs font-extrabold uppercase tracking-widest text-purple-400 mb-1">
-          Draft Complete
+          {completionLabel}
         </span>
-        <h2 className="text-3xl font-extrabold text-white mb-2">Tracklist Locked In!</h2>
+        <h2 className="text-3xl font-extrabold text-white mb-2">
+          {gameMode === 'draft' ? 'Tracklist Locked In!' : `${projectLabel} Tracklist Locked In`}
+        </h2>
         <p className="text-sm text-gray-300 max-w-lg mb-6 leading-relaxed">
-          {slots.length} tracks selected. Submit to the A&R Critic Board to get your final score and album grade.
+          {slots.length} tracks selected for your {gameMode === 'draft' ? 'draft' : projectLabel.toLowerCase()}. Reorder the sequence from the tracklist drawer, then submit when the build is ready for its final review.
         </p>
+
+        {gameMode !== 'draft' && (
+          <span className="mb-5 rounded-full border border-emerald-800/70 bg-emerald-950/30 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300">
+            Build saved locally · ready to review
+          </span>
+        )}
 
         <button
           onClick={() => {
@@ -92,7 +104,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           className="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold rounded-2xl shadow-xl shadow-purple-900/40 text-base tracking-wide transition-all transform hover:scale-105 cursor-pointer flex items-center gap-2"
         >
           <Sparkles className="w-5 h-5 text-amber-300 animate-spin-slow" />
-          <span>Get Your Score</span>
+          <span>{reviewActionLabel}</span>
         </button>
       </div>
     );
@@ -108,7 +120,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="px-2.5 py-0.5 rounded bg-purple-950 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-800">
-              Round {currentSlot.roundNumber} of {slots.length}
+              {trackLabel} {currentSlot.roundNumber} of {slots.length}
             </span>
 
             {/* Auto-era badge */}
@@ -136,7 +148,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           </div>
 
           <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-            Pick your <span className="text-purple-300">{currentSlot.name}</span>
+            {gameMode === 'draft' ? 'Pick your' : `Select a track for your ${projectLabel.toLowerCase()}:`} <span className="text-purple-300">{currentSlot.name}</span>
           </h2>
           <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-xl leading-relaxed">
             {currentSlot.description}
@@ -195,20 +207,22 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       )}
 
-      {/* Five-card recommendation pool in TrackDraft mode; legacy EP/LP stays compact. */}
+      {/* Five-card recommendation pool in TrackDraft mode; builders use the same safe empty state with mode-specific copy. */}
       {currentOptions.length === 0 ? (
         <div className="w-full bg-gray-950 border border-purple-900/40 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
           <AlertCircle className="w-8 h-8 text-amber-400 animate-pulse" />
-          <h3 className="text-base font-extrabold text-white">No Tracks in Current Era Pool</h3>
+          <h3 className="text-base font-extrabold text-white">
+            No {projectLabel} candidates available
+          </h3>
           <p className="text-xs text-gray-400 max-w-sm">
-            The catalog doesn&apos;t have enough {currentEraLabel} songs for this slot. Use a reroll token to try again.
+            The catalog doesn&apos;t have enough {currentEraLabel ?? 'matching'} songs for {currentSlot.name}. {rerollTokens > 0 ? 'Use a reroll token to try another pool.' : 'No rerolls remain, so this slot is waiting for a new session.'}
           </p>
           <button
             onClick={handleReroll}
             disabled={rerollTokens <= 0}
             className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs transition cursor-pointer mt-2"
           >
-            Reroll ({rerollTokens})
+            {rerollTokens > 0 ? `Try another pool (${rerollTokens})` : 'No rerolls available'}
           </button>
         </div>
       ) : (
