@@ -12,8 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000"),
+  ...(configuredSiteUrl ? { metadataBase: new URL(configuredSiteUrl) } : {}),
   title: {
     default: "TrackDraft — Fantasy Music Curation & A&R Game",
     template: "%s · TrackDraft",
