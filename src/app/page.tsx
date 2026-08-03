@@ -102,7 +102,7 @@ export default function Home() {
   const showLanding = !hasStarted;
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-slate-100 flex flex-col justify-between selection:bg-purple-500 selection:text-white relative pb-24">
+    <div className="min-h-screen min-w-0 bg-[#0f1117] text-slate-100 flex flex-col justify-between selection:bg-purple-500 selection:text-white relative pb-24">
       {/* Background Neon Ambient Glow Orbs */}
       <div className="fixed top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed bottom-10 right-1/4 translate-x-1/2 w-[30rem] h-[30rem] bg-pink-600/10 rounded-full blur-[140px] pointer-events-none" />
@@ -120,7 +120,7 @@ export default function Home() {
       />
 
       {/* Main Container */}
-      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 flex-grow flex flex-col gap-6 relative z-10">
+      <main className="box-border min-w-0 w-full max-w-6xl mx-auto px-4 sm:px-6 flex-grow flex flex-col gap-6 relative z-10">
 
         {activeSurface === 'setup' ? (
           <SetupPanel

@@ -83,41 +83,70 @@ export function computeBestPossible(
   // Verify we have options in every round
   if (poolsPerRound.some((p) => p.length === 0)) return null;
 
-  // Exhaustive search: iterate over all combinations
+  // Exhaustive search is exact for the seven-round modes, but 4^14 album
+  // combinations would block the request for minutes. Switch to a bounded,
+  // deterministic beam search once the search space becomes too large.
   let bestScore = -Infinity;
   let bestCombo: Song[] = [];
+  const searchSpace = poolsPerRound.reduce((total, pool) => total * pool.length, 1);
+  const exhaustiveLimit = 250_000;
 
-  // Use iterative approach with index array
-  const indices = new Array<number>(roundCount).fill(0);
+  if (searchSpace <= exhaustiveLimit) {
+    const indices = new Array<number>(roundCount).fill(0);
 
-  outer: while (true) {
-    // Build candidate draft from current indices
-    const combo: DraftedTrack[] = indices.map((songIdx, roundIdx) => ({
-      slot: slots[roundIdx] ?? playerDraftedTracks[roundIdx]?.slot,
-      song: poolsPerRound[roundIdx][songIdx],
-      roundDrafted: roundIdx + 1,
-      isWildcard: false,
-    })).filter((dt) => dt.slot !== undefined);
+    outer: while (true) {
+      const combo: DraftedTrack[] = indices.map((songIdx, roundIdx) => ({
+        slot: slots[roundIdx] ?? playerDraftedTracks[roundIdx]?.slot,
+        song: poolsPerRound[roundIdx][songIdx],
+        roundDrafted: roundIdx + 1,
+        isWildcard: false,
+      })).filter((dt) => dt.slot !== undefined);
 
-    if (combo.length === roundCount) {
-      const monopoly = computeMonopolyReport(combo);
-      const energy   = computeEnergyMetrics(combo);
-      const result   = scoreDraft(combo, monopoly, energy);
-      if (result.finalScore > bestScore) {
-        bestScore = result.finalScore;
-        bestCombo = combo.map((dt) => dt.song);
+      if (combo.length === roundCount) {
+        const monopoly = computeMonopolyReport(combo);
+        const energy = computeEnergyMetrics(combo);
+        const result = scoreDraft(combo, monopoly, energy);
+        if (result.finalScore > bestScore) {
+          bestScore = result.finalScore;
+          bestCombo = combo.map((dt) => dt.song);
+        }
       }
+
+      let pos = roundCount - 1;
+      while (pos >= 0) {
+        indices[pos]++;
+        if (indices[pos] < poolsPerRound[pos].length) break;
+        indices[pos] = 0;
+        pos--;
+      }
+      if (pos < 0) break outer;
+    }
+  } else {
+    const beamWidth = 512;
+    let beam: DraftedTrack[][] = [[]];
+
+    for (let roundIdx = 0; roundIdx < roundCount; roundIdx++) {
+      const slot = slots[roundIdx] ?? playerDraftedTracks[roundIdx]?.slot;
+      if (!slot) return null;
+
+      const expanded = beam.flatMap((partial) => poolsPerRound[roundIdx].map((song) => {
+        const draft = [...partial, { slot, song, roundDrafted: roundIdx + 1, isWildcard: false }];
+        const monopoly = computeMonopolyReport(draft);
+        const energy = computeEnergyMetrics(draft);
+        return { draft, score: scoreDraft(draft, monopoly, energy).finalScore };
+      }));
+
+      expanded.sort((a, b) => b.score - a.score || a.draft.map((track) => track.song.id).join('|').localeCompare(b.draft.map((track) => track.song.id).join('|')));
+      beam = expanded.slice(0, beamWidth).map((entry) => entry.draft);
     }
 
-    // Increment indices (odometer pattern)
-    let pos = roundCount - 1;
-    while (pos >= 0) {
-      indices[pos]++;
-      if (indices[pos] < poolsPerRound[pos].length) break;
-      indices[pos] = 0;
-      pos--;
+    const best = beam[0];
+    if (best) {
+      const monopoly = computeMonopolyReport(best);
+      const energy = computeEnergyMetrics(best);
+      bestScore = scoreDraft(best, monopoly, energy).finalScore;
+      bestCombo = best.map((dt) => dt.song);
     }
-    if (pos < 0) break outer; // all combinations exhausted
   }
 
   const playerScore = (() => {

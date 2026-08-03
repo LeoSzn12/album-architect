@@ -18,7 +18,7 @@ export const LeaderboardPanel: React.FC = () => {
   });
 
   return (
-    <div className="w-full bg-gray-900/90 border border-purple-500/40 rounded-3xl p-6 shadow-2xl backdrop-blur-md my-6 flex flex-col gap-5">
+    <div className="box-border min-w-0 w-full bg-gray-900/90 border border-purple-500/40 rounded-3xl p-6 shadow-2xl backdrop-blur-md my-6 flex flex-col gap-5">
       {/* Panel Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-gray-800 gap-3">
         <div className="flex items-center gap-3">
@@ -52,11 +52,11 @@ export const LeaderboardPanel: React.FC = () => {
       </div>
 
       {/* Filter Category Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-950/90 p-3 rounded-2xl border border-purple-900/40 text-xs font-extrabold">
-        <div className="flex items-center gap-1.5 text-purple-300">
+      <div className="flex min-w-0 flex-col items-stretch gap-3 bg-gray-950/90 p-3 rounded-2xl border border-purple-900/40 text-xs font-extrabold sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-purple-300">
           <Filter className="w-3.5 h-3.5 text-pink-400" />
           <span>Format:</span>
-          <div className="flex gap-1 ml-1">
+          <div className="flex min-w-0 flex-wrap gap-1 ml-1">
             {(['all', 'draft', 'ep', 'album'] as const).map((m) => (
               <button
                 key={m}
@@ -76,9 +76,9 @@ export const LeaderboardPanel: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-purple-300">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-purple-300">
           <span>Tier:</span>
-          <div className="flex gap-1 ml-1">
+          <div className="flex min-w-0 flex-wrap gap-1 ml-1">
             {(['all', 'standard', 'veteran', 'hardcore'] as const).map((d) => (
               <button
                 key={d}

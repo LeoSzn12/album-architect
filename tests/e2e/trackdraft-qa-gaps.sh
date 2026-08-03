@@ -84,9 +84,9 @@ assert_mode_flow() {
   done
 
   run_code "(() => { const review = [...document.querySelectorAll('button')].find((button) => button.textContent?.includes('$review_label')); if (!review) throw new Error('review action missing'); review.click(); return true; })()"
-  # The API fallback contract is asserted separately below; this click verifies
-  # the rendered review transition without making the browser wait on animation.
-  sleep 2
+  # Evaluation is asynchronous: the scorecard waits for the deterministic
+  # fallback/AI response and can take longer on a cold production worker.
+  run_code "(async () => { const deadline = Date.now() + 20000; while (Date.now() < deadline) { const body = document.body.innerText; if (body.includes('Scored by Deterministic Engine') || body.includes('Transparent A&R Scorecard')) return true; await new Promise((resolve) => setTimeout(resolve, 250)); } throw new Error('final scorecard did not render within 20 seconds'); })()"
   assert_text "Scored by Deterministic Engine"
   assert_text "Transparent A&R Scorecard"
 }
