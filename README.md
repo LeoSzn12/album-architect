@@ -109,6 +109,7 @@ The provider endpoints are:
 - `POST /api/providers/import` with `{ "provider", "reference" }`
 - `POST /api/providers/export` with `{ "provider", "name", "songs" }`
 - `POST /api/songs/resolve` with `{ "provider", "url" }`
+- `GET /api/health` for a no-store deployment/configuration health contract
 
 ## Automated browser smoke test
 

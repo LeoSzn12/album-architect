@@ -94,3 +94,17 @@ export async function accessTokenFromStoredProviderAccount(provider: ProviderId)
   }
   return token.accessToken;
 }
+
+/** Removes the encrypted provider account for the signed-in user. */
+export async function unlinkProviderAccount(provider: ProviderId) {
+  const client = await createSupabaseServerClient();
+  if (!client) return { configured: false as const, unlinked: false as const };
+  const { data, error: claimsError } = await client.auth.getClaims();
+  const userId = !claimsError && data?.claims?.sub ? String(data.claims.sub) : null;
+  if (!userId) return { configured: true as const, unlinked: false as const, unauthenticated: true as const };
+
+  const { error } = await client.from('provider_accounts').delete().eq('user_id', userId).eq('provider', provider);
+  return error
+    ? { configured: true as const, unlinked: false as const, error: error.message }
+    : { configured: true as const, unlinked: true as const };
+}

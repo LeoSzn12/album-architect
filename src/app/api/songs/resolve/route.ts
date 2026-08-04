@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProvider } from '@/lib/providers';
 import type { ProviderId } from '@/lib/providers/types';
 import { accessTokenFromRequest, createRemoteProvider } from '@/lib/providers/remote';
+import { rateLimit, rateLimitHeaders, requestRateLimitKey } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
 const allowedHosts = new Set(['open.spotify.com', 'spotify.com', 'youtube.com', 'www.youtube.com', 'music.youtube.com', 'youtu.be']);
 
 export async function POST(request: NextRequest) {
+  const limiter = rateLimit(requestRateLimitKey(request, 'song-resolve'), { limit: 20, windowMs: 60_000 });
+  if (!limiter.allowed) return NextResponse.json({ error: 'URL resolution is temporarily rate limited. Please retry shortly.' }, { status: 429, headers: rateLimitHeaders(limiter) });
   const body = await request.json().catch(() => null) as { provider?: ProviderId; url?: string } | null;
   if (!body?.url || typeof body.url !== 'string' || body.url.length > 2048) return NextResponse.json({ error: 'A valid provider URL is required.' }, { status: 400 });
   let parsed: URL;
@@ -17,6 +20,6 @@ export async function POST(request: NextRequest) {
   const adapter = provider === 'demo' ? getProvider('demo') : createRemoteProvider(provider, await accessTokenFromRequest(request, provider));
   const result = await adapter.resolveUrl(parsed.toString());
   return result.ok
-    ? NextResponse.json({ song: result.data })
-    : NextResponse.json({ error: result.error, notice: 'Connect the provider account or configure a server-side provider key to resolve external songs.' }, { status: result.error.code === 'invalid-request' ? 400 : 503 });
+    ? NextResponse.json({ song: result.data }, { headers: rateLimitHeaders(limiter) })
+    : NextResponse.json({ error: result.error, notice: 'Connect the provider account or configure a server-side provider key to resolve external songs.' }, { status: result.error.code === 'invalid-request' ? 400 : 503, headers: rateLimitHeaders(limiter) });
 }

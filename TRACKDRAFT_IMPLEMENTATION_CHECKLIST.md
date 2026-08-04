@@ -34,6 +34,8 @@ This note records the first executable vertical slice from the July 31, 2026 han
 - [x] UI/UX foundation refresh: display typography, visible keyboard focus, reduced-motion support, clearer landing hierarchy, and grouped responsive header navigation.
 - [x] In-process burst protection for evaluation and provider search/import/export routes with explicit retry metadata.
 - [x] Full-mode browser gap suite stabilized around final evaluation timing.
+- [x] Provider disconnect and account deletion routes are guarded by authenticated Supabase/service-role checks.
+- [x] Challenge transitions are explicitly constrained to open → accepted/declined → completed, with recipient acceptance RLS hardening.
 
 ## Deliberate prototype boundaries
 
@@ -49,6 +51,7 @@ This note records the first executable vertical slice from the July 31, 2026 han
 3. Expand authenticated integration/E2E coverage for resume, provider degradation, reorder-before-submit, and share/challenge flows.
 4. Complete the visual pass across active Draft, EP, Album, review, library, and profile surfaces.
 5. Deploy, run production smoke tests, and configure monitoring/error alerts.
+6. Run the live account deletion, provider disconnect, and challenge acceptance checks against Supabase.
 
 ## Current execution notes
 

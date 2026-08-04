@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSession, getSession } from '@/lib/sessionRepository';
 import { createPersistentSession, getPersistentSession } from '@/lib/supabase/sessionRepository';
 import type { GameMode } from '@/types/draft';
+import { rateLimit, rateLimitHeaders, requestRateLimitKey } from '@/lib/rateLimit';
 
 const modes = new Set<GameMode>(['draft', 'ep', 'album']);
 
 export async function POST(request: NextRequest) {
+  const limiter = rateLimit(requestRateLimitKey(request, 'session-create'), { limit: 12, windowMs: 60_000 });
+  if (!limiter.allowed) return NextResponse.json({ error: 'Session creation is temporarily rate limited. Please retry shortly.' }, { status: 429, headers: rateLimitHeaders(limiter) });
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
   const mode = body?.mode;
   const trackCount = body?.trackCount;
@@ -25,10 +28,10 @@ export async function POST(request: NextRequest) {
   if (persistent.configured) {
     if (persistent.unauthenticated) return NextResponse.json({ error: 'Sign in before creating a persistent session.' }, { status: 401 });
     if (persistent.error || !persistent.data) return NextResponse.json({ error: persistent.error ?? 'Session could not be created.' }, { status: 503 });
-    return NextResponse.json({ session: persistent.data }, { status: 201 });
+    return NextResponse.json({ session: persistent.data }, { status: 201, headers: rateLimitHeaders(limiter) });
   }
   const session = createSession(input);
-  return NextResponse.json({ session }, { status: 201 });
+  return NextResponse.json({ session }, { status: 201, headers: rateLimitHeaders(limiter) });
 }
 
 export async function GET(request: NextRequest) {

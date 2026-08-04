@@ -5,7 +5,7 @@ This runbook covers the remaining credential-gated work from the original TrackD
 ## 1. Supabase
 
 1. Create or select the production Supabase project.
-2. Apply [`supabase/migrations/20260803000000_trackdraft_foundation.sql`](../supabase/migrations/20260803000000_trackdraft_foundation.sql) using the Supabase SQL editor or a linked Supabase CLI project.
+2. Apply all migrations in [`supabase/migrations/`](../supabase/migrations/) using the Supabase SQL editor or a linked Supabase CLI project. The final `data_api_grants` migration is required for current Supabase Data API behavior.
 3. Confirm all tables have RLS enabled and run an authenticated smoke test for session creation, picks, reorder, submit, library import, scorecards, shares, and challenges.
 4. In Supabase Auth URL Configuration:
    - Site URL: the deployed app origin.
@@ -19,6 +19,7 @@ Set these values in the production deployment environment:
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key)
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only; required for permanent account deletion)
 - `PROVIDER_SESSION_SECRET` (random, at least 32 characters)
 - `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI`
 - `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `YOUTUBE_REDIRECT_URI`
@@ -39,6 +40,7 @@ npm test
 npm run lint
 npm run build
 BASE_URL=https://<production-origin> npm run test:e2e
+curl --fail https://<production-origin>/api/health
 ```
 
 Then manually verify:
@@ -50,6 +52,9 @@ Then manually verify:
 5. Create a share link, challenge, acceptance, completion, and rematch.
 6. Connect Spotify and YouTube, search, import, resolve a URL, and export a private playlist.
 7. Expire/revoke a provider token and confirm reconnect or demo mode preserves the game.
+8. Disconnect Spotify/YouTube and verify the encrypted provider account and cookie are removed.
+9. Delete a test account and verify cascading user-owned data removal, Auth sign-out, and re-registration.
+10. Confirm `/api/health` reports the expected build SHA and configuration checks without exposing secrets.
 
 ## 4. Rollback
 
