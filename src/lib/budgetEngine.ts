@@ -6,7 +6,7 @@ export const INITIAL_BUDGET = 15;
  * Computes deterministic budget price ($1 to $5) for any song based on impact and cultural recognition.
  */
 export function getSongBudgetPrice(song: Song): number {
-  if (typeof song.budgetCost === 'number' && song.budgetCost >= 1 && song.budgetCost <= 5) {
+  if (typeof song.budgetCost === 'number' && song.budgetCost >= 0 && song.budgetCost <= 5) {
     return song.budgetCost;
   }
 

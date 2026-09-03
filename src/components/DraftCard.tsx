@@ -137,7 +137,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
                 : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm'
             }`}
           >
-            💰 ${songPrice}
+            {songPrice === 0 ? '🆓 $0 Waiver' : `💰 $${songPrice}`}
           </span>
 
           {isNewMonopolyRisk && (

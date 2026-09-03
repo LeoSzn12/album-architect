@@ -295,12 +295,28 @@ export function generateCandidatePool(context: CandidateContext, count: number =
   }
 
   // 6b. Ensure at least one affordable option when budget mode is active
-  if (typeof context.budgetRemaining === 'number' && context.budgetRemaining > 0) {
+  if (typeof context.budgetRemaining === 'number') {
     const hasAffordable = finalPool.some((s) => getSongBudgetPrice(s) <= context.budgetRemaining!);
     if (!hasAffordable) {
-      const affordableOption = candidatePool.find(
+      let affordableOption = candidatePool.find(
         (s) => getSongBudgetPrice(s) <= context.budgetRemaining! && !finalPool.some((f) => f.id === s.id)
       );
+
+      // Fallback across the broader catalog if the current slot/theme pool lacks affordable options
+      if (!affordableOption) {
+        affordableOption = SONG_LIBRARY.find(
+          (s) => getSongBudgetPrice(s) <= context.budgetRemaining! && !finalPool.some((f) => f.id === s.id)
+        );
+      }
+
+      // If budget is completely exhausted, provide an emergency rookie waiver pick ($0 cost)
+      if (!affordableOption && context.budgetRemaining <= 0) {
+        const sleeper = SONG_LIBRARY.find((s) => !finalPool.some((f) => f.id === s.id));
+        if (sleeper) {
+          affordableOption = { ...sleeper, budgetCost: 0 };
+        }
+      }
+
       if (affordableOption && finalPool.length > 0) {
         finalPool[finalPool.length - 1] = affordableOption;
       }
