@@ -293,3 +293,57 @@ export const ALBUM_SLOTS: DraftSlot[] = [
     eraLabel: 'Any-Era Outro',
   },
 ];
+
+export const BUDGET_SLOTS: DraftSlot[] = [
+  {
+    id: 'cinematic-intro',
+    name: 'Intro / Statement',
+    roundNumber: 1,
+    description: 'Set the tone with your opening capital investment.',
+    targetEnergy: { min: 60, max: 85, ideal: 75 },
+    iconName: 'Sparkles',
+    defaultEra: 'all',
+    eraLabel: 'Budget Opener',
+  },
+  {
+    id: 'statement-banger',
+    name: 'Lead Single / Anthem',
+    roundNumber: 2,
+    description: 'Invest in your project centerpiece or cash in on a high-value sleeper.',
+    targetEnergy: { min: 80, max: 100, ideal: 92 },
+    iconName: 'Flame',
+    defaultEra: 'all',
+    eraLabel: 'Budget Single',
+  },
+  {
+    id: 'late-night-rnb',
+    name: 'Vibe Shift / Late Night',
+    roundNumber: 3,
+    description: 'Emotional or melodic counterweight to pace your tracklist.',
+    targetEnergy: { min: 35, max: 65, ideal: 50 },
+    iconName: 'Moon',
+    defaultEra: 'all',
+    eraLabel: 'Budget Vibe',
+  },
+  {
+    id: 'apex-climax',
+    name: 'Apex Climax',
+    roundNumber: 4,
+    description: 'The sonic peak of the project before winding down.',
+    targetEnergy: { min: 85, max: 100, ideal: 94 },
+    iconName: 'Zap',
+    defaultEra: 'all',
+    eraLabel: 'Budget Climax',
+  },
+  {
+    id: 'cinematic-outro',
+    name: 'Closing Track / Outro',
+    roundNumber: 5,
+    description: 'Leave the listener with an indelible final impression within remaining funds.',
+    targetEnergy: { min: 50, max: 75, ideal: 62 },
+    iconName: 'Sunset',
+    defaultEra: 'all',
+    eraLabel: 'Budget Outro',
+  },
+];
+

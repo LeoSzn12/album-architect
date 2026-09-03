@@ -4,6 +4,7 @@ import React from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Disc3, Zap, Trophy, Swords, ChevronRight } from 'lucide-react';
 import { playDraftLockSound } from '@/lib/audioEngine';
+import { DailyDropHero } from './DailyDropHero';
 
 interface LandingScreenProps {
   onStart: () => void;
@@ -22,7 +23,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
   onScrollToLeaderboard,
 }) => {
   const { audioEnabled, gameMode, slots } = useDraftStore();
-  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
   const isBuilder = gameMode !== 'draft';
   const startLabel = gameMode === 'draft' ? 'Start Draft' : `Start ${projectLabel} Builder`;
 
@@ -33,6 +34,11 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center gap-10 px-4 py-10 sm:py-14">
+      {/* The Daily Drop Hero Banner */}
+      <div className="w-full max-w-3xl">
+        <DailyDropHero onStart={onStart} />
+      </div>
+
       {/* Hero Section */}
       <section aria-labelledby="landing-title" className="flex max-w-3xl flex-col items-center gap-5 text-center">
         {/* Animated Logo */}

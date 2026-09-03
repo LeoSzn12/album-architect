@@ -1,5 +1,6 @@
 import type { Song, CandidateContext, CandidateDebugInfo, SlotId } from '../types/draft.ts';
-import { SONG_LIBRARY, filterByEra } from '../data/songs.ts';
+import { SONG_LIBRARY, filterByEra, filterByChallengeTheme } from '../data/songs.ts';
+import { getSongBudgetPrice } from './budgetEngine.ts';
 
 function createPrng(seedStr: string) {
   let h = 2166136261 >>> 0;
@@ -165,10 +166,16 @@ function enforceCinematicOutroRequirements(selected: Song[], pool: Song[], conte
 export function generateCandidatePool(context: CandidateContext, count: number = 4): Song[] {
   const { slotId, era, seed, rerollIndex, draftedSongIds, draftedArtists } = context;
 
-  // 1. Initial era filtering
+  // 1. Initial era & theme filtering
   let pool = filterByEra(SONG_LIBRARY, era);
+  if (context.theme && context.theme !== 'standard') {
+    pool = filterByChallengeTheme(pool, context.theme);
+  }
 
   // Fallback to full library if era pool is completely empty
+  if (pool.length === 0) {
+    pool = context.theme ? filterByChallengeTheme(SONG_LIBRARY, context.theme) : SONG_LIBRARY;
+  }
   if (pool.length === 0) {
     pool = SONG_LIBRARY;
   }
@@ -265,7 +272,7 @@ export function generateCandidatePool(context: CandidateContext, count: number =
   );
 
   const sleeper = sleeperCandidates.find((c) => !usedArtists.has(c.song.artist)) ||
-                  scored.find((c) => !selected.some((s) => s.id === c.song.id));
+                  [...scored].sort((a, b) => b.altScore - a.altScore).find((c) => !selected.some((s) => s.id === c.song.id));
   if (sleeper) {
     selected.push(sleeper.song);
   }
@@ -285,6 +292,19 @@ export function generateCandidatePool(context: CandidateContext, count: number =
     finalPool = enforceCinematicIntroRequirements(selected, candidatePool, context, prng);
   } else if (slotId === 'cinematic-outro') {
     finalPool = enforceCinematicOutroRequirements(selected, candidatePool, context, prng);
+  }
+
+  // 6b. Ensure at least one affordable option when budget mode is active
+  if (typeof context.budgetRemaining === 'number' && context.budgetRemaining > 0) {
+    const hasAffordable = finalPool.some((s) => getSongBudgetPrice(s) <= context.budgetRemaining!);
+    if (!hasAffordable) {
+      const affordableOption = candidatePool.find(
+        (s) => getSongBudgetPrice(s) <= context.budgetRemaining! && !finalPool.some((f) => f.id === s.id)
+      );
+      if (affordableOption && finalPool.length > 0) {
+        finalPool[finalPool.length - 1] = affordableOption;
+      }
+    }
   }
 
   // 7. Attach development CandidateDebugInfo

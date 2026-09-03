@@ -1,4 +1,4 @@
-import { ALBUM_SLOTS, EP_SLOTS } from '../data/slots.ts';
+import { ALBUM_SLOTS, EP_SLOTS, BUDGET_SLOTS } from '../data/slots.ts';
 import type { DraftSlot, GameMode, SlotId } from '../types/draft.ts';
 
 /** The stable semantic keys used by the seven-round TrackDraft mode. */
@@ -22,7 +22,7 @@ export type TemplateSlot = DraftSlot & {
 };
 
 export interface GameTemplate {
-  id: 'draft-7' | 'ep-6' | 'ep-7' | 'album-12' | 'album-13' | 'album-14';
+  id: 'draft-7' | 'ep-6' | 'ep-7' | 'album-12' | 'album-13' | 'album-14' | 'budget-5';
   mode: TemplateMode;
   name: string;
   trackCount: number;
@@ -40,6 +40,7 @@ const TRACK_COUNT_RULES: Record<TemplateMode, readonly number[]> = {
   draft: [7],
   ep: [6, 7],
   album: [12, 13, 14],
+  budget: [5],
 };
 
 function templateSlot(
@@ -126,6 +127,14 @@ export const ALBUM_14_TEMPLATE: GameTemplate = {
   slots: slotsFrom(ALBUM_SLOTS, 14),
 };
 
+export const BUDGET_5_TEMPLATE: GameTemplate = {
+  id: 'budget-5',
+  mode: 'budget',
+  name: '$15 Aux Budget (5 tracks)',
+  trackCount: 5,
+  slots: slotsFrom(BUDGET_SLOTS, 5),
+};
+
 export const GAME_TEMPLATES = {
   'draft-7': DRAFT_7_TEMPLATE,
   'ep-6': EP_6_TEMPLATE,
@@ -133,6 +142,7 @@ export const GAME_TEMPLATES = {
   'album-12': ALBUM_12_TEMPLATE,
   'album-13': ALBUM_13_TEMPLATE,
   'album-14': ALBUM_14_TEMPLATE,
+  'budget-5': BUDGET_5_TEMPLATE,
 } as const;
 
 export function validateGameTemplate(template: GameTemplate): TemplateValidationResult {

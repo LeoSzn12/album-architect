@@ -1,4 +1,4 @@
-import type { Song, EraFilter, SlotId, CandidateContext } from '../types/draft.ts';
+import type { Song, EraFilter, SlotId, CandidateContext, ChallengeTheme } from '../types/draft.ts';
 import { generateCandidatePool } from '../lib/candidateSelector.ts';
 
 export const SONG_LIBRARY: Song[] = [
@@ -5092,6 +5092,348 @@ export const SONG_LIBRARY: Song[] = [
       "statement-banger": 90
     }
   },
+  // ==========================================
+  // --- 90s GOLDEN ERA ANTHEMS ---
+  // ==========================================
+  {
+    id: 'song-90s-1',
+    title: 'California Love',
+    artist: '2Pac',
+    featuredArtists: ['Dr. Dre', 'Roger Troutman'],
+    rawArtistString: '2Pac feat. Dr. Dre',
+    album: 'All Eyez on Me',
+    year: 1995,
+    genre: 'West Coast Hip-Hop',
+    typeTag: 'G-Funk Stadium Anthem',
+    bpm: 92,
+    energy: 92,
+    slots: ['statement-banger', 'club-bounce', 'apex-climax'],
+    gradient: 'from-amber-600 to-red-900',
+    audioSynthFreq: 440,
+    impact: 98,
+    recognition: 99,
+    acclaim: 96,
+    archetypes: ['high-energy', 'street-anthem'],
+    slotAffinity: { 'statement-banger': 98, 'club-bounce': 95, 'apex-climax': 94 },
+    producerTags: ['dr-dre'],
+    budgetCost: 5,
+  },
+  {
+    id: 'song-90s-2',
+    title: 'Juicy',
+    artist: 'The Notorious B.I.G.',
+    featuredArtists: [],
+    rawArtistString: 'The Notorious B.I.G.',
+    album: 'Ready to Die',
+    year: 1994,
+    genre: 'East Coast Hip-Hop',
+    typeTag: 'Triumphant Narrative Classic',
+    bpm: 96,
+    energy: 85,
+    slots: ['cinematic-intro', 'statement-banger', 'storyteller-cut'],
+    gradient: 'from-yellow-600 to-amber-900',
+    audioSynthFreq: 392,
+    impact: 99,
+    recognition: 99,
+    acclaim: 99,
+    archetypes: ['iconic-opener', 'storytelling'],
+    slotAffinity: { 'cinematic-intro': 98, 'statement-banger': 96, 'storyteller-cut': 95 },
+    budgetCost: 5,
+  },
+  {
+    id: 'song-90s-3',
+    title: 'Still D.R.E.',
+    artist: 'Dr. Dre',
+    featuredArtists: ['Snoop Dogg'],
+    rawArtistString: 'Dr. Dre feat. Snoop Dogg',
+    album: '2001',
+    year: 1999,
+    genre: 'West Coast Hip-Hop',
+    typeTag: 'Pizzicato Piano Banger',
+    bpm: 93,
+    energy: 89,
+    slots: ['statement-banger', 'apex-climax', 'gritty-anthem'],
+    gradient: 'from-emerald-800 to-zinc-950',
+    audioSynthFreq: 330,
+    impact: 99,
+    recognition: 99,
+    acclaim: 97,
+    archetypes: ['high-energy', 'street-anthem'],
+    slotAffinity: { 'statement-banger': 99, 'apex-climax': 95, 'gritty-anthem': 92 },
+    producerTags: ['dr-dre'],
+    budgetCost: 5,
+  },
+  {
+    id: 'song-90s-4',
+    title: 'C.R.E.A.M.',
+    artist: 'Wu-Tang Clan',
+    featuredArtists: ['Method Man', 'Raekwon', 'Inspectah Deck'],
+    rawArtistString: 'Wu-Tang Clan',
+    album: 'Enter the Wu-Tang (36 Chambers)',
+    year: 1993,
+    genre: 'Boom-Bap',
+    typeTag: 'Gritty Street Reality',
+    bpm: 90,
+    energy: 74,
+    slots: ['gritty-anthem', 'storyteller-cut', 'introspective-cut'],
+    gradient: 'from-yellow-700 to-stone-900',
+    audioSynthFreq: 294,
+    impact: 97,
+    recognition: 95,
+    acclaim: 99,
+    archetypes: ['street-anthem', 'storytelling'],
+    slotAffinity: { 'gritty-anthem': 98, 'storyteller-cut': 96, 'introspective-cut': 88 },
+    budgetCost: 4,
+  },
+  {
+    id: 'song-90s-5',
+    title: 'Gin and Juice',
+    artist: 'Snoop Dogg',
+    featuredArtists: ['Dat Nigga Daz'],
+    rawArtistString: 'Snoop Dogg',
+    album: 'Doggystyle',
+    year: 1993,
+    genre: 'West Coast Hip-Hop',
+    typeTag: 'Laidback G-Funk Jam',
+    bpm: 95,
+    energy: 84,
+    slots: ['club-bounce', 'vibe-shift', 'statement-banger'],
+    gradient: 'from-blue-700 to-indigo-950',
+    audioSynthFreq: 370,
+    impact: 96,
+    recognition: 97,
+    acclaim: 95,
+    archetypes: ['club', 'high-energy'],
+    slotAffinity: { 'club-bounce': 97, 'vibe-shift': 90, 'statement-banger': 92 },
+    producerTags: ['dr-dre'],
+    budgetCost: 4,
+  },
+  {
+    id: 'song-90s-6',
+    title: 'N.Y. State of Mind',
+    artist: 'Nas',
+    featuredArtists: [],
+    rawArtistString: 'Nas',
+    album: 'Illmatic',
+    year: 1994,
+    genre: 'East Coast Hip-Hop',
+    typeTag: 'Pure Lyrical Masterpiece',
+    bpm: 84,
+    energy: 82,
+    slots: ['cinematic-intro', 'gritty-anthem', 'storyteller-cut'],
+    gradient: 'from-amber-900 to-stone-950',
+    audioSynthFreq: 349,
+    impact: 99,
+    recognition: 96,
+    acclaim: 100,
+    archetypes: ['lyrical', 'street-anthem'],
+    slotAffinity: { 'cinematic-intro': 95, 'gritty-anthem': 98, 'storyteller-cut': 97 },
+    budgetCost: 5,
+  },
+  {
+    id: 'song-90s-7',
+    title: 'Killing Me Softly With His Song',
+    artist: 'Fugees',
+    featuredArtists: ['Ms. Lauryn Hill'],
+    rawArtistString: 'Fugees',
+    album: 'The Score',
+    year: 1996,
+    genre: 'R&B / Hip-Hop',
+    typeTag: 'Acoustic Soul Fusion',
+    bpm: 92,
+    energy: 68,
+    slots: ['late-night-rnb', 'acoustic-unplugged', 'vibe-shift'],
+    gradient: 'from-emerald-900 to-teal-950',
+    audioSynthFreq: 330,
+    impact: 97,
+    recognition: 98,
+    acclaim: 98,
+    archetypes: ['rnb', 'introspective'],
+    slotAffinity: { 'late-night-rnb': 98, 'acoustic-unplugged': 96, 'vibe-shift': 92 },
+    budgetCost: 4,
+  },
+  {
+    id: 'song-90s-8',
+    title: 'No Scrubs',
+    artist: 'TLC',
+    featuredArtists: [],
+    rawArtistString: 'TLC',
+    album: 'FanMail',
+    year: 1999,
+    genre: 'R&B',
+    typeTag: 'Millennium R&B Bop',
+    bpm: 93,
+    energy: 80,
+    slots: ['statement-banger', 'late-night-rnb', 'club-bounce'],
+    gradient: 'from-purple-800 to-pink-950',
+    audioSynthFreq: 440,
+    impact: 96,
+    recognition: 98,
+    acclaim: 94,
+    archetypes: ['rnb', 'high-energy'],
+    slotAffinity: { 'statement-banger': 94, 'late-night-rnb': 97, 'club-bounce': 91 },
+    budgetCost: 4,
+  },
+  // ==========================================
+  // --- CLASS OF 2016 TIME CAPSULE ---
+  // ==========================================
+  {
+    id: 'song-2016-1',
+    title: 'Goosebumps',
+    artist: 'Travis Scott',
+    featuredArtists: ['Kendrick Lamar'],
+    rawArtistString: 'Travis Scott feat. Kendrick Lamar',
+    album: 'Birds in the Trap Sing McKnight',
+    year: 2016,
+    genre: 'Psychedelic Trap',
+    typeTag: 'Hypnotic Bass Anthem',
+    bpm: 130,
+    energy: 92,
+    slots: ['club-bounce', 'apex-climax', 'statement-banger'],
+    gradient: 'from-purple-900 to-stone-900',
+    audioSynthFreq: 415,
+    impact: 98,
+    recognition: 99,
+    acclaim: 94,
+    archetypes: ['high-energy', 'club'],
+    slotAffinity: { 'club-bounce': 99, 'apex-climax': 97, 'statement-banger': 95 },
+    producerTags: ['mike-dean'],
+    budgetCost: 5,
+  },
+  {
+    id: 'song-2016-2',
+    title: 'One Dance',
+    artist: 'Drake',
+    featuredArtists: ['Wizkid', 'Kyla'],
+    rawArtistString: 'Drake feat. Wizkid & Kyla',
+    album: 'Views',
+    year: 2016,
+    genre: 'Dancehall / Pop Rap',
+    typeTag: 'Global Afrobeats Hit',
+    bpm: 104,
+    energy: 86,
+    slots: ['club-bounce', 'vibe-shift', 'statement-banger'],
+    gradient: 'from-cyan-800 to-blue-950',
+    audioSynthFreq: 349,
+    impact: 99,
+    recognition: 100,
+    acclaim: 92,
+    archetypes: ['club', 'vibe-shift'],
+    slotAffinity: { 'club-bounce': 98, 'vibe-shift': 96, 'statement-banger': 94 },
+    producerTags: ['ohevo-40'],
+    budgetCost: 5,
+  },
+  {
+    id: 'song-2016-3',
+    title: 'Black Beatles',
+    artist: 'Rae Sremmurd',
+    featuredArtists: ['Gucci Mane'],
+    rawArtistString: 'Rae Sremmurd feat. Gucci Mane',
+    album: 'SremmLife 2',
+    year: 2016,
+    genre: 'Trap',
+    typeTag: 'Atmospheric Mannequin Anthem',
+    bpm: 145,
+    energy: 88,
+    slots: ['statement-banger', 'apex-climax', 'club-bounce'],
+    gradient: 'from-pink-800 to-purple-950',
+    audioSynthFreq: 392,
+    impact: 95,
+    recognition: 98,
+    acclaim: 93,
+    archetypes: ['high-energy', 'club'],
+    slotAffinity: { 'statement-banger': 96, 'apex-climax': 94, 'club-bounce': 95 },
+    budgetCost: 4,
+  },
+  {
+    id: 'song-2016-4',
+    title: 'No Problem',
+    artist: 'Chance the Rapper',
+    featuredArtists: ['Lil Wayne', '2 Chainz'],
+    rawArtistString: 'Chance the Rapper feat. Lil Wayne & 2 Chainz',
+    album: 'Coloring Book',
+    year: 2016,
+    genre: 'Gospel Rap',
+    typeTag: 'Joyful Gospel Bounce',
+    bpm: 135,
+    energy: 89,
+    slots: ['statement-banger', 'club-bounce', 'vibe-shift'],
+    gradient: 'from-amber-600 to-orange-950',
+    audioSynthFreq: 440,
+    impact: 92,
+    recognition: 94,
+    acclaim: 95,
+    archetypes: ['high-energy', 'iconic-opener'],
+    slotAffinity: { 'statement-banger': 95, 'club-bounce': 92, 'vibe-shift': 90 },
+    budgetCost: 3,
+  },
+  {
+    id: 'song-2016-5',
+    title: 'Father Stretch My Hands Pt. 1',
+    artist: 'Kanye West',
+    featuredArtists: ['Kid Cudi', 'Kelly Price'],
+    rawArtistString: 'Kanye West feat. Kid Cudi',
+    album: 'The Life of Pablo',
+    year: 2016,
+    genre: 'Gospel Rap',
+    typeTag: 'The Legendary Metro Beat Drop',
+    bpm: 113,
+    energy: 94,
+    slots: ['cinematic-intro', 'apex-climax', 'statement-banger'],
+    gradient: 'from-orange-700 to-red-950',
+    audioSynthFreq: 330,
+    impact: 98,
+    recognition: 99,
+    acclaim: 96,
+    archetypes: ['iconic-opener', 'climax'],
+    slotAffinity: { 'cinematic-intro': 99, 'apex-climax': 99, 'statement-banger': 97 },
+    producerTags: ['metro-boomin', 'kanye-west', 'mike-dean'],
+    budgetCost: 5,
+  },
+  {
+    id: 'song-2016-6',
+    title: 'Pick Up the Phone',
+    artist: 'Young Thug',
+    featuredArtists: ['Travis Scott', 'Quavo'],
+    rawArtistString: 'Young Thug & Travis Scott feat. Quavo',
+    album: 'JEFFERY / Birds in the Trap',
+    year: 2016,
+    genre: 'Melodic Trap',
+    typeTag: 'Steel Drum Auto-Tune Wave',
+    bpm: 136,
+    energy: 87,
+    slots: ['melodic-trap', 'vibe-shift', 'club-bounce'],
+    gradient: 'from-teal-700 to-indigo-950',
+    audioSynthFreq: 370,
+    impact: 94,
+    recognition: 95,
+    acclaim: 95,
+    archetypes: ['vibe-shift', 'club'],
+    slotAffinity: { 'melodic-trap': 99, 'vibe-shift': 96, 'club-bounce': 93 },
+    budgetCost: 3,
+  },
+  {
+    id: 'song-2016-7',
+    title: 'Work',
+    artist: 'Rihanna',
+    featuredArtists: ['Drake'],
+    rawArtistString: 'Rihanna feat. Drake',
+    album: 'ANTI',
+    year: 2016,
+    genre: 'Dancehall / R&B',
+    typeTag: 'Hypnotic Island Groove',
+    bpm: 92,
+    energy: 80,
+    slots: ['late-night-rnb', 'vibe-shift', 'club-bounce'],
+    gradient: 'from-red-900 to-zinc-950',
+    audioSynthFreq: 330,
+    impact: 97,
+    recognition: 99,
+    acclaim: 94,
+    archetypes: ['rnb', 'vibe-shift'],
+    slotAffinity: { 'late-night-rnb': 98, 'vibe-shift': 95, 'club-bounce': 92 },
+    budgetCost: 4,
+  },
 ];
 
 /**
@@ -5103,6 +5445,50 @@ export function filterByEra(library: Song[], eraFilter: EraFilter): Song[] {
   if (eraFilter === '2000s') return library.filter((s) => s.year !== undefined && s.year < 2010);
   return library;
 }
+
+/**
+ * Filter songs by challenge gauntlet theme.
+ */
+export function filterByChallengeTheme(library: Song[], theme?: ChallengeTheme): Song[] {
+  if (!theme || theme === 'standard') return library;
+
+  let filtered: Song[];
+  switch (theme) {
+    case 'era-90s':
+      filtered = library.filter((s) => s.year !== undefined && s.year >= 1990 && s.year <= 1999);
+      break;
+    case 'era-2000s':
+      filtered = library.filter((s) => s.year !== undefined && s.year >= 2000 && s.year <= 2009);
+      break;
+    case 'era-2010s':
+      filtered = library.filter((s) => s.year !== undefined && s.year >= 2010 && s.year <= 2019);
+      break;
+    case 'era-2020s':
+      filtered = library.filter((s) => s.year !== undefined && s.year >= 2020);
+      break;
+    case 'year-2016':
+      filtered = library.filter((s) => s.year === 2016);
+      break;
+    case 'genre-hiphop':
+      filtered = library.filter((s) => {
+        const g = s.genre.toLowerCase();
+        return g.includes('hip-hop') || g.includes('rap') || g.includes('trap') || g.includes('drill') || g.includes('boom');
+      });
+      break;
+    case 'genre-rnb':
+      filtered = library.filter((s) => {
+        const g = s.genre.toLowerCase();
+        return g.includes('r&b') || g.includes('soul') || g.includes('neo-soul');
+      });
+      break;
+    default:
+      filtered = library;
+  }
+
+  // Gracefully fallback to full library if filter produces too few candidates
+  return filtered.length >= 8 ? filtered : library;
+}
+
 
 /**
  * Finds the optimal solo-monopoly-safe song for a slot.
@@ -5153,6 +5539,8 @@ export function getOptionsForSlot(
     draftedArtists: context?.draftedArtists ?? [],
     recentlyShownSongIds: context?.recentlyShownSongIds ?? [],
     recentlyShownArtists: context?.recentlyShownArtists ?? [],
+    theme: context?.theme,
+    budgetRemaining: context?.budgetRemaining,
   };
   return generateCandidatePool(fullContext, count);
 }

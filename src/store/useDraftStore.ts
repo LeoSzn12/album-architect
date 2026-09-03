@@ -17,13 +17,23 @@ import {
   CandidateRound,
   OpponentReveal,
   SlotId,
+  ChallengeTheme,
+  SynergyBadge,
+  CrowdHypeResult,
 } from '@/types/draft';
-import { DRAFT_SLOTS, EP_SLOTS, ALBUM_SLOTS } from '@/data/slots';
+import { DRAFT_SLOTS, EP_SLOTS, ALBUM_SLOTS, BUDGET_SLOTS } from '@/data/slots';
 import { getOptionsForSlot } from '@/data/songs';
 import { generateFallbackEvaluation } from '@/lib/fallbackEvaluator';
 import { generateEraSequence } from '@/lib/eraSequence';
 import { computeMonopolyReport, computeEnergyMetrics } from '@/lib/draftMetrics';
 import { reorderTracklist } from '@/lib/tracklistOrder';
+import {
+  INITIAL_BUDGET,
+  calculateRemainingBudget,
+  computeBudgetReport,
+} from '@/lib/budgetEngine';
+import { getDailySeed, getDailyTheme, calculateDailyStreak } from '@/lib/dailyDrop';
+import { detectSynergies, computeCrowdHype } from '@/lib/synergyEngine';
 
 let sessionRequestCounter = 0;
 let sessionWriteQueue = Promise.resolve();
@@ -59,8 +69,10 @@ async function saveGameSessionPick(sessionId: string, track: DraftedTrack) {
  *   v2 → v3: added eraSequence, candidateHistory; replaced subScores shape
  *             (pacing/synergy/cohesion/starPower → slotFit/albumFlow/cohesion/impact).
  *   v3 → v4: added explicit Draft opponent state and transparent scorecard fields.
+ *   v4 → v5: added session persistence boundary.
+ *   v5 → v6: added challengeTheme, budgetRemaining, dailyStreak, activeSynergies, crowdHype.
  */
-const PERSIST_VERSION = 5;
+const PERSIST_VERSION = 6;
 
 interface DraftStoreState {
   gameMode: GameMode;
@@ -95,6 +107,12 @@ interface DraftStoreState {
   opponentDraftedTracks: DraftedTrack[];
   lastOpponentReveal: OpponentReveal | null;
   sessionId: string | null;
+  challengeTheme: ChallengeTheme;
+  budgetRemaining: number;
+  dailyStreak: number;
+  lastDailyCompletedDate: string | null;
+  activeSynergies: SynergyBadge[];
+  crowdHype: CrowdHypeResult;
 
   // Actions
   setGameMode: (mode: GameMode) => void;
@@ -102,8 +120,16 @@ interface DraftStoreState {
   setDraftSeed: (seed: string | null) => void;
   setPlayerAlias: (alias: string) => void;
   setSelectedEra: (era: EraFilter) => void;
+  setChallengeTheme: (theme: ChallengeTheme) => void;
+  startDailyDrop: () => void;
   fetchOptions: (slotId: SlotId, era: EraFilter, seed: string | null, rerollIndex?: number) => Song[];
-  startNewDraft: (mode?: GameMode, era?: EraFilter, diff?: DifficultyTier, seed?: string | null) => void;
+  startNewDraft: (
+    mode?: GameMode,
+    era?: EraFilter,
+    diff?: DifficultyTier,
+    seed?: string | null,
+    theme?: ChallengeTheme
+  ) => void;
   draftSong: (song: Song, isWildcard?: boolean) => void;
   undoLastPick: () => boolean;
   useRerollToken: () => boolean;
@@ -174,18 +200,30 @@ export const useDraftStore = create<DraftStoreState>()(
       opponentDraftedTracks: [],
       lastOpponentReveal: null,
       sessionId: null,
+      challengeTheme: 'standard',
+      budgetRemaining: INITIAL_BUDGET,
+      dailyStreak: 0,
+      lastDailyCompletedDate: null,
+      activeSynergies: [],
+      crowdHype: {
+        score: 65,
+        status: 'AWAITING FIRST DROP 🚀',
+        reactionQuote: 'Passengers waiting to see who gets the aux cord...',
+      },
 
       fetchOptions: (slotId: SlotId, era: EraFilter, seed: string | null, rerollIndex: number = 0) => {
-        const { draftedTracks, recentlyShownSongIds, recentlyShownArtists, soloDraftNonce } = get();
+        const { draftedTracks, recentlyShownSongIds, recentlyShownArtists, soloDraftNonce, challengeTheme, budgetRemaining, gameMode } = get();
         const draftedSongIds = draftedTracks.map((d) => d.song.id);
         const draftedArtists = draftedTracks.map((d) => d.song.artist);
 
-        const options = getOptionsForSlot(slotId, get().gameMode === 'draft' ? 5 : 4, era, seed, {
+        const options = getOptionsForSlot(slotId, gameMode === 'draft' ? 5 : 4, era, seed, {
           rerollIndex: seed ? rerollIndex : rerollIndex + soloDraftNonce * 10,
           draftedSongIds,
           draftedArtists,
           recentlyShownSongIds,
           recentlyShownArtists,
+          theme: challengeTheme,
+          budgetRemaining: gameMode === 'budget' ? budgetRemaining : undefined,
         });
 
         if (seed === null) {
@@ -226,18 +264,31 @@ export const useDraftStore = create<DraftStoreState>()(
         set({ selectedEra: era });
       },
 
+      setChallengeTheme: (theme: ChallengeTheme) => {
+        set({ challengeTheme: theme });
+        get().startNewDraft(undefined, undefined, undefined, undefined, theme);
+      },
+
+      startDailyDrop: () => {
+        const todaySeed = getDailySeed();
+        const dailyInfo = getDailyTheme();
+        get().startNewDraft('draft', 'all', 'standard', todaySeed, dailyInfo.theme);
+      },
+
       startNewDraft: (
         mode?: GameMode,
         era?: EraFilter,
         diff?: DifficultyTier,
-        seed?: string | null
+        seed?: string | null,
+        theme?: ChallengeTheme
       ) => {
         const sessionRequestId = ++sessionRequestCounter;
         const newMode = mode ?? get().gameMode;
         const newEra  = era  ?? get().selectedEra;
         const newDiff = diff ?? get().difficulty;
         const newSeed = seed !== undefined ? seed : get().draftSeed;
-        const slots   = newMode === 'draft' ? DRAFT_SLOTS : newMode === 'ep' ? EP_SLOTS : ALBUM_SLOTS;
+        const newTheme = theme ?? (newSeed && newSeed.startsWith('DAILY-') ? getDailyTheme().theme : get().challengeTheme);
+        const slots   = newMode === 'draft' ? DRAFT_SLOTS : newMode === 'ep' ? EP_SLOTS : newMode === 'budget' ? BUDGET_SLOTS : ALBUM_SLOTS;
 
         let tokens = newMode === 'album' ? 3 : 2;
         if (newDiff === 'veteran' || newDiff === 'hardcore') tokens = 1;
@@ -249,9 +300,8 @@ export const useDraftStore = create<DraftStoreState>()(
 
         const eraSequence = generateEraSequence(slots, newSeed);
         const slot0Era    = eraSequence[0];
-        // Set the mode before fetching the first pool so Draft mode receives
-        // its required five recommendations even when switching from EP/LP.
-        set({ gameMode: newMode, slots });
+        // Set mode & theme before fetching the first pool
+        set({ gameMode: newMode, slots, challengeTheme: newTheme, budgetRemaining: INITIAL_BUDGET });
         const initialOptions = get().fetchOptions(slots[0].id, slot0Era, newSeed, 0);
 
         const initialHistory: CandidateRound[] = [{
@@ -266,6 +316,8 @@ export const useDraftStore = create<DraftStoreState>()(
           difficulty: newDiff,
           selectedEra: newEra,
           draftSeed: newSeed,
+          challengeTheme: newTheme,
+          budgetRemaining: INITIAL_BUDGET,
           slots,
           currentRoundIndex: 0,
           draftedTracks: [],
@@ -276,6 +328,12 @@ export const useDraftStore = create<DraftStoreState>()(
           candidateHistory: initialHistory,
           monopolyReport: EMPTY_MONOPOLY,
           energyMetrics: EMPTY_ENERGY,
+          activeSynergies: [],
+          crowdHype: {
+            score: 65,
+            status: 'AWAITING FIRST DROP 🚀',
+            reactionQuote: 'Passengers waiting to see who gets the aux cord...',
+          },
           evaluationResult: null,
           opponentEvaluationResult: null,
           isEvaluating: false,
@@ -324,6 +382,12 @@ export const useDraftStore = create<DraftStoreState>()(
         const nextRoundIndex   = currentRoundIndex + 1;
         const monopolyReport   = computeMonopolyReport(updatedDrafted);
         const energyMetrics    = computeEnergyMetrics(updatedDrafted);
+        const updatedBudget    = gameMode === 'budget' ? calculateRemainingBudget(updatedDrafted) : INITIAL_BUDGET;
+        const activeSynergies  = detectSynergies(updatedDrafted);
+        const crowdHype        = computeCrowdHype(updatedDrafted, activeSynergies);
+
+        // Update budget and synergies in store before next fetchOptions
+        set({ budgetRemaining: updatedBudget, activeSynergies, crowdHype });
 
         let nextOptions: Song[] = [];
         let updatedHistory      = candidateHistory;
@@ -352,6 +416,9 @@ export const useDraftStore = create<DraftStoreState>()(
           currentRoundIndex: nextRoundIndex,
           draftedTracks: updatedDrafted,
           currentOptions: nextOptions,
+          budgetRemaining: updatedBudget,
+          activeSynergies,
+          crowdHype,
           monopolyReport,
           energyMetrics,
           candidateHistory: updatedHistory,
@@ -366,13 +433,18 @@ export const useDraftStore = create<DraftStoreState>()(
       },
 
       undoLastPick: () => {
-        const { draftedTracks, slots, eraSequence, draftSeed, candidateHistory } = get();
+        const { draftedTracks, slots, eraSequence, draftSeed, candidateHistory, gameMode } = get();
         if (draftedTracks.length === 0) return false;
 
         const updatedDrafted  = draftedTracks.slice(0, -1);
         const prevRoundIndex  = updatedDrafted.length;
         const prevSlot        = slots[prevRoundIndex];
         const prevEra         = eraSequence[prevRoundIndex] ?? 'all';
+        const restoredBudget  = gameMode === 'budget' ? calculateRemainingBudget(updatedDrafted) : INITIAL_BUDGET;
+        const activeSynergies = detectSynergies(updatedDrafted);
+        const crowdHype       = computeCrowdHype(updatedDrafted, activeSynergies);
+
+        set({ budgetRemaining: restoredBudget, activeSynergies, crowdHype });
         const restoredOptions = get().fetchOptions(prevSlot.id, prevEra, draftSeed, 0);
 
         const monopolyReport  = computeMonopolyReport(updatedDrafted);
@@ -385,6 +457,9 @@ export const useDraftStore = create<DraftStoreState>()(
           currentRoundIndex: prevRoundIndex,
           draftedTracks: updatedDrafted,
           currentOptions: restoredOptions,
+          budgetRemaining: restoredBudget,
+          activeSynergies,
+          crowdHype,
           monopolyReport,
           energyMetrics,
           evaluationResult: null,
@@ -529,6 +604,45 @@ export const useDraftStore = create<DraftStoreState>()(
           return result;
         }
 
+        // Augment evaluation with budget, synergies, crowd hype, and theme metadata
+        if (gameMode === 'budget') {
+          result.budgetReport = computeBudgetReport(draftedTracksSnapshot, result.rawScore);
+        }
+        result.activeTheme = get().challengeTheme;
+        result.achievedSynergies = detectSynergies(draftedTracksSnapshot);
+        result.crowdHype = computeCrowdHype(draftedTracksSnapshot, result.achievedSynergies);
+
+        // Daily Drop Streak tracking
+        const todaySeed = getDailySeed();
+        const isDailyDrop = Boolean(draftSeed && draftSeed === todaySeed);
+        let newDailyStreak = get().dailyStreak;
+        let newLastDailyDate = get().lastDailyCompletedDate;
+
+        if (isDailyDrop) {
+          const streakRes = calculateDailyStreak(get().lastDailyCompletedDate, get().dailyStreak, todaySeed);
+          newDailyStreak = streakRes.newStreak;
+          newLastDailyDate = todaySeed;
+        }
+
+        // Curator Badges
+        const curatorBadges: string[] = [];
+        if (gameMode === 'budget' && result.budgetReport?.totalSpent === 15 && result.overallScore >= 8.5) {
+          curatorBadges.push('Budget Beast');
+        }
+        if (result.achievedSynergies?.some((s) => s.id === 'silk-bpm-blend')) {
+          curatorBadges.push('Master DJ');
+        }
+        if (result.crowdHype && result.crowdHype.score >= 85) {
+          curatorBadges.push('Aux God');
+        }
+        if (isDailyDrop) {
+          curatorBadges.push(`Daily Drop (${newDailyStreak}d Streak)`);
+        }
+        if (result.monopolyReport.totalPenaltyDeduction === 0 && draftedTracksSnapshot.length >= 7) {
+          curatorBadges.push('The Diplomat');
+        }
+        result.curatorBadges = curatorBadges;
+
         const { pastDrafts, leaderboard } = get();
 
         const dateStr = new Date().toLocaleDateString('en-US', {
@@ -548,6 +662,9 @@ export const useDraftStore = create<DraftStoreState>()(
           topTrackTitle: draftedTracksSnapshot[0]?.song.title || 'Master Project',
           topTrackArtist: draftedTracksSnapshot[0]?.song.rawArtistString || 'Various Artists',
           evaluationResult: result,
+          theme: get().challengeTheme,
+          budgetReport: result.budgetReport,
+          crowdHypeScore: result.crowdHype?.score,
         };
 
         const updatedHistory = [newPastDraft, ...pastDrafts].slice(0, 20);
@@ -565,6 +682,8 @@ export const useDraftStore = create<DraftStoreState>()(
           topTrackArtist: draftedTracksSnapshot[0]?.song.rawArtistString || 'Various Artists',
           completedAt: dateStr,
           subScores: result.subScores,
+          theme: get().challengeTheme,
+          isDailyDrop,
         };
 
         const updatedLeaderboard = [...leaderboard, newLeaderboardEntry]
@@ -607,6 +726,8 @@ export const useDraftStore = create<DraftStoreState>()(
           isEvaluating: false,
           pastDrafts: updatedHistory,
           leaderboard: updatedLeaderboard,
+          dailyStreak: newDailyStreak,
+          lastDailyCompletedDate: newLastDailyDate,
         });
         return result;
       },
@@ -745,6 +866,13 @@ export const useDraftStore = create<DraftStoreState>()(
 
         if (version < 5) persisted.sessionId = null;
 
+        if (version < 6) {
+          persisted.challengeTheme = 'standard';
+          persisted.budgetRemaining = INITIAL_BUDGET;
+          persisted.dailyStreak = 0;
+          persisted.lastDailyCompletedDate = null;
+        }
+
         return persisted;
       },
       /**
@@ -778,6 +906,10 @@ export const useDraftStore = create<DraftStoreState>()(
         opponentDraftedTracks: state.opponentDraftedTracks,
         lastOpponentReveal: state.lastOpponentReveal,
         sessionId: state.sessionId,
+        challengeTheme: state.challengeTheme,
+        budgetRemaining: state.budgetRemaining,
+        dailyStreak: state.dailyStreak,
+        lastDailyCompletedDate: state.lastDailyCompletedDate,
       }),
     }
   )

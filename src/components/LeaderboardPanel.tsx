@@ -57,20 +57,20 @@ export const LeaderboardPanel: React.FC = () => {
           <Filter className="w-3.5 h-3.5 text-pink-400" />
           <span>Format:</span>
           <div className="flex min-w-0 flex-wrap gap-1 ml-1">
-            {(['all', 'draft', 'ep', 'album'] as const).map((m) => (
+            {(['all', 'draft', 'budget', 'ep', 'album'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => {
                   playHoverSound(audioEnabled);
                   setFilterMode(m);
                 }}
-                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                className={`px-3 py-1 rounded-xl transition cursor-pointer ${
                   filterMode === m
-                    ? 'bg-purple-600 text-white shadow'
+                    ? 'bg-purple-600 text-white shadow-md'
                     : 'bg-gray-900 text-gray-400 hover:text-white'
                 }`}
               >
-                {m === 'all' ? 'All Formats' : m === 'draft' ? 'Draft (7)' : m === 'ep' ? 'EP (7)' : 'LP (14)'}
+                {m === 'all' ? 'All' : m === 'draft' ? 'Draft' : m === 'budget' ? '$15 Budget' : m === 'ep' ? 'EP' : 'Album'}
               </button>
             ))}
           </div>
@@ -151,9 +151,19 @@ export const LeaderboardPanel: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <h4 className="font-black text-sm text-white">{entry.playerAlias}</h4>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 uppercase">
-                        {entry.gameMode === 'draft' ? 'DRAFT' : entry.gameMode === 'ep' ? 'EP' : 'LP'} • {entry.difficulty}
+                        {entry.gameMode === 'draft' ? 'DRAFT' : entry.gameMode === 'budget' ? '$15 BUDGET' : entry.gameMode === 'ep' ? 'EP' : 'LP'} • {entry.difficulty}
                       </span>
-                      {entry.draftSeed && (
+                      {entry.isDailyDrop && (
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 uppercase flex items-center gap-0.5">
+                          🔥 Daily Drop
+                        </span>
+                      )}
+                      {entry.theme && entry.theme !== 'standard' && (
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 uppercase">
+                          {entry.theme}
+                        </span>
+                      )}
+                      {entry.draftSeed && !entry.isDailyDrop && (
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1">
                           <Swords className="w-3 h-3" /> {entry.draftSeed}
                         </span>

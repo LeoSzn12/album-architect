@@ -21,6 +21,8 @@ import {
   Dice5,
   X,
   Plus,
+  DollarSign,
+  Crown,
 } from 'lucide-react';
 import { playHoverSound, playRerollSound, playDraftLockSound } from '@/lib/audioEngine';
 import { eraLabel } from '@/lib/eraSequence';
@@ -28,6 +30,8 @@ import {
   enrichCandidatesWithFlowIntelligence,
   pickWildcardCandidate,
 } from '@/lib/flowIntelligence';
+import { AuxHypeMeter } from './AuxHypeMeter';
+import { SynergyDisplay } from './SynergyDisplay';
 import type { Song } from '@/types/draft';
 
 interface DraftBoardProps {
@@ -50,6 +54,10 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     eraSequence,
     gameMode,
     lastOpponentReveal,
+    challengeTheme,
+    budgetRemaining,
+    activeSynergies,
+    crowdHype,
   } = useDraftStore();
 
   const { toggleSong, isSongPlaying, stop } = useSnippetAudio();
@@ -65,7 +73,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
   const isCompleted = currentRoundIndex >= slots.length;
   const currentSlot = slots[currentRoundIndex];
-  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
   const trackLabel = gameMode === 'draft' ? 'Round' : `${projectLabel} Track`;
   const completionLabel = gameMode === 'draft' ? 'Draft Complete' : `${projectLabel} Ready for Review`;
   const reviewActionLabel = gameMode === 'draft' ? 'Get Your Score' : `Review ${projectLabel}`;
@@ -297,6 +305,32 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
               </span>
             )}
 
+            {/* Budget Mode Counter */}
+            {gameMode === 'budget' && (
+              <span className="px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-300 text-xs font-black uppercase tracking-wider border border-emerald-700 flex items-center gap-1 shadow-sm">
+                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                Budget: ${budgetRemaining} remaining
+              </span>
+            )}
+
+            {/* Challenge Gauntlet Badge */}
+            {challengeTheme && challengeTheme !== 'standard' && (
+              <span className="px-2.5 py-0.5 rounded bg-amber-950 text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-700 flex items-center gap-1 shadow-sm">
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                {challengeTheme === 'year-2016'
+                  ? 'Class of 2016'
+                  : challengeTheme === 'era-90s'
+                  ? '90s Golden Era'
+                  : challengeTheme === 'era-2000s'
+                  ? '2000s Bling Era'
+                  : challengeTheme === 'genre-hiphop'
+                  ? 'Hip-Hop Only'
+                  : challengeTheme === 'genre-rnb'
+                  ? 'R&B / Soul'
+                  : challengeTheme}
+              </span>
+            )}
+
             {draftSeed && (
               <span className="px-2.5 py-0.5 rounded bg-amber-950 text-amber-300 text-xs font-mono font-extrabold tracking-wider border border-amber-800 flex items-center gap-1">
                 <Swords className="w-3 h-3 text-amber-400" /> 1v1: {draftSeed}
@@ -353,6 +387,16 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           </button>
         </div>
       </section>
+
+      {/* Real-time Aux Crowd Hype & Active Synergies Deck */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+        <div className="md:col-span-1">
+          <AuxHypeMeter crowdHype={crowdHype} />
+        </div>
+        <div className="md:col-span-2">
+          <SynergyDisplay synergies={activeSynergies} />
+        </div>
+      </div>
 
       {/* Interactive Audition & Shortcut Deck Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-purple-900/30 bg-purple-950/20 px-4 py-2 text-xs">

@@ -20,6 +20,7 @@ import {
   playHoverSound,
   playDraftLockSound,
 } from '@/lib/audioEngine';
+import { getSongBudgetPrice } from '@/lib/budgetEngine';
 
 interface DraftCardProps {
   song: Song;
@@ -41,6 +42,8 @@ export const DraftCard: React.FC<DraftCardProps> = ({
     monopolyReport,
     setActivePlayingSongId,
     openRealSongPlayer,
+    gameMode,
+    budgetRemaining,
   } = useDraftStore();
 
   const {
@@ -55,6 +58,9 @@ export const DraftCard: React.FC<DraftCardProps> = ({
 
   const isPlaying = isSongPlaying(song.id);
   const isActive = isSongActive(song.id);
+
+  const songPrice = getSongBudgetPrice(song);
+  const isOverBudget = gameMode === 'budget' && songPrice > budgetRemaining;
 
   // Check if drafting this song triggers or extends a solo monopoly penalty
   const currentSoloCount = monopolyReport.artistCounts[song.artist]?.solo || 0;
@@ -79,6 +85,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
   };
 
   const handleDraftClick = () => {
+    if (isOverBudget) return;
     stop();
     setActivePlayingSongId(null);
     playDraftLockSound(audioEnabled);
@@ -122,6 +129,17 @@ export const DraftCard: React.FC<DraftCardProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap justify-end">
+          <span
+            title={`Card cost: $${songPrice} (${songPrice === 5 ? 'Megastar' : songPrice === 4 ? 'Heavy Hitter' : songPrice === 3 ? 'Fan Favorite' : songPrice === 2 ? 'Quality Cut' : 'Sleeper Value'})`}
+            className={`px-2 py-0.5 rounded text-[10px] font-black border flex items-center gap-0.5 ${
+              isOverBudget
+                ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
+                : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm'
+            }`}
+          >
+            💰 ${songPrice}
+          </span>
+
           {isNewMonopolyRisk && (
             <span
               title="Drafting another solo track for this artist will trigger a -1.5pt Monopoly Penalty!"
@@ -347,9 +365,12 @@ export const DraftCard: React.FC<DraftCardProps> = ({
           </button>
 
           <button
+            disabled={isOverBudget}
             onClick={handleDraftClick}
             className={`min-h-[44px] flex-1 py-2 rounded-xl font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 shadow-lg cursor-pointer active:scale-95 ${
-              hasMonopolyWarning
+              isOverBudget
+                ? 'bg-gray-800/80 border border-gray-700 text-gray-500 cursor-not-allowed'
+                : hasMonopolyWarning
                 ? 'bg-gradient-to-r from-red-700 to-pink-700 hover:from-red-600 hover:to-pink-600 text-white shadow-red-950/50'
                 : song.flowInsight?.isTopCuratorPick
                 ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:brightness-110 text-white shadow-emerald-950/50'
@@ -357,7 +378,13 @@ export const DraftCard: React.FC<DraftCardProps> = ({
             }`}
           >
             <Plus className="w-4 h-4" />
-            <span>{hasMonopolyWarning ? 'Draft (Penalty)' : 'Lock In Pick'}</span>
+            <span>
+              {isOverBudget
+                ? `Over Budget ($${songPrice})`
+                : hasMonopolyWarning
+                ? 'Draft (Penalty)'
+                : 'Lock In Pick'}
+            </span>
           </button>
         </div>
       </div>

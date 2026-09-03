@@ -1,4 +1,14 @@
-export type GameMode = 'draft' | 'ep' | 'album';
+export type GameMode = 'draft' | 'ep' | 'album' | 'budget';
+
+export type ChallengeTheme =
+  | 'standard'
+  | 'era-90s'
+  | 'era-2000s'
+  | 'era-2010s'
+  | 'era-2020s'
+  | 'year-2016'
+  | 'genre-hiphop'
+  | 'genre-rnb';
 
 export type SlotId =
   | 'cinematic-intro'
@@ -71,6 +81,8 @@ export interface CandidateContext {
   draftedArtists: string[];
   recentlyShownSongIds: string[];
   recentlyShownArtists: string[];
+  theme?: ChallengeTheme;
+  budgetRemaining?: number;
 }
 
 export interface Song {
@@ -88,6 +100,8 @@ export interface Song {
   slots: SlotId[];
   gradient: string;
   audioSynthFreq: number; // base frequency for synthesized preview audio
+  producerTags?: string[]; // e.g. ['metro-boomin', 'kanye-west', 'mike-dean']
+  budgetCost?: number; // $1 to $5 for $15 Budget Draft Mode
   youtubeId?: string; // YouTube video ID e.g. "FW5s99y58d8" — must be exactly 11 chars
   youtubeUrl?: string; // Direct YouTube / YT Music URL
   spotifyId?: string; // Spotify track ID e.g. "0VjIjW4GlUZAMYd2vXMi3b" — 22 chars
@@ -279,6 +293,36 @@ export interface EvaluationResult {
   strongestChoice?: { position: number; reason: string };
   weakestTransition?: { fromPosition: number; toPosition: number; reason: string };
   recommendedChange?: { action: 'swap' | 'move' | 'keep'; position: number; suggestion: string };
+  budgetReport?: BudgetReport;
+  activeTheme?: ChallengeTheme;
+  achievedSynergies?: SynergyBadge[];
+  crowdHype?: CrowdHypeResult;
+  curatorBadges?: string[];
+}
+
+export interface BudgetReport {
+  initialBudget: number;
+  totalSpent: number;
+  remainingBudget: number;
+  efficiencyScore: number; // 0 to 100
+  rating: string;
+  executiveRating: string;
+  perTrackCost: { title: string; cost: number }[];
+}
+
+export interface SynergyBadge {
+  id: string;
+  name: string;
+  description: string;
+  bonusPoints: number;
+  icon: string;
+  category: 'producer' | 'bpm' | 'feature' | 'era' | 'curator';
+}
+
+export interface CrowdHypeResult {
+  score: number; // 0 to 100
+  status: string; // e.g. "AUX PASS APPROVED 🔥"
+  reactionQuote: string;
 }
 
 export type ScoreCategoryKey =
@@ -325,6 +369,9 @@ export interface PastDraft {
   topTrackTitle: string;
   topTrackArtist: string;
   evaluationResult: EvaluationResult;
+  theme?: ChallengeTheme;
+  budgetReport?: BudgetReport;
+  crowdHypeScore?: number;
 }
 
 export interface LeaderboardEntry {
@@ -340,6 +387,8 @@ export interface LeaderboardEntry {
   topTrackArtist: string;
   completedAt: string;
   subScores: ScoringBreakdown;
+  theme?: ChallengeTheme;
+  isDailyDrop?: boolean;
 }
 
 export interface VersusMatchup {

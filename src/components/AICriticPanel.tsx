@@ -18,6 +18,10 @@ import {
   Music2,
   Zap,
   Layers,
+  DollarSign,
+  Crown,
+  Flame,
+  Award,
 } from 'lucide-react';
 import { playHoverSound, playDraftCompleteFanfare } from '@/lib/audioEngine';
 import { scoreToVerdict } from '@/lib/scoringEngine';
@@ -143,9 +147,14 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     source,
     categoryScores,
     executiveSummary,
+    budgetReport,
+    activeTheme,
+    achievedSynergies,
+    crowdHype,
+    curatorBadges,
   } = evaluationResult;
 
-  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
+  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
   const reviewTitle = gameMode === 'draft' ? 'TrackDraft Match Review' : `${projectLabel} Builder Review`;
 
   const verdict = scoreToVerdict(overallScore);
@@ -178,9 +187,17 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
             {draftedTracks.length} tracks reviewed in final order. This scorecard is saved in your local history.
           </p>
         </div>
-        <span className="self-start rounded-full border border-emerald-800/70 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 sm:self-center">
-          {projectLabel} · {draftedTracks.length} tracks
-        </span>
+        <div className="flex items-center gap-2">
+          {activeTheme && activeTheme !== 'standard' && (
+            <span className="rounded-full border border-amber-500/40 bg-amber-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1">
+              <Crown className="w-3 h-3 text-amber-400" />
+              {activeTheme}
+            </span>
+          )}
+          <span className="self-start rounded-full border border-emerald-800/70 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 sm:self-center">
+            {projectLabel} · {draftedTracks.length} tracks
+          </span>
+        </div>
       </div>
 
       {/* ── 1. Verdict Banner ── */}
@@ -204,6 +221,79 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           </span>
         )}
       </div>
+
+      {/* ── Curator Badges ── */}
+      {curatorBadges && curatorBadges.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 p-3.5 rounded-2xl bg-purple-950/40 border border-purple-800/50 backdrop-blur-md">
+          <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1">
+            <Award className="w-3.5 h-3.5 text-purple-400" /> Curator Badges Earned:
+          </span>
+          {curatorBadges.map((badge) => (
+            <span
+              key={badge}
+              className="px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/40 text-xs font-black text-purple-200 shadow-sm flex items-center gap-1 animate-pulse"
+            >
+              ✨ {badge}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ── $15 Budget Efficiency Breakdown ── */}
+      {budgetReport && (
+        <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-emerald-900/60 border border-emerald-600 text-emerald-300 font-bold">
+                <DollarSign className="w-4 h-4" />
+              </span>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                  Aux Budget Efficiency Report
+                </span>
+                <h4 className="text-base font-extrabold text-white">
+                  {budgetReport.executiveRating}
+                </h4>
+              </div>
+            </div>
+            <p className="text-xs text-gray-300 mt-1">
+              Spent ${budgetReport.totalSpent} of ${budgetReport.initialBudget} (${budgetReport.remainingBudget} leftover) • Efficiency Score: {budgetReport.efficiencyScore.toFixed(0)}/100
+            </p>
+          </div>
+          <div className="px-3 py-1.5 rounded-xl bg-emerald-900/40 border border-emerald-500/50 text-right">
+            <span className="text-[10px] uppercase font-bold text-gray-400 block">ROI Score</span>
+            <span className="text-xl font-black text-emerald-300">{budgetReport.efficiencyScore.toFixed(0)}%</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Aux Crowd Hype & Achieved Synergies ── */}
+      {(crowdHype || (achievedSynergies && achievedSynergies.length > 0)) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {crowdHype && (
+            <div className="p-4 rounded-2xl bg-gray-950 border border-gray-800 flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-amber-400" /> Aux Crowd Heat: {crowdHype.score}% ({crowdHype.status})
+              </span>
+              <p className="text-xs text-gray-300 italic">“{crowdHype.reactionQuote}”</p>
+            </div>
+          )}
+          {achievedSynergies && achievedSynergies.length > 0 && (
+            <div className="p-4 rounded-2xl bg-purple-950/30 border border-purple-900/50 flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-pink-400" /> Synergies Unlocked ({achievedSynergies.length})
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {achievedSynergies.map((s) => (
+                  <span key={s.id} className="text-[11px] px-2.5 py-0.5 rounded-full bg-purple-900/60 border border-purple-700 text-purple-200">
+                    {s.name} (+{s.bonusPoints})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {opponentEvaluationResult && (
         <div className="rounded-2xl border border-cyan-800/70 bg-cyan-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
