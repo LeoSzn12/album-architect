@@ -104,3 +104,91 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #a855f7;
 }
+
+/* Crowd Stage & Live Feedback Animations */
+@keyframes crowdBounce {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) scale(1.02);
+  }
+}
+
+@keyframes crowdBounceFast {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) scale(1.05);
+  }
+}
+
+@keyframes stageLaser {
+  0% {
+    transform: rotate(-35deg) scaleX(0.8);
+    opacity: 0.3;
+  }
+  50% {
+    transform: rotate(35deg) scaleX(1.3);
+    opacity: 0.8;
+  }
+  100% {
+    transform: rotate(-35deg) scaleX(0.8);
+    opacity: 0.3;
+  }
+}
+
+@keyframes speechBubblePop {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 10px, 0) scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: translate3d(-50%, -4px, 0) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+}
+
+@keyframes equalizerDance {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 14px;
+  }
+}
+
+.animate-crowd-bounce {
+  animation: crowdBounce 1.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.animate-crowd-bounce-fast {
+  animation: crowdBounceFast 0.55s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+.animate-stage-laser {
+  animation: stageLaser 4s ease-in-out infinite;
+}
+
+.animate-bubble-pop {
+  animation: speechBubblePop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-eq-1 {
+  animation: equalizerDance 0.6s ease-in-out infinite;
+}
+.animate-eq-2 {
+  animation: equalizerDance 0.8s ease-in-out infinite 0.15s;
+}
+.animate-eq-3 {
+  animation: equalizerDance 0.5s ease-in-out infinite 0.3s;
+}
+.animate-eq-4 {
+  animation: equalizerDance 0.7s ease-in-out infinite 0.1s;
+}
+

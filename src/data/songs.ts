@@ -1930,7 +1930,7 @@ export const SONG_LIBRARY: Song[] = [
     typeTag: 'Hypnotic West Coast Groover',
     bpm: 72,
     energy: 78,
-    slots: ['vibe-shift'],
+    slots: ['vibe-shift', 'introspective-cut', 'storyteller-cut'],
     gradient: 'from-emerald-950 to-indigo-950',
     audioSynthFreq: 330,
     appleMusicId: '1440860400',
@@ -1941,7 +1941,7 @@ export const SONG_LIBRARY: Song[] = [
     recognition: 97,
     acclaim: 97,
     archetypes: ['vibe-shift', 'cinematic', 'storytelling'],
-    slotAffinity: { 'vibe-shift': 98 },
+    slotAffinity: { 'vibe-shift': 98, 'introspective-cut': 92, 'storyteller-cut': 90 },
   },
   {
     id: 'song-61',

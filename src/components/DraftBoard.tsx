@@ -24,12 +24,19 @@ import {
   Crown,
   Disc3,
 } from 'lucide-react';
-import { playHoverSound, playRerollSound, playDraftLockSound } from '@/lib/audioEngine';
+import {
+  playHoverSound,
+  playRerollSound,
+  playDraftLockSound,
+  playCrowdCheerSound,
+  playCrowdGaspSound,
+} from '@/lib/audioEngine';
 import { eraLabel } from '@/lib/eraSequence';
 import {
   enrichCandidatesWithFlowIntelligence,
   pickWildcardCandidate,
 } from '@/lib/flowIntelligence';
+import { CrowdStageVisualizer } from './CrowdStageVisualizer';
 import { AuxHypeMeter } from './AuxHypeMeter';
 import { SynergyDisplay } from './SynergyDisplay';
 import type { Song } from '@/types/draft';
@@ -56,6 +63,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     lastOpponentReveal,
     challengeTheme,
     budgetRemaining,
+    monopolyReport,
     activeSynergies,
     crowdHype,
   } = useDraftStore();
@@ -64,6 +72,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
   const [compareSelection, setCompareSelection] = useState<Song[]>([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [hoveredCandidate, setHoveredCandidate] = useState<Song | null>(null);
 
   // Surprise Wildcard Spin state
   const [wildcardModalOpen, setWildcardModalOpen] = useState(false);
@@ -82,10 +91,11 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   const currentEra = eraSequence[currentRoundIndex];
   const currentEraLabel = currentEra ? eraLabel(currentEra) : null;
 
-  // Reset comparison on round change
+  // Reset comparison and hover anticipation on round change
   useEffect(() => {
     setCompareSelection([]);
     setIsCompareOpen(false);
+    setHoveredCandidate(null);
   }, [currentRoundIndex]);
 
   // Keyboard Shortcuts:
@@ -184,6 +194,20 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
       playDraftLockSound(audioEnabled);
       undoLastPick();
     }
+  };
+
+  const handleDraftSong = (song: Song) => {
+    const isHighSynergy = (song.flowInsight?.synergyScore ?? 0) >= 80;
+    const isMonopolyClash = (monopolyReport.artistCounts[song.artist]?.solo ?? 0) >= 1;
+
+    if (isMonopolyClash) {
+      playCrowdGaspSound(audioEnabled);
+    } else if (isHighSynergy) {
+      playCrowdCheerSound(audioEnabled);
+    }
+
+    setHoveredCandidate(null);
+    draftSong(song);
   };
 
   const handleCompareToggle = (song: Song) => {
@@ -406,13 +430,20 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       </section>
 
-      {/* Real-time Aux Crowd Hype & Active Synergies Deck */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
-        <div className="md:col-span-1">
-          <AuxHypeMeter crowdHype={crowdHype} />
+      {/* Live Aux Crowd Arena & Synergies Feedback Deck */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 items-stretch">
+        <div className="lg:col-span-2">
+          <CrowdStageVisualizer
+            crowdHype={crowdHype}
+            hoveredCandidate={hoveredCandidate}
+            draftedTracks={draftedTracks}
+            currentSlot={currentSlot}
+            activeSynergies={activeSynergies}
+          />
         </div>
-        <div className="md:col-span-2">
+        <div className="lg:col-span-1 flex flex-col gap-2">
           <SynergyDisplay synergies={activeSynergies} />
+          <AuxHypeMeter crowdHype={crowdHype} />
         </div>
       </div>
 
@@ -532,9 +563,10 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
                 <DraftCard
                   song={song}
                   candidateIndex={idx}
-                  onDraft={draftSong}
+                  onDraft={handleDraftSong}
                   onCompareToggle={handleCompareToggle}
                   isComparing={compareSelection.some((s) => s.id === song.id)}
+                  onHoverCandidate={setHoveredCandidate}
                 />
               </div>
             ))}

@@ -76,7 +76,7 @@ export function getRecentExposurePenalty(song: Song, context: CandidateContext):
   }
 
   if (recentlyShownArtists.includes(song.artist)) {
-    return 0.25;
+    return 0.6;
   }
 
   return 1.0;
@@ -206,9 +206,10 @@ export function generateCandidatePool(context: CandidateContext, count: number =
   const scored = candidatePool.map((song) => {
     const affinity = getSlotAffinity(song, slotId);
     const recentPenalty = getRecentExposurePenalty(song, context);
+    const freshnessBoost = context.seed === null && !context.recentlyShownSongIds.includes(song.id) ? 1.25 : 1.0;
     const jitter = 0.7 + prng() * 0.6; // Computed once per candidate in array order
 
-    const baseWeight = affinity * recentPenalty;
+    const baseWeight = affinity * recentPenalty * freshnessBoost;
     const finalWeight = baseWeight * (draftedArtists.includes(song.artist) ? 0.5 : 1.0);
 
     return {
@@ -218,8 +219,8 @@ export function generateCandidatePool(context: CandidateContext, count: number =
       jitter,
       baseWeight,
       finalWeight,
-      headlinerScore: (song.recognition + song.impact) * recentPenalty * jitter,
-      bestFitScore: affinity * recentPenalty * jitter,
+      headlinerScore: (song.recognition + song.impact) * recentPenalty * freshnessBoost * jitter,
+      bestFitScore: affinity * recentPenalty * freshnessBoost * jitter,
       altScore: finalWeight * jitter,
     };
   });
