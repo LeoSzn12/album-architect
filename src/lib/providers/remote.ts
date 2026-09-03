@@ -103,7 +103,7 @@ abstract class RemoteProvider implements CatalogProvider {
   abstract readonly capabilities: ProviderCapabilities;
   protected readonly accessToken: string | null;
 
-  protected constructor(accessToken: string | null) {
+  constructor(accessToken: string | null) {
     this.accessToken = accessToken;
   }
 
@@ -215,7 +215,8 @@ export class SpotifyRemoteProvider extends RemoteProvider {
     const tracks = result.data.items?.items ?? [];
     const songs = tracks.flatMap((entry) => {
       const track = (entry.item ?? entry.track) as Record<string, unknown> | undefined;
-      const id = typeof track?.id === 'string' ? track.id : null;
+      if (!track) return [];
+      const id = typeof track.id === 'string' ? track.id : null;
       if (!id) return [];
       const external = track.external_urls as { spotify?: unknown } | undefined;
       const album = track.album as { name?: unknown; release_date?: unknown } | undefined;

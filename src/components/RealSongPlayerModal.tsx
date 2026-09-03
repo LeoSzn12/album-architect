@@ -6,8 +6,12 @@ import {
   getYouTubeMusicUrl,
   getYouTubeVideoUrl,
   getSpotifyUrl,
+  getAppleMusicUrl,
+  getAppleMusicPreviewUrl,
   getYouTubeEmbedUrl,
   getSpotifyEmbedUrl,
+  resolveBestSource,
+  getAvailableSources,
 } from '@/lib/musicBridge';
 import { playSongPreview, stopSongPreview } from '@/lib/audioEngine';
 import {
@@ -24,6 +28,7 @@ import {
 } from 'lucide-react';
 
 import { useModalA11y } from '@/hooks/useModalA11y';
+import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer';
 
 export const RealSongPlayerModal: React.FC = () => {
   const {
@@ -39,6 +44,8 @@ export const RealSongPlayerModal: React.FC = () => {
   } = useDraftStore();
 
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
+
+  const spotify = useSpotifyPlayer();
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
     isOpen: isPlayerModalOpen,
@@ -57,6 +64,16 @@ export const RealSongPlayerModal: React.FC = () => {
     };
   }, [selectedRealSong?.id, isPlayerModalOpen]);
 
+  useEffect(() => {
+    // Auto-fallback: if the user's preferred source isn't available for this
+    // track, silently switch to the best source that IS available.
+    if (!selectedRealSong) return;
+    const available = getAvailableSources(selectedRealSong);
+    if (selectedRealSong && !available.includes(audioSourcePreference)) {
+      setAudioSourcePreference(resolveBestSource(selectedRealSong, audioSourcePreference));
+    }
+  }, [selectedRealSong?.id, audioSourcePreference, setAudioSourcePreference]);
+
   if (!isPlayerModalOpen || !selectedRealSong) return null;
 
   const spotifyEmbedUrl = getSpotifyEmbedUrl(selectedRealSong); // null if no valid ID
@@ -64,9 +81,13 @@ export const RealSongPlayerModal: React.FC = () => {
   const ytVideoUrl      = getYouTubeVideoUrl(selectedRealSong);
   const spotifyUrl      = getSpotifyUrl(selectedRealSong);
   const ytEmbedUrl      = getYouTubeEmbedUrl(selectedRealSong); // null if no valid ID
+  const appleMusicUrl   = getAppleMusicUrl(selectedRealSong);
+  const applePreviewUrl = getAppleMusicPreviewUrl(selectedRealSong); // null if no preview
 
   const isDraftedSequence = draftedTracks.some((t) => t.song.id === selectedRealSong.id);
   const currentTrackIndex = draftedTracks.findIndex((t) => t.song.id === selectedRealSong.id);
+  // Local snapshot so TS keeps narrowing inside nested JSX closures.
+  const spState = spotify.currentState;
 
   const handleToggleSynth = () => {
     if (isSynthPlaying) {
@@ -82,6 +103,15 @@ export const RealSongPlayerModal: React.FC = () => {
     stopSongPreview();
     setIsSynthPlaying(false);
     setAudioSourcePreference(pref);
+  };
+
+  const handlePlayFullTrack = async () => {
+    spotify.connect();
+    if (selectedRealSong.spotifyId) {
+      // Wait a beat for the device to register, then start playback.
+      await new Promise((r) => setTimeout(r, 250));
+      void spotify.playTrack(selectedRealSong.spotifyId);
+    }
   };
 
   return (
@@ -169,6 +199,19 @@ export const RealSongPlayerModal: React.FC = () => {
           >
             <Radio className="w-4 h-4" />
             <span>Spotify</span>
+          </button>
+
+          <button
+            onClick={() => handleSourceSwitch('apple')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              audioSourcePreference === 'apple'
+                ? 'bg-rose-600/90 text-white shadow-lg shadow-rose-950/50'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+            }`}
+            aria-label="Preview via Apple Music"
+          >
+            <Music2 className="w-4 h-4" />
+            <span>Apple Music</span>
           </button>
 
           <button
@@ -272,6 +315,107 @@ export const RealSongPlayerModal: React.FC = () => {
               >
                 <Radio className="w-4 h-4" />
                 <span>Open on Spotify</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
+
+              {/* Full Track (Premium via Web Playback SDK) */}
+              <div className="w-full max-w-md rounded-xl border border-emerald-900/60 bg-emerald-950/20 p-5 flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Radio className={`w-5 h-5 ${spotify.isReady ? 'text-emerald-300 animate-pulse' : 'text-emerald-500'}`} />
+                  <h4 className="text-sm font-extrabold text-white">Full Track Playback</h4>
+                </div>
+                <p className="text-[11px] text-gray-400 text-center">
+                  Premium Spotify account required — plays the full song in-browser via the Spotify Web Playback SDK.
+                </p>
+
+                {!spotify.isReady && (
+                  <button
+                    onClick={handlePlayFullTrack}
+                    disabled={spotify.status === 'loading-token' || spotify.status === 'loading-sdk' || spotify.status === 'connecting'}
+                    className="py-2 px-5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold text-xs flex items-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Enable full track playback"
+                  >
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>
+                      {spotify.status === 'loading-token' || spotify.status === 'loading-sdk' || spotify.status === 'connecting'
+                        ? 'Connecting Spotify…'
+                        : 'Play Full Track'}
+                    </span>
+                  </button>
+                )}
+
+                {spotify.error && (
+                  <p className="text-[11px] text-amber-300 text-center max-w-xs">{spotify.error}</p>
+                )}
+
+                {spState && (
+                  <div className="w-full flex items-center justify-between gap-2 rounded-lg bg-black/40 border border-gray-800 px-3 py-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold text-white">{spState.trackName ?? 'Now Playing'}</p>
+                      <p className="truncate text-[10px] text-gray-400">{spState.artistName ?? 'Spotify'}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-gray-400 tabular-nums">
+                        {Math.floor((spState.positionMs / 1000))}s / {Math.floor((spState.durationMs / 1000))}s
+                      </span>
+                      <button
+                        onClick={() => void (spState.paused ? spotify.resume() : spotify.pause())}
+                        className="p-2 rounded-lg bg-emerald-900 hover:bg-emerald-800 text-white cursor-pointer"
+                        aria-label={spState.paused ? 'Resume full track' : 'Pause full track'}
+                      >
+                        {spState.paused
+                          ? <Play className="w-4 h-4 fill-current" />
+                          : <Square className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {audioSourcePreference === 'apple' && (
+            <div className="w-full flex flex-col gap-4 items-center">
+              {applePreviewUrl ? (
+                <div className="w-full max-w-md rounded-xl overflow-hidden border border-rose-900/50 bg-rose-950/20 p-5 flex flex-col items-center gap-4">
+                  <div className="p-3 rounded-full bg-rose-900/40 border border-rose-500/40 text-rose-300">
+                    <Music2 className="w-8 h-8" />
+                  </div>
+                  <div className="text-center">
+                    <h4 className="text-sm font-extrabold text-white">Apple Music Preview</h4>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Official 30–90 second clip — free, no login needed.
+                    </p>
+                  </div>
+                  <audio
+                    key={`apple-preview-${selectedRealSong.id}`}
+                    src={applePreviewUrl}
+                    controls
+                    autoPlay
+                    className="w-full"
+                    preload="metadata"
+                  />
+                </div>
+              ) : (
+                <div className="w-full py-8 px-4 rounded-xl bg-gray-950 border border-gray-800 text-center flex flex-col items-center gap-3">
+                  <Music2 className="w-10 h-10 text-rose-400" />
+                  <div>
+                    <h4 className="text-sm font-extrabold text-white">No Apple Music preview available</h4>
+                    <p className="text-xs text-gray-400 mt-1 max-w-md">
+                      No in-app Apple Music preview for this track — open on Apple Music below.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <a
+                href={appleMusicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs flex items-center gap-2 transition-all shadow-lg shadow-rose-950/40 cursor-pointer"
+              >
+                <Music2 className="w-4 h-4" />
+                <span>Open on Apple Music</span>
                 <ExternalLink className="w-3.5 h-3.5 opacity-80" />
               </a>
             </div>

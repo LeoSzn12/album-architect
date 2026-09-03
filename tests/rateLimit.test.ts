@@ -12,7 +12,7 @@ test('rate limiter allows a bounded burst and returns retry metadata', () => {
 
   assert.equal(blocked.allowed, false);
   assert.equal(blocked.remaining, 0);
-  assert.equal(rateLimitHeaders(blocked)['Retry-After'], '10');
+  assert.equal((rateLimitHeaders(blocked) as Record<string, string>)['Retry-After'], '10');
 });
 
 test('rate limiter resets buckets after the policy window', () => {

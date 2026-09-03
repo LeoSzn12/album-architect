@@ -37,9 +37,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pro
   const tokenBody = await tokenResponse.json().catch(() => null) as { access_token?: string; refresh_token?: string; expires_in?: number; scope?: string } | null;
   const expiresAt = tokenBody?.access_token ? Date.now() + (typeof tokenBody.expires_in === 'number' ? tokenBody.expires_in * 1000 : 3_600_000) : undefined;
   const sealedToken = tokenBody?.access_token ? sealProviderSession(JSON.stringify({ accessToken: tokenBody.access_token, refreshToken: tokenBody.refresh_token, expiresAt })) : null;
-  if (!tokenResponse.ok || !sealedToken) return NextResponse.redirect(redirectTarget(request, 'error'));
+  if (!tokenResponse.ok || !sealedToken || !tokenBody?.access_token) return NextResponse.redirect(redirectTarget(request, 'error'));
 
-  const persisted = await persistProviderAccount({ provider, accessToken: tokenBody.access_token!, refreshToken: tokenBody.refresh_token, expiresAt, scopes: tokenBody.scope?.split(' ').filter(Boolean) });
+  const persisted = await persistProviderAccount({ provider, accessToken: tokenBody.access_token, refreshToken: tokenBody.refresh_token, expiresAt, scopes: tokenBody.scope?.split(' ').filter(Boolean) });
   if (persisted.configured && !persisted.persisted) return NextResponse.redirect(redirectTarget(request, 'error'));
 
   const response = NextResponse.redirect(redirectTarget(request, 'connected'));

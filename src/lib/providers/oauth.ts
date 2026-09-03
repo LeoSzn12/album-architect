@@ -21,7 +21,10 @@ const configs: Record<Exclude<ProviderId, 'demo'>, Omit<OAuthProviderConfig, 'cl
   spotify: {
     provider: 'spotify',
     authorizationEndpoint: 'https://accounts.spotify.com/authorize',
-    scopes: ['playlist-read-private', 'playlist-modify-public', 'playlist-modify-private', 'user-read-private'],
+    // `streaming` + `user-read-email` enable the Spotify Web Playback SDK
+    // (full-track in-browser playback for Premium users). The rest power
+    // search / playlist import-export.
+    scopes: ['playlist-read-private', 'playlist-modify-public', 'playlist-modify-private', 'user-read-private', 'streaming', 'user-read-email'],
   },
   youtube: {
     provider: 'youtube',

@@ -166,7 +166,7 @@ export const useDraftStore = create<DraftStoreState>()(
       audioEnabled: true,
       activePlayingSongId: null,
       selectedRealSong: null,
-      audioSourcePreference: 'youtube',
+      audioSourcePreference: 'apple',
       isPlayerModalOpen: false,
       pastDrafts: [],
       leaderboard: [],

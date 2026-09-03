@@ -9,7 +9,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
   if (!body || typeof body.position !== 'number' || !Number.isInteger(body.position) || typeof body.slotId !== 'string' || !body.song || typeof body.song !== 'object') {
     return NextResponse.json({ error: 'Invalid pick payload.' }, { status: 400 });
   }
-  const source = body.selectionSource === 'search' || body.selectionSource === 'link' || body.selectionSource === 'manual' ? body.selectionSource : 'recommendation';
+  const source: SessionPick['selectionSource'] = body.selectionSource === 'search' || body.selectionSource === 'link' || body.selectionSource === 'manual' ? body.selectionSource : 'recommendation';
   const pick = {
     position: body.position,
     slotId: body.slotId,

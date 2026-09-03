@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSession, getSession } from '@/lib/sessionRepository';
 import { createPersistentSession, getPersistentSession } from '@/lib/supabase/sessionRepository';
 import type { GameMode } from '@/types/draft';
+import type { SessionVisibility } from '@/types/session';
 import { rateLimit, rateLimitHeaders, requestRateLimitKey } from '@/lib/rateLimit';
 
 const modes = new Set<GameMode>(['draft', 'ep', 'album']);
@@ -20,8 +21,8 @@ export async function POST(request: NextRequest) {
     trackCount,
     creatorAlias: typeof body?.creatorAlias === 'string' ? body.creatorAlias : undefined,
     brief: typeof body?.brief === 'string' ? body.brief : undefined,
-    visibility: body?.visibility === 'public' || body?.visibility === 'friends' || body?.visibility === 'private' ? body.visibility : undefined,
-    opponentType: body?.opponentType === 'friend' ? 'friend' : 'ai',
+    visibility: (body?.visibility === 'public' || body?.visibility === 'friends' || body?.visibility === 'private' ? body.visibility : undefined) as SessionVisibility | undefined,
+    opponentType: body?.opponentType === 'friend' ? 'friend' as const : 'ai' as const,
     seed: typeof body?.seed === 'string' ? body.seed.trim().toUpperCase().slice(0, 24) : null,
   };
   const persistent = await createPersistentSession(input);

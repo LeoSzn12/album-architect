@@ -92,6 +92,15 @@ export interface Song {
   youtubeUrl?: string; // Direct YouTube / YT Music URL
   spotifyId?: string; // Spotify track ID e.g. "0VjIjW4GlUZAMYd2vXMi3b" — 22 chars
   spotifyUrl?: string; // Direct Spotify URL
+  /** Apple Music track ID (numeric, e.g. "1440843554"). Used for the free Apple Music embed preview. */
+  appleMusicId?: string;
+  /** Direct Apple Music / iTunes URL. */
+  appleMusicUrl?: string;
+  /**
+   * Direct 30–90 second official preview audio file URL from the iTunes Search API.
+   * Plays in a native <audio> element — no login, no subscription, free for the public.
+   */
+  appleMusicPreviewUrl?: string;
   /**
    * Curated game impact rating (0–100). Reflects a combination of cultural
    * recognition, acclaim, commercial strength, and longevity.
@@ -109,6 +118,8 @@ export interface Song {
   isActualAlbumOpener?: boolean;
   /** Indicates whether track is an actual album outro / closing track. */
   isActualAlbumOutro?: boolean;
+  /** Alias for isActualAlbumOutro */
+  isActualAlbumCloser?: boolean;
   /** Track number on original album release. */
   originalAlbumTrackNumber?: number;
   /** Debug info populated in dev mode for candidate evaluation. */
@@ -118,9 +129,24 @@ export interface Song {
    * Gradient fallback is shown when absent.
    */
   artwork?: string;
+  /** Real-time A&R flow and transition intelligence computed for current candidate context */
+  flowInsight?: CandidateFlowInsight;
 }
 
-export type AudioSourcePreference = 'youtube' | 'spotify' | 'synth';
+export interface CandidateFlowInsight {
+  synergyScore: number; // 0 to 100
+  isTopCuratorPick: boolean;
+  isSleeperGem: boolean;
+  bpmDelta: number;
+  bpmTransitionLabel: string;
+  energyDelta: number;
+  pacingLabel: string;
+  curatorInsight: string;
+  tag: string;
+  tagColor: 'emerald' | 'cyan' | 'purple' | 'amber' | 'pink';
+}
+
+export type AudioSourcePreference = 'youtube' | 'spotify' | 'apple' | 'synth';
 
 export interface DraftedTrack {
   slot: DraftSlot;

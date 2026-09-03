@@ -67,7 +67,7 @@ describe('full mode-flow contracts', () => {
       assert.equal(evaluation.reviews.length, 3);
       assert.equal(Object.keys(evaluation.categoryScores ?? {}).length, 7);
       assert.ok(evaluation.overallScore >= 1 && evaluation.overallScore <= 10);
-      assert.ok(evaluation.bestPossibleTracklist.length === template.trackCount);
+      assert.ok(evaluation.bestPossibleTracklist?.length === template.trackCount);
     });
   }
 

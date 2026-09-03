@@ -1,12 +1,34 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
+import { useSnippetAudio } from '@/hooks/useSnippetAudio';
 import { DraftCard } from './DraftCard';
 import { ProgressStrip } from './ProgressStrip';
-import { RefreshCw, Sparkles, Trophy, Undo2, AlertCircle, Swords, EyeOff } from 'lucide-react';
+import { CompareModal } from './CompareModal';
+import {
+  RefreshCw,
+  Sparkles,
+  Trophy,
+  Undo2,
+  AlertCircle,
+  Swords,
+  EyeOff,
+  Headphones,
+  ArrowRightLeft,
+  Flame,
+  Volume2,
+  Dice5,
+  X,
+  Plus,
+} from 'lucide-react';
 import { playHoverSound, playRerollSound, playDraftLockSound } from '@/lib/audioEngine';
 import { eraLabel } from '@/lib/eraSequence';
+import {
+  enrichCandidatesWithFlowIntelligence,
+  pickWildcardCandidate,
+} from '@/lib/flowIntelligence';
+import type { Song } from '@/types/draft';
 
 interface DraftBoardProps {
   onEvaluateTrigger: () => void;
@@ -30,6 +52,17 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     lastOpponentReveal,
   } = useDraftStore();
 
+  const { toggleSong, isSongPlaying, stop } = useSnippetAudio();
+
+  const [compareSelection, setCompareSelection] = useState<Song[]>([]);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+
+  // Surprise Wildcard Spin state
+  const [wildcardModalOpen, setWildcardModalOpen] = useState(false);
+  const [unlockedWildcard, setUnlockedWildcard] = useState<Song | null>(null);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [mobileCardIndex, setMobileCardIndex] = useState(0);
+
   const isCompleted = currentRoundIndex >= slots.length;
   const currentSlot = slots[currentRoundIndex];
   const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
@@ -41,23 +74,97 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   const currentEra = eraSequence[currentRoundIndex];
   const currentEraLabel = currentEra ? eraLabel(currentEra) : null;
 
-  // Cmd+Z / Ctrl+Z shortcut for Undo
+  // Reset comparison on round change
+  useEffect(() => {
+    setCompareSelection([]);
+    setIsCompareOpen(false);
+  }, [currentRoundIndex]);
+
+  // Keyboard Shortcuts:
+  // 1-5: Audition Candidate 1 to 5
+  // Space: Toggle current snippet
+  // C: Compare shortlisted
+  // R: Reroll
+  // Cmd+Z: Undo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept when user is typing in inputs
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      // Cmd+Z / Ctrl+Z shortcut for Undo
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
         if (draftedTracks.length > 0 && !isCompleted) {
           e.preventDefault();
           playDraftLockSound(audioEnabled);
           undoLastPick();
         }
+        return;
+      }
+
+      // Space: Toggle Snippet Play/Pause
+      if (e.code === 'Space') {
+        e.preventDefault();
+        const activeSong = currentOptions.find((s) => isSongPlaying(s.id)) || currentOptions[0];
+        if (activeSong) {
+          toggleSong(activeSong);
+        }
+        return;
+      }
+
+      // Keys 1 to 5: Audition candidate at index
+      const num = parseInt(e.key, 10);
+      if (!isNaN(num) && num >= 1 && num <= currentOptions.length) {
+        e.preventDefault();
+        const targetSong = currentOptions[num - 1];
+        if (targetSong) {
+          toggleSong(targetSong);
+        }
+        return;
+      }
+
+      // Key 'c': Open comparison between shortlisted or first two candidates
+      if (e.key.toLowerCase() === 'c' && currentOptions.length >= 2) {
+        e.preventDefault();
+        if (compareSelection.length < 2) {
+          setCompareSelection([currentOptions[0], currentOptions[1]]);
+        }
+        setIsCompareOpen((prev) => !prev);
+        return;
+      }
+
+      // Key 'r': Reroll
+      if (e.key.toLowerCase() === 'r' && rerollTokens > 0 && !isCompleted) {
+        e.preventDefault();
+        playRerollSound(audioEnabled);
+        triggerRerollToken();
+        return;
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [draftedTracks.length, isCompleted, undoLastPick, audioEnabled]);
+  }, [
+    currentOptions,
+    draftedTracks.length,
+    isCompleted,
+    undoLastPick,
+    audioEnabled,
+    rerollTokens,
+    triggerRerollToken,
+    compareSelection,
+    isSongPlaying,
+    toggleSong,
+  ]);
 
   const handleReroll = () => {
     if (rerollTokens > 0) {
+      stop();
       playRerollSound(audioEnabled);
       triggerRerollToken();
     }
@@ -65,9 +172,68 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
   const handleUndo = () => {
     if (draftedTracks.length > 0) {
+      stop();
       playDraftLockSound(audioEnabled);
       undoLastPick();
     }
+  };
+
+  const handleCompareToggle = (song: Song) => {
+    setCompareSelection((prev) => {
+      const exists = prev.some((s) => s.id === song.id);
+      if (exists) {
+        return prev.filter((s) => s.id !== song.id);
+      }
+      if (prev.length >= 2) {
+        return [prev[1], song];
+      }
+      const next = [...prev, song];
+      if (next.length === 2) {
+        setIsCompareOpen(true);
+      }
+      return next;
+    });
+  };
+
+  // Dynamic Vibe calculation for the live draft session
+  const currentVibe = useMemo(() => {
+    if (draftedTracks.length === 0) return 'Session Opening 🚀';
+    const lastTrack = draftedTracks[draftedTracks.length - 1];
+    if (lastTrack.song.energy >= 88) return 'High Voltage Energy ⚡';
+    if (lastTrack.song.energy <= 65) return 'Late-Night Introspection 🌙';
+    if (lastTrack.song.genre === 'R&B') return 'Smooth R&B Groove ✨';
+    return 'Pacing Building Nicely 🎶';
+  }, [draftedTracks]);
+
+  // Dynamic A&R Flow Intelligence enrichment for candidates in this round
+  const enrichedOptions = useMemo(() => {
+    if (!currentSlot || currentOptions.length === 0) return currentOptions;
+    const draftedSoloArtists = draftedTracks.map((t) => t.song.artist.trim());
+    return enrichCandidatesWithFlowIntelligence(
+      currentOptions,
+      currentSlot,
+      draftedTracks,
+      draftedSoloArtists
+    );
+  }, [currentOptions, currentSlot, draftedTracks]);
+
+  // Surprise Wildcard / Shuffle feature handler
+  const handleSurpriseShuffle = () => {
+    if (isCompleted || !currentSlot) return;
+    stop();
+    setIsSpinning(true);
+    playRerollSound(audioEnabled);
+    setTimeout(() => {
+      const draftedSongIds = draftedTracks.map((t) => t.song.id);
+      const draftedSoloArtists = draftedTracks.map((t) => t.song.artist.trim());
+      const gem = pickWildcardCandidate(currentSlot.id, draftedSongIds, draftedSoloArtists);
+      if (gem) {
+        setUnlockedWildcard(gem);
+        setWildcardModalOpen(true);
+        toggleSong(gem);
+      }
+      setIsSpinning(false);
+    }, 450);
   };
 
   if (isCompleted) {
@@ -97,6 +263,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
         <button
           onClick={() => {
+            stop();
             playHoverSound(audioEnabled);
             onEvaluateTrigger();
           }}
@@ -187,6 +354,54 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       </section>
 
+      {/* Interactive Audition & Shortcut Deck Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-purple-900/30 bg-purple-950/20 px-4 py-2 text-xs">
+        <div className="flex items-center gap-2.5 text-purple-200">
+          <Headphones className="w-4 h-4 text-pink-400 animate-pulse" />
+          <span className="font-extrabold uppercase tracking-wider text-[11px]">Audition Deck:</span>
+          <span className="hidden sm:inline text-slate-400 font-medium">
+            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-purple-300 font-mono text-[10px]">1-5</kbd> to sample • <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-purple-300 font-mono text-[10px]">Space</kbd> pause • <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-purple-300 font-mono text-[10px]">C</kbd> compare
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Compare Trigger Button */}
+          {currentOptions.length >= 2 && (
+            <button
+              onClick={() => {
+                if (compareSelection.length < 2) {
+                  setCompareSelection([currentOptions[0], currentOptions[1]]);
+                }
+                setIsCompareOpen(true);
+              }}
+              className="py-1 px-2.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/80 text-cyan-300 text-[11px] font-extrabold flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm"
+              title="Compare two candidates side-by-side"
+            >
+              <ArrowRightLeft className="w-3 h-3" />
+              <span>
+                {compareSelection.length === 2 ? 'Face-Off Selected' : 'A/B Face-Off'}
+              </span>
+            </button>
+          )}
+
+          {/* Surprise Wildcard Shuffle Button */}
+          <button
+            onClick={handleSurpriseShuffle}
+            disabled={isSpinning}
+            title="Spin for a surprise high-synergy wildcard gem from the catalog"
+            className="py-1 px-2.5 rounded-lg bg-amber-950/80 hover:bg-amber-900/90 border border-amber-800/80 text-amber-300 text-[11px] font-extrabold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm active:scale-95"
+          >
+            <Dice5 className={`w-3.5 h-3.5 text-amber-400 ${isSpinning ? 'animate-spin' : ''}`} />
+            <span>{isSpinning ? 'Rolling...' : 'Surprise Wildcard'}</span>
+          </button>
+
+          {/* Live Vibe Pill */}
+          <span className="px-2.5 py-1 rounded-lg bg-pink-950/40 border border-pink-800/50 text-pink-300 text-[11px] font-black">
+            {currentVibe}
+          </span>
+        </div>
+      </div>
+
       {/* Draft mode reveals the AI choice only after the human locks a pick. */}
       {gameMode === 'draft' && lastOpponentReveal && (
         <div className="rounded-2xl border border-cyan-800/70 bg-cyan-950/30 p-4 flex flex-col sm:flex-row sm:items-center gap-3 animate-fade-in">
@@ -208,7 +423,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
       )}
 
       {/* Five-card recommendation pool in TrackDraft mode; builders use the same safe empty state with mode-specific copy. */}
-      {currentOptions.length === 0 ? (
+      {enrichedOptions.length === 0 ? (
         <div className="w-full bg-gray-950 border border-purple-900/40 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
           <AlertCircle className="w-8 h-8 text-amber-400 animate-pulse" />
           <h3 className="text-base font-extrabold text-white">
@@ -226,12 +441,145 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           </button>
         </div>
       ) : (
-        <div aria-label={`${currentOptions.length} candidate tracks`} className={`grid grid-cols-1 ${currentOptions.length >= 5 ? 'md:grid-cols-5' : 'sm:grid-cols-2'} gap-4`}>
-          {currentOptions.map((song) => (
-            <DraftCard key={song.id} song={song} onDraft={draftSong} />
-          ))}
+        <div className="w-full pb-32 sm:pb-24">
+          {/* Candidates Container: Mobile horizontal snap carousel, desktop 5-column grid */}
+          <div
+            aria-label={`${enrichedOptions.length} candidate tracks`}
+            className="flex sm:grid sm:grid-cols-2 md:grid-cols-5 overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 pb-3 sm:pb-0 no-scrollbar items-stretch"
+          >
+            {enrichedOptions.map((song, idx) => (
+              <div
+                key={song.id}
+                className="w-[84vw] max-w-[315px] flex-shrink-0 snap-center sm:w-auto flex flex-col"
+              >
+                <DraftCard
+                  song={song}
+                  candidateIndex={idx}
+                  onDraft={draftSong}
+                  onCompareToggle={handleCompareToggle}
+                  isComparing={compareSelection.some((s) => s.id === song.id)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Swipe Pagination Indicator */}
+          <div className="flex sm:hidden justify-center items-center gap-2 mt-2 py-1">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Swipe candidates</span>
+            <div className="flex items-center gap-1.5">
+              {enrichedOptions.map((_, i) => (
+                <span
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full bg-purple-500/60"
+                />
+              ))}
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Surprise Wildcard Spin Modal */}
+      {wildcardModalOpen && unlockedWildcard && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+        >
+          <div className="relative w-full max-w-md rounded-3xl border border-amber-500/60 bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950/40 p-6 shadow-2xl shadow-amber-950/60 text-center overflow-hidden">
+            {/* Ambient gold glow */}
+            <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-amber-500/20 blur-2xl pointer-events-none" />
+
+            <button
+              onClick={() => {
+                setWildcardModalOpen(false);
+                setUnlockedWildcard(null);
+              }}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/80 border border-slate-700 text-slate-400 hover:text-white transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 text-xs font-black uppercase tracking-widest mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Surprise Wildcard Unlocked!</span>
+            </div>
+
+            {/* Artwork & Details */}
+            <div className="relative w-32 h-32 mx-auto my-2 rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/40 bg-slate-900">
+              {unlockedWildcard.artwork ? (
+                <img
+                  src={unlockedWildcard.artwork}
+                  alt={unlockedWildcard.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className={`w-full h-full bg-gradient-to-br ${unlockedWildcard.gradient} flex items-center justify-center`}>
+                  <Dice5 className="w-12 h-12 text-amber-300" />
+                </div>
+              )}
+            </div>
+
+            <h3 className="font-display text-xl font-black text-white mt-3 line-clamp-1">
+              {unlockedWildcard.title}
+            </h3>
+            <p className="text-sm font-semibold text-amber-200 mt-0.5">
+              {unlockedWildcard.rawArtistString}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              {unlockedWildcard.album} • {unlockedWildcard.bpm} BPM • {unlockedWildcard.energy}% Energy
+            </p>
+
+            <div className="my-4 p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 text-xs text-amber-200/90 italic">
+              "An unexpected high-affinity vault gem selected specifically to surprise and elevate your current tracklist."
+            </div>
+
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                onClick={() => toggleSong(unlockedWildcard)}
+                className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-95"
+              >
+                <Headphones className="w-4 h-4 text-pink-400" />
+                <span>{isSongPlaying(unlockedWildcard.id) ? 'Pause Sample' : 'Audition (30s)'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  stop();
+                  draftSong(unlockedWildcard);
+                  setWildcardModalOpen(false);
+                  setUnlockedWildcard(null);
+                }}
+                className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-pink-600 hover:brightness-110 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-950/50 cursor-pointer transition active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Lock In Wildcard</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* A/B Face-off Comparison Modal */}
+      {(() => {
+        const activeSongs: [Song, Song] | null =
+          compareSelection.length >= 2
+            ? [compareSelection[0], compareSelection[1]]
+            : currentOptions.length >= 2
+            ? [currentOptions[0], currentOptions[1]]
+            : null;
+
+        if (!activeSongs || !isCompareOpen) return null;
+
+        return (
+          <CompareModal
+            isOpen={isCompareOpen}
+            onClose={() => setIsCompareOpen(false)}
+            songs={activeSongs}
+            slot={currentSlot}
+            onSelectSong={draftSong}
+          />
+        );
+      })()}
     </div>
   );
 };

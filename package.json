@@ -12,7 +12,9 @@
     "test:e2e:gaps": "tests/e2e/trackdraft-qa-gaps.sh",
     "test:simulation": "node --experimental-strip-types --test tests/simulation.test.ts",
     "report:catalog": "node --experimental-strip-types scripts/catalogReport.ts",
-    "report:catalog-html": "node --experimental-strip-types scripts/catalogHtmlReport.ts"
+    "report:catalog-html": "node --experimental-strip-types scripts/catalogHtmlReport.ts",
+    "resolve:ids": "node --experimental-strip-types scripts/resolveCatalogIds.ts",
+    "resolve:ids:dry": "node --experimental-strip-types scripts/resolveCatalogIds.ts --dry-run"
   },
   "dependencies": {
     "@google/genai": "^2.13.0",
