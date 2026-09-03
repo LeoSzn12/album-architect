@@ -166,33 +166,19 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
   return (
     <section
       aria-label="Live Crowd and Aux Hype Stage"
-      className="relative w-full rounded-3xl border border-purple-900/40 bg-gradient-to-b from-[#0e121d]/95 via-[#0a0d14]/95 to-[#08090e] p-3.5 sm:p-4 backdrop-blur-2xl shadow-2xl overflow-hidden transition-all duration-500"
+      className="relative w-full rounded-2xl border border-white/[0.08] bg-[#0e0e12]/85 p-3.5 sm:p-4 backdrop-blur-2xl shadow-2xl overflow-hidden transition-all duration-500"
     >
-      {/* Background Stage Lights & Lasers */}
+      {/* Subtle Acoustic Stage Lighting Sheen */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Laser 1: Cyan */}
         <div
-          className={`absolute -top-10 left-1/4 w-2 h-72 bg-cyan-400/50 blur-sm rounded-full transform -rotate-45 origin-top transition-opacity ${
-            isHyped ? 'animate-stage-laser opacity-90' : isGroove ? 'opacity-40' : 'opacity-10'
-          }`}
-        />
-        {/* Laser 2: Magenta / Pink */}
-        <div
-          className={`absolute -top-10 right-1/4 w-2 h-72 bg-pink-500/50 blur-sm rounded-full transform rotate-45 origin-top transition-opacity ${
-            isHyped ? 'animate-stage-laser opacity-90 delay-300' : isGroove ? 'opacity-40' : 'opacity-10'
-          }`}
-        />
-
-        {/* Ambient Stage Glow Wash */}
-        <div
-          className={`absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full blur-3xl transition-all duration-700 ${
+          className={`absolute -top-24 left-1/2 -translate-x-1/2 w-[32rem] h-40 rounded-full blur-3xl transition-all duration-700 ${
             isHyped
-              ? 'bg-gradient-to-r from-pink-600/30 via-purple-600/35 to-cyan-500/30'
+              ? 'bg-rose-600/15'
               : isGroove
-              ? 'bg-gradient-to-r from-purple-800/20 to-cyan-600/20'
+              ? 'bg-emerald-600/10'
               : isMid
-              ? 'bg-amber-900/15'
-              : 'bg-rose-950/20'
+              ? 'bg-amber-600/10'
+              : 'bg-zinc-800/10'
           }`}
         />
       </div>
@@ -204,12 +190,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
           <div
             className={`p-2 rounded-xl border transition-colors ${
               isHyped
-                ? 'bg-pink-950/80 border-pink-500/60 text-pink-300 shadow-lg shadow-pink-950/50 animate-pulse'
+                ? 'bg-rose-950/60 border-rose-500/40 text-rose-400 shadow-md shadow-rose-950/40 animate-pulse'
                 : isGroove
-                ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-300'
+                ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300'
                 : isMid
-                ? 'bg-amber-950/80 border-amber-500/40 text-amber-300'
-                : 'bg-rose-950/80 border-rose-500/40 text-rose-300'
+                ? 'bg-amber-950/60 border-amber-500/30 text-amber-300'
+                : 'bg-zinc-900 border-zinc-700/50 text-zinc-400'
             }`}
           >
             {isHyped ? (
@@ -219,18 +205,18 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             ) : isMid ? (
               <Radio className="w-4 h-4" />
             ) : (
-              <AlertTriangle className="w-4 h-4 animate-bounce" />
+              <AlertTriangle className="w-4 h-4" />
             )}
           </div>
 
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
                 Live Aux Crowd Arena
               </span>
               {streakCount >= 2 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-gradient-to-r from-amber-500 to-pink-500 text-[9px] font-black text-slate-950 flex items-center gap-0.5 animate-pulse">
-                  <Zap className="w-2.5 h-2.5 fill-current" />
+                <span className="px-1.5 py-0.2 rounded-full bg-white/[0.08] border border-white/[0.12] text-[9px] font-black text-white flex items-center gap-0.5">
+                  <Zap className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
                   {streakCount}x Streak
                 </span>
               )}
@@ -247,8 +233,8 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             <div
               className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black border transition-all animate-fade-in ${
                 hoverPrediction.isPositive
-                  ? 'bg-emerald-950/90 text-emerald-300 border-emerald-500/60 shadow-md shadow-emerald-950/50'
-                  : 'bg-rose-950/90 text-rose-300 border-rose-500/60 shadow-md shadow-rose-950/50'
+                  ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40 shadow-sm'
+                  : 'bg-rose-950/60 text-rose-300 border-rose-500/40 shadow-sm'
               }`}
             >
               {hoverPrediction.isPositive ? (
@@ -267,16 +253,16 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
           <div
             className={`px-3 py-1 rounded-xl border flex items-center gap-1.5 transition-all ${
               isHyped
-                ? 'bg-gradient-to-r from-pink-950/90 to-purple-950/90 border-pink-500/70 text-white shadow-lg shadow-pink-950/40 ring-1 ring-pink-400/50'
+                ? 'bg-[#161214] border-rose-500/60 text-white shadow-lg shadow-rose-950/30'
                 : isGroove
-                ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-200'
+                ? 'bg-[#101614] border-emerald-500/40 text-emerald-200'
                 : isMid
-                ? 'bg-amber-950/80 border-amber-500/40 text-amber-200'
-                : 'bg-rose-950/80 border-rose-500/40 text-rose-200'
+                ? 'bg-[#161410] border-amber-500/30 text-amber-200'
+                : 'bg-zinc-900 border-white/[0.08] text-zinc-300'
             }`}
           >
             <span className="text-base sm:text-lg font-black tracking-tight">{currentScore}%</span>
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
               Hype
             </span>
           </div>
@@ -284,17 +270,17 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
       </div>
 
       {/* MIDDLE DECK: Animated Crowd Stage & Reactive Silhouettes */}
-      <div className="relative z-10 w-full h-20 sm:h-24 bg-black/40 rounded-2xl border border-white/[0.06] overflow-hidden flex items-end justify-center px-4">
+      <div className="relative z-10 w-full h-20 sm:h-24 bg-black/50 rounded-xl border border-white/[0.06] overflow-hidden flex items-end justify-center px-4">
         {/* Dynamic Speech Bubble */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 w-max max-w-[94%] sm:max-w-md animate-bubble-pop">
-          <div className="relative px-3 py-1.5 rounded-2xl bg-slate-900/95 border border-purple-500/50 text-slate-100 text-xs font-semibold shadow-2xl backdrop-blur-md flex items-center gap-2">
+          <div className="relative px-3 py-1.5 rounded-2xl bg-zinc-900/95 border border-white/[0.15] text-zinc-100 text-xs font-semibold shadow-2xl backdrop-blur-xl flex items-center gap-2">
             <span className="text-sm">
-              {activeFx ? '⚡' : isHyped ? '🔥' : isGroove ? '🎧' : isMid ? '📱' : '💀'}
+              {activeFx ? '⚡' : isHyped ? '🔥' : isGroove ? '🎧' : isMid ? '📱' : '💤'}
             </span>
             <p className="truncate italic font-medium">
               {fxMessage || (hoverPrediction ? hoverPrediction.anticipatoryQuote : `"${reactionQuote}"`)}
             </p>
-            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-b border-r border-purple-500/50 rotate-45" />
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-zinc-900 border-b border-r border-white/[0.15] rotate-45" />
           </div>
         </div>
 
@@ -304,12 +290,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
           <div
             className={`flex flex-col items-center origin-bottom transition-transform ${
               isHyped
-                ? 'animate-crowd-bounce-fast text-purple-300'
+                ? 'animate-crowd-bounce-fast text-zinc-200'
                 : isGroove
-                ? 'animate-crowd-bounce text-purple-400/80'
+                ? 'animate-crowd-bounce text-zinc-400'
                 : isMid
-                ? 'opacity-60 text-slate-500'
-                : 'opacity-30 translate-y-2 text-slate-700'
+                ? 'opacity-60 text-zinc-600'
+                : 'opacity-30 translate-y-2 text-zinc-800'
             }`}
             style={{ animationDelay: '0ms' }}
           >
@@ -326,12 +312,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
           <div
             className={`flex flex-col items-center origin-bottom transition-transform ${
               isHyped
-                ? 'animate-crowd-bounce-fast text-pink-400'
+                ? 'animate-crowd-bounce-fast text-rose-400'
                 : isGroove
-                ? 'animate-crowd-bounce text-purple-300'
+                ? 'animate-crowd-bounce text-zinc-300'
                 : isMid
-                ? 'text-slate-500'
-                : 'text-slate-700 translate-y-1'
+                ? 'text-zinc-600'
+                : 'text-zinc-800 translate-y-1'
             }`}
             style={{ animationDelay: '120ms' }}
           >
@@ -342,23 +328,23 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             </svg>
           </div>
 
-          {/* Member 3: Festival girl waving arms */}
+          {/* Member 3: Festival fan waving arms */}
           <div
             className={`flex flex-col items-center origin-bottom transition-transform ${
               isHyped
-                ? 'animate-crowd-bounce-fast text-cyan-300'
+                ? 'animate-crowd-bounce-fast text-white'
                 : isGroove
-                ? 'animate-crowd-bounce text-cyan-400'
+                ? 'animate-crowd-bounce text-zinc-300'
                 : isMid
-                ? 'text-slate-500'
-                : 'text-slate-700'
+                ? 'text-zinc-600'
+                : 'text-zinc-800'
             }`}
             style={{ animationDelay: '240ms' }}
           >
             <svg className="w-7 h-12 sm:w-10 sm:h-15 fill-current drop-shadow-md" viewBox="0 0 40 60">
               <line x1="10" y1="6" x2="16" y2="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
               {isHyped && (
-                <circle cx="9" cy="5" r="3" className="fill-cyan-300 animate-ping" />
+                <circle cx="9" cy="5" r="3" className="fill-rose-400 animate-ping" />
               )}
               <circle cx="21" cy="16" r="7.5" />
               <path d="M13 27 C13 25 29 25 29 27 L33 60 L9 60 Z" />
@@ -367,16 +353,16 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
 
           {/* Member 4: Center DJ Deck Console */}
           <div className="flex flex-col items-center justify-end h-full px-2 z-10">
-            <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-purple-500/50 shadow-xl">
-              <Disc3 className={`w-4 h-4 text-pink-400 ${isHyped ? 'animate-spin-slow' : ''}`} />
+            <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-zinc-900 border border-white/[0.12] shadow-xl">
+              <Disc3 className={`w-4 h-4 text-rose-500 ${isHyped ? 'animate-spin-slow' : ''}`} />
               <div className="flex items-end gap-0.5 h-3">
-                <span className="w-1 bg-cyan-400 rounded-full animate-eq-1" />
-                <span className="w-1 bg-pink-500 rounded-full animate-eq-2" />
-                <span className="w-1 bg-purple-400 rounded-full animate-eq-3" />
-                <span className="w-1 bg-amber-400 rounded-full animate-eq-4" />
+                <span className="w-1 bg-white rounded-full animate-eq-1" />
+                <span className="w-1 bg-rose-500 rounded-full animate-eq-2" />
+                <span className="w-1 bg-zinc-400 rounded-full animate-eq-3" />
+                <span className="w-1 bg-white rounded-full animate-eq-4" />
               </div>
             </div>
-            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 mt-0.5">
+            <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500 mt-0.5">
               AUX BOOTH
             </span>
           </div>
@@ -385,12 +371,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
           <div
             className={`flex flex-col items-center origin-bottom transition-transform ${
               isHyped
-                ? 'animate-crowd-bounce-fast text-amber-300'
+                ? 'animate-crowd-bounce-fast text-zinc-200'
                 : isGroove
-                ? 'animate-crowd-bounce text-amber-400'
+                ? 'animate-crowd-bounce text-zinc-300'
                 : isMid
-                ? 'text-slate-500'
-                : 'text-slate-700'
+                ? 'text-zinc-600'
+                : 'text-zinc-800'
             }`}
             style={{ animationDelay: '80ms' }}
           >
@@ -409,8 +395,8 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
                 : isGroove
                 ? 'animate-crowd-bounce text-emerald-500'
                 : isMid
-                ? 'text-slate-500'
-                : 'text-slate-700'
+                ? 'text-zinc-600'
+                : 'text-zinc-800'
             }`}
             style={{ animationDelay: '200ms' }}
           >
@@ -418,8 +404,8 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
               <path d="M6 7 L12 22 M38 7 L32 22" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
               {isHyped && (
                 <>
-                  <circle cx="6" cy="6" r="2.5" className="fill-amber-300 animate-pulse" />
-                  <circle cx="38" cy="6" r="2.5" className="fill-cyan-300 animate-pulse" />
+                  <circle cx="6" cy="6" r="2.5" className="fill-white animate-pulse" />
+                  <circle cx="38" cy="6" r="2.5" className="fill-rose-400 animate-pulse" />
                 </>
               )}
               <circle cx="22" cy="16" r="8" />
@@ -431,12 +417,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
           <div
             className={`flex flex-col items-center origin-bottom transition-transform ${
               isHyped
-                ? 'animate-crowd-bounce-fast text-indigo-400'
+                ? 'animate-crowd-bounce-fast text-zinc-300'
                 : isGroove
-                ? 'animate-crowd-bounce text-indigo-300'
+                ? 'animate-crowd-bounce text-zinc-400'
                 : isMid
-                ? 'text-slate-500'
-                : 'text-slate-700'
+                ? 'text-zinc-600'
+                : 'text-zinc-800'
             }`}
             style={{ animationDelay: '160ms' }}
           >
@@ -450,16 +436,16 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
 
       {/* BOTTOM DECK: Precision Gradient Hype Meter Bar */}
       <div className="relative z-10 w-full mt-2 flex flex-col gap-1">
-        <div className="w-full h-2 bg-slate-950 rounded-full p-0.5 border border-white/[0.08] overflow-hidden">
+        <div className="w-full h-2 bg-black/60 rounded-full p-0.5 border border-white/[0.08] overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               isHyped
-                ? 'bg-gradient-to-r from-orange-500 via-pink-500 to-cyan-400 shadow-md shadow-pink-500/50'
+                ? 'bg-rose-500 shadow-md shadow-rose-500/50'
                 : isGroove
-                ? 'bg-gradient-to-r from-emerald-400 to-cyan-500'
+                ? 'bg-emerald-400'
                 : isMid
-                ? 'bg-gradient-to-r from-cyan-500 to-amber-500'
-                : 'bg-gradient-to-r from-slate-600 to-rose-600'
+                ? 'bg-amber-400'
+                : 'bg-zinc-600'
             }`}
             style={{ width: `${currentScore}%` }}
           />
@@ -470,12 +456,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2.5 pt-2 border-t border-white/[0.08]">
         <div className="flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">DJ Soundboard:</span>
-            <span className="text-[9px] text-slate-500 font-medium hidden sm:inline">Tap or press keys</span>
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-zinc-400">DJ Soundboard:</span>
+            <span className="text-[9px] text-zinc-500 font-medium hidden sm:inline">Tap or press keys</span>
           </div>
           {activeFx && (
-            <span className="text-[10px] font-bold text-pink-400 animate-pulse sm:hidden">
-              FX Triggered!
+            <span className="text-[10px] font-bold text-rose-400 animate-pulse sm:hidden">
+              FX Triggered
             </span>
           )}
         </div>
@@ -488,12 +474,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             aria-label="DJ Airhorn"
             className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'airhorn'
-                ? 'bg-pink-600 text-white border-pink-400 shadow-lg shadow-pink-950/60 scale-102'
-                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-pink-300'
+                ? 'bg-white text-black border-white shadow-lg scale-102 font-black'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-zinc-200'
             }`}
           >
-            <Megaphone className="w-3.5 h-3.5 text-pink-400" />
-            <span className="text-[10px] sm:text-xs leading-none">Airhorn <kbd className="hidden sm:inline text-[8.5px] text-pink-200/70 font-mono">H</kbd></span>
+            <Megaphone className="w-3.5 h-3.5 text-rose-500" />
+            <span className="text-[10px] sm:text-xs leading-none">Airhorn <kbd className="hidden sm:inline text-[8.5px] text-zinc-400 font-mono">H</kbd></span>
           </button>
 
           {/* Scratch */}
@@ -503,12 +489,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             aria-label="Turntable Scratch"
             className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'scratch'
-                ? 'bg-cyan-600 text-white border-cyan-400 shadow-lg shadow-cyan-950/60 scale-102'
-                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-cyan-300'
+                ? 'bg-white text-black border-white shadow-lg scale-102 font-black'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-zinc-200'
             }`}
           >
-            <Disc3 className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="text-[10px] sm:text-xs leading-none">Scratch <kbd className="hidden sm:inline text-[8.5px] text-cyan-200/70 font-mono">S</kbd></span>
+            <Disc3 className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="text-[10px] sm:text-xs leading-none">Scratch <kbd className="hidden sm:inline text-[8.5px] text-zinc-400 font-mono">S</kbd></span>
           </button>
 
           {/* Rewind */}
@@ -518,12 +504,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             aria-label="Rewind Pull-Up"
             className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'rewind'
-                ? 'bg-amber-600 text-white border-amber-400 shadow-lg shadow-amber-950/60 scale-102'
-                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-amber-300'
+                ? 'bg-white text-black border-white shadow-lg scale-102 font-black'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-zinc-200'
             }`}
           >
             <Rewind className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-[10px] sm:text-xs leading-none">Rewind <kbd className="hidden sm:inline text-[8.5px] text-amber-200/70 font-mono">P</kbd></span>
+            <span className="text-[10px] sm:text-xs leading-none">Rewind <kbd className="hidden sm:inline text-[8.5px] text-zinc-400 font-mono">P</kbd></span>
           </button>
 
           {/* Crowd Cheer */}
@@ -533,12 +519,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             aria-label="Crowd Roar"
             className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'cheer'
-                ? 'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-950/60 scale-102'
-                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-purple-300'
+                ? 'bg-white text-black border-white shadow-lg scale-102 font-black'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-zinc-200'
             }`}
           >
-            <HandMetal className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-[10px] sm:text-xs leading-none">Roar <kbd className="hidden sm:inline text-[8.5px] text-purple-200/70 font-mono">A</kbd></span>
+            <HandMetal className="w-3.5 h-3.5 text-rose-400" />
+            <span className="text-[10px] sm:text-xs leading-none">Roar <kbd className="hidden sm:inline text-[8.5px] text-zinc-400 font-mono">A</kbd></span>
           </button>
         </div>
       </div>

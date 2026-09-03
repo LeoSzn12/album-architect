@@ -18,7 +18,7 @@ const DAILY_THEMES: Record<number, DailyThemeInfo> = {
     subtitle: 'Sunday Drop',
     description: 'Curate a contemplative, late-night deep cut masterclass from the 2010s.',
     iconName: 'Moon',
-    accentColor: 'from-indigo-500 to-purple-600',
+    accentColor: 'from-sky-500 to-blue-600',
   },
   1: {
     dayOfWeek: 1,
@@ -27,7 +27,7 @@ const DAILY_THEMES: Record<number, DailyThemeInfo> = {
     subtitle: 'Monday Drop',
     description: 'The golden streaming decade. Modern classics, stadium hooks, and moody 808s.',
     iconName: 'Sparkles',
-    accentColor: 'from-cyan-500 to-blue-600',
+    accentColor: 'from-rose-500 to-red-600',
   },
   2: {
     dayOfWeek: 2,
@@ -36,7 +36,7 @@ const DAILY_THEMES: Record<number, DailyThemeInfo> = {
     subtitle: 'Tuesday Drop',
     description: 'Velvety falsettos, toxic confessions, and 2 AM atmospheric soundscapes.',
     iconName: 'Heart',
-    accentColor: 'from-pink-500 to-rose-600',
+    accentColor: 'from-rose-500 to-rose-700',
   },
   3: {
     dayOfWeek: 3,
@@ -63,7 +63,7 @@ const DAILY_THEMES: Record<number, DailyThemeInfo> = {
     subtitle: 'Friday Drop',
     description: 'Oversized tees, Neptunes bounce, Timbaland beats, and timeless hook anthems.',
     iconName: 'Flame',
-    accentColor: 'from-orange-500 to-pink-600',
+    accentColor: 'from-orange-500 to-rose-600',
   },
   6: {
     dayOfWeek: 6,
@@ -72,7 +72,7 @@ const DAILY_THEMES: Record<number, DailyThemeInfo> = {
     subtitle: 'Saturday Drop',
     description: 'Sample chops, lyrical masterclasses, and untouchable heavyweight verses.',
     iconName: 'Crown',
-    accentColor: 'from-purple-500 to-indigo-600',
+    accentColor: 'from-rose-600 to-amber-600',
   },
 };
 

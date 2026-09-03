@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --td-bg: #0d1016;
-  --td-surface: #151a24;
-  --td-surface-raised: #1b2230;
-  --td-border: rgba(148, 163, 184, 0.18);
-  --td-border-strong: rgba(196, 181, 253, 0.42);
-  --td-ink: #f8fafc;
-  --td-muted: #a7b0c0;
-  --td-accent: #d946ef;
-  --td-accent-cool: #22d3ee;
-  --td-accent-warm: #fbbf24;
-  --td-font-body: "Avenir Next", "Segoe UI", sans-serif;
-  --td-font-display: Georgia, "Times New Roman", serif;
+  --td-bg: #050507;
+  --td-surface: #101014;
+  --td-surface-raised: #18181e;
+  --td-border: rgba(255, 255, 255, 0.08);
+  --td-border-strong: rgba(255, 255, 255, 0.18);
+  --td-ink: #ffffff;
+  --td-muted: #a1a1aa;
+  --td-accent: #fa233b;
+  --td-accent-cool: #38bdf8;
+  --td-accent-warm: #f59e0b;
+  --td-font-body: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+  --td-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
 }
 
 @layer base {
@@ -26,6 +26,7 @@
     color: var(--td-ink);
     font-family: var(--td-font-body);
     overflow-x: hidden;
+    letter-spacing: -0.015em;
   }
 
   button,
@@ -37,14 +38,38 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--td-accent-cool);
+    outline: 2px solid var(--td-accent);
     outline-offset: 3px;
   }
 }
 
 .font-display {
   font-family: var(--td-font-display);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
+}
+
+/* Apple Liquid Glass Materials */
+.apple-glass {
+  background: rgba(18, 18, 22, 0.72);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.apple-glass-card {
+  background: rgba(22, 22, 26, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.apple-glass-pill {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @keyframes spinSlow {
@@ -97,12 +122,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #27272a;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a855f7;
+  background: #52525b;
 }
 
 /* Mobile Safe Area & Touch Utilities */

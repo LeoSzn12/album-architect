@@ -105,25 +105,266 @@ export const LibraryPanel: React.FC<LibraryPanelProps> = ({ songs = SONG_LIBRARY
     }
   };
 
-  return <section aria-labelledby="library-panel-title" className="w-full max-w-6xl rounded-3xl border border-purple-500/30 bg-gray-900/90 p-5 shadow-2xl backdrop-blur-md sm:p-7">
-    {onBackToGame && (
-      <div className="mb-5 flex items-center justify-between pb-4 border-b border-gray-800">
-        <button
-          onClick={onBackToGame}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 border border-purple-800/60 text-purple-300 font-extrabold text-xs transition active:scale-95 cursor-pointer shadow-sm"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Return to Draft Board</span>
-        </button>
-        <span className="text-xs text-gray-500 font-semibold">Track Catalog & Playlist Desk</span>
+  return (
+    <section aria-labelledby="library-panel-title" className="w-full max-w-6xl rounded-3xl border border-white/[0.08] bg-[#0e0e12]/95 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
+      {onBackToGame && (
+        <div className="mb-6 flex items-center justify-between pb-4 border-b border-white/[0.08]">
+          <button
+            onClick={onBackToGame}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-zinc-200 font-bold text-xs transition active:scale-95 cursor-pointer shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Draft Board</span>
+          </button>
+          <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Track Catalog & Playlist Desk</span>
+        </div>
+      )}
+
+      <div className="mb-6 flex flex-col gap-4 border-b border-white/[0.08] pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-rose-400">Catalog Desk</p>
+          <h2 id="library-panel-title" className="flex items-center gap-2.5 text-2xl font-black text-white tracking-tight mt-1">
+            <div className="w-8 h-8 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+              <Library className="h-4 w-4 text-rose-500" aria-hidden="true" />
+            </div>
+            Library
+          </h2>
+          <p className="mt-1 text-sm text-zinc-400">Search, mark, and shape your personal cut list.</p>
+        </div>
+        {provider && (
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+            {provider.name} · {provider.capabilities.search.enabled ? 'search ready' : 'scaffolded'}
+          </span>
+        )}
       </div>
-    )}
-    <div className="mb-5 flex flex-col gap-3 border-b border-gray-800 pb-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Catalog desk</p><h2 id="library-panel-title" className="flex items-center gap-2 text-2xl font-black text-white"><Library className="h-5 w-5 text-purple-300" aria-hidden="true" />Library</h2><p className="mt-1 text-sm text-gray-400">Search, mark, and shape your personal cut list.</p></div>{provider && <span className="rounded-lg border border-gray-700 bg-gray-950 px-2.5 py-1.5 text-[10px] font-black uppercase text-gray-400">{provider.name} · {provider.capabilities.search.enabled ? 'search ready' : 'scaffolded'}</span>}</div>
-    <div className="mb-4 grid gap-3 md:grid-cols-[1fr_auto]"><label className="relative"><span className="sr-only">Search catalog</span><Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" aria-hidden="true" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, artist, album, or mood" className="w-full rounded-xl border border-gray-700 bg-gray-950 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30" /></label><label><span className="sr-only">Filter by genre</span><select value={genre} onChange={(event) => setGenre(event.target.value)} className="w-full rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm font-bold text-gray-300 outline-none focus:border-purple-400 md:w-56">{genres.map((item) => <option key={item} value={item}>{item === 'all' ? 'All genres' : item}</option>)}</select></label></div>
-    <div className="mb-4 rounded-2xl border border-purple-500/20 bg-purple-950/10 p-4"><div className="mb-2 flex items-center justify-between gap-3"><div className="text-xs font-black uppercase tracking-wider text-purple-200">Provider desk</div><span className="rounded-lg border border-gray-700 bg-gray-950 px-2 py-1 text-[10px] font-black uppercase text-gray-400">{remoteProvider ? `${remoteProvider} account` : 'Select Spotify or YouTube in Setup'}</span></div><div className="grid gap-2 sm:grid-cols-[1fr_auto]"><input value={providerQuery} onChange={(event) => setProviderQuery(event.target.value)} placeholder="Search connected provider catalog" className="min-w-0 rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-400" /><button type="button" disabled={!remoteProvider || !providerQuery.trim() || providerState.status === 'loading'} onClick={searchRemote} className="rounded-xl border border-purple-500/40 bg-purple-950/60 px-4 py-2.5 text-xs font-black text-purple-100 transition hover:bg-purple-900/70 disabled:cursor-not-allowed disabled:opacity-50">Search provider</button></div><div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]"><input value={playlistReference} onChange={(event) => setPlaylistReference(event.target.value)} placeholder="Paste a Spotify or YouTube playlist URL" className="min-w-0 rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-400" /><button type="button" disabled={!remoteProvider || !playlistReference.trim() || providerState.status === 'loading'} onClick={importPlaylist} className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-4 py-2.5 text-xs font-black text-cyan-100 transition hover:bg-cyan-900/60 disabled:cursor-not-allowed disabled:opacity-50">Import playlist</button></div><div className="mt-2 flex flex-col gap-2 sm:flex-row"><input value={exportName} onChange={(event) => setExportName(event.target.value)} aria-label="Export playlist name" className="min-w-0 flex-1 rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-xs text-white outline-none focus:border-purple-400" /><button type="button" disabled={!remoteProvider || !exportSongs.length || providerState.status === 'loading'} onClick={exportPlaylist} className="rounded-xl border border-emerald-500/40 bg-emerald-950/50 px-4 py-2.5 text-xs font-black text-emerald-100 transition hover:bg-emerald-900/60 disabled:cursor-not-allowed disabled:opacity-50">Export {exportSongs.length ? `${exportSongs.length} tracks` : 'draft'}</button></div>{providerState.message && <p className={`mt-2 break-words text-xs ${providerState.status === 'success' ? 'text-emerald-300' : 'text-amber-300'}`}>{providerState.message}</p>}{providerSongs.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{providerSongs.slice(0, 12).map((song) => <button type="button" key={song.id} onClick={() => onSelectSong?.(song)} className="rounded-xl border border-gray-800 bg-gray-950/80 px-3 py-2 text-left hover:border-purple-500/70"><span className="block truncate text-xs font-black text-white">{song.title}</span><span className="block truncate text-[11px] text-gray-500">{song.rawArtistString || song.artist}</span></button>)}</div>}</div>
-    <div className="mb-6 rounded-2xl border border-cyan-500/20 bg-cyan-950/10 p-4"><div className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-cyan-200"><Link2 className="h-3.5 w-3.5" aria-hidden="true" />Resolve an official song link</div><div className="flex flex-col gap-2 sm:flex-row"><input value={linkUrl} onChange={(event) => setLinkUrl(event.target.value)} placeholder="https://open.spotify.com/... or https://music.youtube.com/..." className="min-w-0 flex-1 rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-xs text-white placeholder:text-gray-600 outline-none focus:border-cyan-400" /><button type="button" disabled={!linkUrl.trim() || resolveState.status === 'loading'} onClick={resolveLink} className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-4 py-2.5 text-xs font-black text-cyan-100 transition hover:bg-cyan-900/60 disabled:cursor-not-allowed disabled:opacity-50">{resolveState.status === 'loading' ? 'Resolving…' : 'Resolve link'}</button></div>{resolveState.message && <p className={`mt-2 text-xs ${resolveState.status === 'success' ? 'text-emerald-300' : 'text-amber-300'}`}>{resolveState.message}</p>}</div>
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{visibleSongs.map((song) => <article key={song.id} className="rounded-2xl border border-gray-800 bg-gray-950/80 p-4 transition hover:border-purple-700/70"><div className={`mb-3 h-16 rounded-xl bg-gradient-to-br ${song.gradient} p-3`}><div className="flex items-start justify-between"><span className="line-clamp-1 text-[10px] font-black uppercase tracking-wider text-white/70">{song.genre}</span><button type="button" aria-label={`Hide ${song.title}`} onClick={() => hideSong(song.id)} className="rounded-lg p-1 text-white/60 hover:bg-black/30 hover:text-white"><EyeOff className="h-3.5 w-3.5" aria-hidden="true" /></button></div></div><h3 className="line-clamp-1 font-black text-white">{song.title}</h3><p className="line-clamp-1 text-xs text-gray-400">{song.rawArtistString}</p><p className="mt-2 text-[11px] text-gray-500">{song.year ?? '—'} · {song.typeTag} · Energy {song.energy}</p><div className="mt-3 flex items-center gap-2"><button type="button" onClick={() => onSelectSong?.(song)} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-purple-800/70 bg-purple-950/50 px-2 py-2 text-xs font-black text-purple-200 hover:bg-purple-900/70"><Play className="h-3.5 w-3.5" aria-hidden="true" />Use track</button><button type="button" aria-pressed={favorites.includes(song.id)} aria-label={`${favorites.includes(song.id) ? 'Remove' : 'Add'} ${song.title} ${favorites.includes(song.id) ? 'from' : 'to'} favorites`} onClick={() => toggleFavorite(song.id)} className={`rounded-lg border p-2 ${favorites.includes(song.id) ? 'border-pink-500/60 bg-pink-950/60 text-pink-300' : 'border-gray-700 text-gray-500 hover:text-pink-300'}`}><Heart className="h-4 w-4" fill={favorites.includes(song.id) ? 'currentColor' : 'none'} aria-hidden="true" /></button></div><div className="mt-3 flex flex-wrap gap-1.5">{(tags[song.id] ?? []).map((tag) => <span key={tag} className="rounded bg-cyan-950/50 px-2 py-1 text-[10px] font-bold text-cyan-300">{tag}</span>)}<label className="flex min-w-0 flex-1 items-center gap-1 rounded border border-dashed border-gray-700 px-2"><Tag className="h-3 w-3 shrink-0 text-gray-500" aria-hidden="true" /><span className="sr-only">Add tag to {song.title}</span><input value={tagInput[song.id] ?? ''} onChange={(event) => setTagInput({ ...tagInput, [song.id]: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter') addTag(song.id); }} placeholder="tag + enter" className="min-w-0 w-full bg-transparent py-1 text-[10px] text-white outline-none placeholder:text-gray-600" /></label></div></article>)}</div>
-    {visibleSongs.length === 0 && <div className="rounded-2xl border border-dashed border-gray-700 py-12 text-center text-sm text-gray-500">No tracks match this cut. Try another search or filter.</div>}
-    {hidden.length > 0 && <button type="button" onClick={() => { setHidden([]); onHiddenChange?.([]); }} className="mt-5 flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-white"><X className="h-3.5 w-3.5" aria-hidden="true" />Restore {hidden.length} hidden track{hidden.length === 1 ? '' : 's'}</button>}
-  </section>;
+
+      <div className="mb-5 grid gap-3 md:grid-cols-[1fr_auto]">
+        <label className="relative">
+          <span className="sr-only">Search catalog</span>
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-zinc-500" aria-hidden="true" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search title, artist, album, or mood"
+            className="w-full rounded-2xl border border-white/[0.08] bg-[#121216]/90 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-zinc-600 outline-none focus:border-rose-500/80 focus:ring-1 focus:ring-rose-500/30"
+          />
+        </label>
+        <label>
+          <span className="sr-only">Filter by genre</span>
+          <select
+            value={genre}
+            onChange={(event) => setGenre(event.target.value)}
+            className="w-full rounded-2xl border border-white/[0.08] bg-[#121216]/90 px-4 py-2.5 text-sm font-bold text-zinc-300 outline-none focus:border-rose-500/80 md:w-56"
+          >
+            {genres.map((item) => (
+              <option key={item} value={item}>
+                {item === 'all' ? 'All genres' : item}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="mb-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 shadow-sm">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="text-xs font-black uppercase tracking-wider text-zinc-300">Provider Desk</div>
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-black uppercase text-zinc-400">
+            {remoteProvider ? `${remoteProvider} account` : 'Select Spotify or YouTube in Setup'}
+          </span>
+        </div>
+        <div className="grid gap-2.5 sm:grid-cols-[1fr_auto]">
+          <input
+            value={providerQuery}
+            onChange={(event) => setProviderQuery(event.target.value)}
+            placeholder="Search connected provider catalog"
+            className="min-w-0 rounded-xl border border-white/[0.08] bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-600 outline-none focus:border-rose-500/80"
+          />
+          <button
+            type="button"
+            disabled={!remoteProvider || !providerQuery.trim() || providerState.status === 'loading'}
+            onClick={searchRemote}
+            className="rounded-full border border-white/[0.08] bg-white/[0.06] hover:bg-white/[0.12] px-5 py-2.5 text-xs font-bold text-zinc-200 transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Search provider
+          </button>
+        </div>
+        <div className="mt-2.5 grid gap-2.5 sm:grid-cols-[1fr_auto]">
+          <input
+            value={playlistReference}
+            onChange={(event) => setPlaylistReference(event.target.value)}
+            placeholder="Paste a Spotify or YouTube playlist URL"
+            className="min-w-0 rounded-xl border border-white/[0.08] bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-600 outline-none focus:border-rose-500/80"
+          />
+          <button
+            type="button"
+            disabled={!remoteProvider || !playlistReference.trim() || providerState.status === 'loading'}
+            onClick={importPlaylist}
+            className="rounded-full border border-white/[0.08] bg-white/[0.06] hover:bg-white/[0.12] px-5 py-2.5 text-xs font-bold text-zinc-200 transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Import playlist
+          </button>
+        </div>
+        <div className="mt-2.5 flex flex-col gap-2.5 sm:flex-row">
+          <input
+            value={exportName}
+            onChange={(event) => setExportName(event.target.value)}
+            aria-label="Export playlist name"
+            className="min-w-0 flex-1 rounded-xl border border-white/[0.08] bg-black/40 px-3.5 py-2.5 text-xs text-white outline-none focus:border-rose-500/80"
+          />
+          <button
+            type="button"
+            disabled={!remoteProvider || !exportSongs.length || providerState.status === 'loading'}
+            onClick={exportPlaylist}
+            className="rounded-full bg-white hover:bg-zinc-200 px-5 py-2.5 text-xs font-extrabold text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 shadow-md"
+          >
+            Export {exportSongs.length ? `${exportSongs.length} tracks` : 'draft'}
+          </button>
+        </div>
+        {providerState.message && (
+          <p className={`mt-2.5 break-words text-xs ${providerState.status === 'success' ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {providerState.message}
+          </p>
+        )}
+        {providerSongs.length > 0 && (
+          <div className="mt-3.5 grid gap-2 sm:grid-cols-2">
+            {providerSongs.slice(0, 12).map((song) => (
+              <button
+                type="button"
+                key={song.id}
+                onClick={() => onSelectSong?.(song)}
+                className="rounded-xl border border-white/[0.08] bg-[#121216]/90 p-3 text-left hover:border-white/20 transition active:scale-95"
+              >
+                <span className="block truncate text-xs font-bold text-white">{song.title}</span>
+                <span className="block truncate text-[11px] text-zinc-500">{song.rawArtistString || song.artist}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 shadow-sm">
+        <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-300">
+          <Link2 className="h-3.5 w-3.5 text-rose-500" aria-hidden="true" />
+          Resolve an official song link
+        </div>
+        <div className="flex flex-col gap-2.5 sm:flex-row">
+          <input
+            value={linkUrl}
+            onChange={(event) => setLinkUrl(event.target.value)}
+            placeholder="https://open.spotify.com/... or https://music.youtube.com/..."
+            className="min-w-0 flex-1 rounded-xl border border-white/[0.08] bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-600 outline-none focus:border-rose-500/80"
+          />
+          <button
+            type="button"
+            disabled={!linkUrl.trim() || resolveState.status === 'loading'}
+            onClick={resolveLink}
+            className="rounded-full border border-white/[0.08] bg-white/[0.06] hover:bg-white/[0.12] px-5 py-2.5 text-xs font-bold text-zinc-200 transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {resolveState.status === 'loading' ? 'Resolving…' : 'Resolve link'}
+          </button>
+        </div>
+        {resolveState.message && (
+          <p className={`mt-2.5 text-xs ${resolveState.status === 'success' ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {resolveState.message}
+          </p>
+        )}
+      </div>
+
+      <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+        {visibleSongs.map((song) => (
+          <article
+            key={song.id}
+            className="rounded-2xl border border-white/[0.08] bg-[#121216]/90 p-4 transition hover:border-white/20 shadow-md flex flex-col justify-between"
+          >
+            <div>
+              <div className={`mb-3 h-16 rounded-xl bg-gradient-to-br ${song.gradient} p-3 relative overflow-hidden border border-white/[0.06]`}>
+                <div className="flex items-start justify-between">
+                  <span className="line-clamp-1 text-[10px] font-black uppercase tracking-wider text-white/80">
+                    {song.genre}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`Hide ${song.title}`}
+                    onClick={() => hideSong(song.id)}
+                    className="rounded-full p-1 text-white/60 hover:bg-black/40 hover:text-white transition"
+                  >
+                    <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+              <h3 className="line-clamp-1 font-black text-white text-sm">{song.title}</h3>
+              <p className="line-clamp-1 text-xs text-zinc-400">{song.rawArtistString}</p>
+              <p className="mt-1.5 text-[11px] text-zinc-500 font-medium">
+                {song.year ?? '—'} · {song.typeTag} · Energy {song.energy}
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onSelectSong?.(song)}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white hover:bg-zinc-200 px-3 py-2 text-xs font-extrabold text-black transition active:scale-95 shadow-sm"
+                >
+                  <Play className="h-3.5 w-3.5 fill-black" aria-hidden="true" />
+                  Use track
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={favorites.includes(song.id)}
+                  aria-label={`${favorites.includes(song.id) ? 'Remove' : 'Add'} ${song.title} ${favorites.includes(song.id) ? 'from' : 'to'} favorites`}
+                  onClick={() => toggleFavorite(song.id)}
+                  className={`rounded-full border p-2 transition active:scale-95 ${
+                    favorites.includes(song.id)
+                      ? 'border-rose-500/50 bg-rose-500/15 text-rose-400'
+                      : 'border-white/[0.08] bg-white/[0.04] text-zinc-500 hover:text-rose-400'
+                  }`}
+                >
+                  <Heart className="h-4 w-4" fill={favorites.includes(song.id) ? 'currentColor' : 'none'} aria-hidden="true" />
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {(tags[song.id] ?? []).map((tag) => (
+                  <span key={tag} className="rounded-full bg-white/[0.06] border border-white/[0.08] px-2.5 py-0.5 text-[10px] font-bold text-zinc-300">
+                    {tag}
+                  </span>
+                ))}
+                <label className="flex min-w-0 flex-1 items-center gap-1.5 rounded-full border border-dashed border-white/[0.12] px-2.5 py-0.5">
+                  <Tag className="h-3 w-3 shrink-0 text-zinc-500" aria-hidden="true" />
+                  <span className="sr-only">Add tag to {song.title}</span>
+                  <input
+                    value={tagInput[song.id] ?? ''}
+                    onChange={(event) => setTagInput({ ...tagInput, [song.id]: event.target.value })}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') addTag(song.id);
+                    }}
+                    placeholder="tag + enter"
+                    className="min-w-0 w-full bg-transparent py-1 text-[10px] text-white outline-none placeholder:text-zinc-600"
+                  />
+                </label>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      {visibleSongs.length === 0 && (
+        <div className="rounded-3xl border border-dashed border-white/[0.08] py-12 text-center text-sm text-zinc-500">
+          No tracks match this cut. Try another search or filter.
+        </div>
+      )}
+      {hidden.length > 0 && (
+        <button
+          type="button"
+          onClick={() => {
+            setHidden([]);
+            onHiddenChange?.([]);
+          }}
+          className="mt-5 flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-white transition"
+        >
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
+          Restore {hidden.length} hidden track{hidden.length === 1 ? '' : 's'}
+        </button>
+      )}
+    </section>
+  );
 };

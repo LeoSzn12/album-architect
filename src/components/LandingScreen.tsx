@@ -43,25 +43,24 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
       {/* Hero Section */}
       <section aria-labelledby="landing-title" className="flex max-w-3xl flex-col items-center gap-5 text-center">
-        {/* Animated Logo */}
+        {/* Apple Music Style Monogram Icon */}
         <div className="relative flex h-20 w-20 items-center justify-center">
-          <div className="absolute inset-2 rounded-3xl border border-fuchsia-300/30 bg-fuchsia-500/10" />
-          <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl border border-fuchsia-300/30 bg-gradient-to-br from-fuchsia-600 to-slate-900 shadow-xl shadow-fuchsia-950/40">
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl border border-white/20 bg-gradient-to-br from-rose-600 via-rose-700 to-zinc-950 shadow-2xl shadow-rose-950/40">
             <Disc3 className="w-10 h-10 text-white animate-spin-slow" />
           </div>
         </div>
 
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-cyan-300/80">A&R playground for people with opinions</p>
-          <h1 id="landing-title" className="font-display text-5xl font-black leading-tight text-white sm:text-7xl">
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.28em] text-zinc-400">A&R playground for people with opinions</p>
+          <h1 id="landing-title" className="text-5xl font-black leading-tight text-white sm:text-7xl tracking-tight">
             TRACKDRAFT
           </h1>
-          <p className="mt-3 text-xl font-bold tracking-tight text-slate-200">
+          <p className="mt-3 text-xl font-bold tracking-tight text-zinc-200">
             {isBuilder ? `${projectLabel} Builder` : 'Curate the project. Defend the sequence.'}
           </p>
         </div>
 
-        <p className="max-w-xl text-base leading-7 text-slate-400 sm:text-lg">
+        <p className="max-w-xl text-base leading-7 text-zinc-400 sm:text-lg">
           {isBuilder ? (
             <>Build a <span className="text-white font-bold">{slots.length}-track {projectLabel}</span> across curated positions. Review the arc, reorder the final sequence, and submit when the project is ready.</>
           ) : (
@@ -73,9 +72,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={handleStart}
-            className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-cyan-500 px-8 py-4 text-base sm:text-lg font-extrabold text-white shadow-xl shadow-fuchsia-950/40 transition-transform hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0"
+            className="flex min-h-14 cursor-pointer items-center gap-3 rounded-full bg-white hover:bg-zinc-200 px-8 py-4 text-base sm:text-lg font-black text-black shadow-2xl transition-all hover:scale-102 active:scale-98"
           >
-            <Zap className="w-5 h-5 text-amber-300" />
+            <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
             <span>{startLabel}</span>
             <ChevronRight className="w-5 h-5 opacity-70" />
           </button>
@@ -86,20 +85,20 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
                 playHoverSound(audioEnabled);
                 onOpenHowToPlay();
               }}
-              className="flex min-h-14 cursor-pointer items-center gap-2.5 rounded-2xl border border-cyan-500/40 bg-cyan-950/30 px-6 py-4 text-base font-extrabold text-cyan-200 shadow-lg shadow-cyan-950/30 transition hover:-translate-y-0.5 hover:bg-cyan-900/40"
+              className="flex min-h-14 cursor-pointer items-center gap-2.5 rounded-full border border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.12] px-6 py-4 text-base font-bold text-white transition active:scale-95 shadow-lg"
             >
-              <BookOpen className="w-5 h-5 text-cyan-400" />
+              <BookOpen className="w-5 h-5 text-zinc-300" />
               <span>How to Play</span>
             </button>
           )}
         </div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">No account or provider connection required</p>
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">No account or streaming login required</p>
       </section>
 
       {/* Rules Summary */}
-      <section aria-labelledby="how-to-play" className="w-full max-w-3xl rounded-[1.75rem] border border-slate-700/70 bg-slate-900/70 p-6 shadow-xl shadow-black/10 backdrop-blur-sm sm:p-8">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/70 pb-4">
-          <h2 id="how-to-play" className="text-sm font-extrabold uppercase tracking-[0.2em] text-fuchsia-300">
+      <section aria-labelledby="how-to-play" className="w-full max-w-3xl rounded-3xl border border-white/[0.08] bg-[#0e0e12]/80 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
+          <h2 id="how-to-play" className="text-sm font-extrabold uppercase tracking-[0.2em] text-zinc-300">
             {isBuilder ? `How to build your ${projectLabel}` : 'How to Draft'}
           </h2>
           {onOpenHowToPlay && (
@@ -108,14 +107,14 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
                 playHoverSound(audioEnabled);
                 onOpenHowToPlay();
               }}
-              className="text-xs font-bold text-cyan-300 hover:text-cyan-200 underline decoration-cyan-500/40 hover:decoration-cyan-300 flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-white hover:text-zinc-300 flex items-center gap-1 cursor-pointer"
             >
               <span>Full Rulebook & Strategies</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
-        <ol className="flex flex-col gap-3">
+        <ol className="flex flex-col gap-3.5">
           {[
             {
               num: '1',
@@ -143,12 +142,12 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             },
           ].map((rule) => (
             <li key={rule.num} className="flex items-start gap-4">
-              <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 text-xs font-extrabold text-fuchsia-200">
+              <span className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.06] text-xs font-black text-white">
                 {rule.num}
               </span>
               <div>
-                <span className="text-sm font-bold text-slate-100">{rule.title}</span>
-                <p className="mt-0.5 text-sm leading-6 text-slate-400">{rule.desc}</p>
+                <span className="text-sm font-bold text-white">{rule.title}</span>
+                <p className="mt-0.5 text-sm leading-6 text-zinc-400">{rule.desc}</p>
               </div>
             </li>
           ))}
@@ -163,24 +162,24 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
               playHoverSound(audioEnabled);
               onOpenHowToPlay();
             }}
-            className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-cyan-500/50 bg-cyan-950/30 px-5 py-2.5 text-sm font-bold text-cyan-200 transition hover:-translate-y-0.5 hover:bg-cyan-900/50"
+            className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] px-5 py-2.5 text-sm font-bold text-zinc-300 hover:text-white transition active:scale-95"
           >
-            <BookOpen className="w-4 h-4 text-cyan-400" />
+            <BookOpen className="w-4 h-4 text-zinc-400" />
             <span>How to Play</span>
           </button>
         )}
 
         <button
           onClick={onOpenFriendsModal}
-          className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-pink-500/50 bg-pink-950/30 px-5 py-2.5 text-sm font-bold text-pink-100 transition hover:-translate-y-0.5 hover:bg-pink-900/50"
+          className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] px-5 py-2.5 text-sm font-bold text-zinc-300 hover:text-white transition active:scale-95"
         >
-          <Swords className="w-4 h-4 text-pink-400" />
+          <Swords className="w-4 h-4 text-zinc-400" />
           <span>1v1 Challenge</span>
         </button>
 
         <button
           onClick={onScrollToLeaderboard}
-          className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-amber-400/40 bg-slate-900/80 px-5 py-2.5 text-sm font-bold text-amber-200 transition hover:-translate-y-0.5 hover:bg-slate-800"
+          className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] px-5 py-2.5 text-sm font-bold text-zinc-300 hover:text-white transition active:scale-95"
         >
           <Trophy className="w-4 h-4 text-amber-400" />
           <span>Leaderboard</span>

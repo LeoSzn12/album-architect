@@ -39,16 +39,16 @@ export default function SharePage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#0f1117] px-4 py-10 text-slate-100 sm:py-16">
+    <main className="min-h-screen bg-[#050507] px-4 py-10 text-white sm:py-16 selection:bg-rose-500/30 selection:text-white">
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center">
         <div className="mb-6 self-start">
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-purple-300">TrackDraft</p>
-          <p className="mt-1 text-sm text-slate-400">Shared result</p>
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-rose-500">TrackDraft</p>
+          <p className="mt-1 text-sm text-zinc-400">Shared result</p>
         </div>
         {payload ? <ShareCard payload={payload} /> : (
-          <section className="w-full rounded-3xl border border-red-400/20 bg-slate-950 p-8 text-center">
+          <section className="w-full rounded-3xl border border-rose-500/20 bg-[#0e0e12]/95 p-8 text-center backdrop-blur-2xl">
             <h1 className="text-2xl font-black text-white">Unable to load result</h1>
-            <p className="mt-2 text-sm text-slate-400">{error || 'Reading share data…'}</p>
+            <p className="mt-2 text-sm text-zinc-400">{error || 'Reading share data…'}</p>
           </section>
         )}
       </div>

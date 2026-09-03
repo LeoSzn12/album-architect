@@ -157,7 +157,7 @@ export interface CandidateFlowInsight {
   pacingLabel: string;
   curatorInsight: string;
   tag: string;
-  tagColor: 'emerald' | 'cyan' | 'purple' | 'amber' | 'pink';
+  tagColor: 'emerald' | 'cyan' | 'purple' | 'amber' | 'pink' | 'rose' | 'zinc';
 }
 
 export type AudioSourcePreference = 'youtube' | 'spotify' | 'apple' | 'synth';

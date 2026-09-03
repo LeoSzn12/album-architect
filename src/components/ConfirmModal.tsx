@@ -43,40 +43,40 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       <div
         ref={modalRef}
         {...modalProps}
-        className="bg-gray-900 border border-purple-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden flex flex-col gap-4"
+        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden flex flex-col gap-4"
       >
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             <div
               className={`p-2.5 rounded-xl border ${
                 isDestructive
-                  ? 'bg-red-950/80 border-red-800 text-red-400'
-                  : 'bg-purple-950/80 border-purple-800 text-purple-300'
+                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-500'
+                  : 'bg-white/[0.06] border-white/[0.08] text-zinc-300'
               }`}
             >
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-extrabold text-white">{title}</h3>
-              <p className="text-xs text-gray-400 mt-0.5">{message}</p>
+              <h3 className="text-lg font-black text-white">{title}</h3>
+              <p className="text-xs text-zinc-400 mt-0.5">{message}</p>
             </div>
           </div>
           <button
             onClick={onCancel}
-            className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition cursor-pointer"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-400 hover:text-white transition cursor-pointer border border-white/[0.08]"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.08]">
           <button
             onClick={() => {
               playHoverSound(audioEnabled);
               onCancel();
             }}
             onMouseEnter={() => playHoverSound(audioEnabled)}
-            className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs transition cursor-pointer"
+            className="px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 font-bold text-xs transition cursor-pointer border border-white/[0.08] active:scale-95"
           >
             {cancelText}
           </button>
@@ -86,10 +86,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
               onConfirm();
             }}
             onMouseEnter={() => playHoverSound(audioEnabled)}
-            className={`px-4 py-2 rounded-xl font-extrabold text-xs transition cursor-pointer shadow-md ${
+            className={`px-5 py-2 rounded-full font-black text-xs transition cursor-pointer shadow-md active:scale-95 ${
               isDestructive
-                ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-red-950/50'
-                : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-purple-950/50'
+                ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                : 'bg-white hover:bg-zinc-200 text-black'
             }`}
           >
             {confirmText}

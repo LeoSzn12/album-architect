@@ -131,42 +131,39 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       <div
         ref={modalRef}
         {...modalProps}
-        className="bg-gray-900 border border-purple-500/40 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative overflow-hidden"
+        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative overflow-hidden"
       >
-        {/* Glow backdrop decorative */}
-        <div className="absolute -top-24 -right-24 w-60 h-60 bg-pink-600/20 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex justify-between items-center pb-4 mb-6 border-b border-gray-800">
+        <div className="flex justify-between items-center pb-4 mb-6 border-b border-white/[0.08]">
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-pink-400" /> Real-World Playlist Export
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-rose-500" /> Real-World Playlist Export
             </span>
-            <h2 className="text-2xl font-extrabold text-white">Export Your TrackDraft</h2>
+            <h2 className="text-2xl font-black text-white">Export Your TrackDraft</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-zinc-400 hover:text-white transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Mock Album Cover Badge Preview */}
-        <div className="bg-gradient-to-br from-purple-950 via-gray-950 to-pink-950 border border-purple-800/60 rounded-2xl p-4 mb-6 flex items-center gap-4 shadow-xl">
-          <div className="w-20 h-20 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 p-0.5 shadow-lg flex-shrink-0">
-            <div className="w-full h-full bg-gray-950 rounded-[10px] flex flex-col items-center justify-center p-2 text-center">
-              <Disc className="w-6 h-6 text-pink-400 mb-1" />
-              <span className="text-[9px] font-extrabold text-white uppercase tracking-tighter line-clamp-1">
+        <div className="bg-[#121216]/90 border border-white/[0.08] rounded-2xl p-4 mb-6 flex items-center gap-4 shadow-xl">
+          <div className="w-20 h-20 rounded-xl bg-black/60 border border-white/[0.1] p-1 flex-shrink-0 flex items-center justify-center">
+            <div className="w-full h-full rounded-[10px] flex flex-col items-center justify-center p-2 text-center">
+              <Disc className="w-7 h-7 text-rose-500 mb-1" />
+              <span className="text-[9px] font-black text-white uppercase tracking-wider line-clamp-1">
                 ARCHITECT
               </span>
             </div>
           </div>
           <div>
-            <span className="px-2 py-0.5 rounded bg-purple-950 text-purple-300 text-[10px] font-bold border border-purple-800">
+            <span className="px-2.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 text-[10px] font-black border border-white/[0.08]">
               {evaluationResult?.gradeBadge || 'Classic Status'}
             </span>
-            <h3 className="text-lg font-extrabold text-white mt-1">{titleText}</h3>
-            <p className="text-xs text-gray-400">
+            <h3 className="text-lg font-black text-white mt-1">{titleText}</h3>
+            <p className="text-xs text-zinc-400">
               {draftedTracks.length} Tracks • Score: {evaluationResult?.overallScore || '9.5'} / 10
             </p>
           </div>
@@ -181,11 +178,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             rel="noopener noreferrer"
             onClick={() => playDraftLockSound(audioEnabled)}
             onMouseEnter={() => playHoverSound(audioEnabled)}
-            className="w-full py-3.5 px-4 bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 hover:opacity-95 text-white font-extrabold rounded-xl shadow-lg shadow-red-950/40 text-center transition flex items-center justify-center gap-2 text-sm cursor-pointer"
+            className="w-full py-3.5 px-4 bg-white hover:bg-zinc-200 text-black font-black rounded-full shadow-lg text-center transition flex items-center justify-center gap-2 text-sm cursor-pointer active:scale-95"
           >
-            <Music className="w-5 h-5" />
-            <span>Launch YouTube Music Playlist Search 🎵</span>
-            <ExternalLink className="w-4 h-4" />
+            <Music className="w-4 h-4 text-red-500" />
+            <span>Launch YouTube Music Playlist Search</span>
+            <ExternalLink className="w-4 h-4 text-zinc-500" />
           </a>
 
           <div className="grid grid-cols-2 gap-3">
@@ -193,9 +190,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             <button
               onClick={handleCopyText}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-gray-700 cursor-pointer"
+              className="py-3 px-4 bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold rounded-full text-xs transition flex items-center justify-center gap-2 border border-white/[0.08] cursor-pointer active:scale-95"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
               <span>{copied ? 'Copied Tracklist!' : 'Copy Tracklist'}</span>
             </button>
 
@@ -203,9 +200,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             <button
               onClick={handleDownloadM3u}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-gray-700 cursor-pointer"
+              className="py-3 px-4 bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold rounded-full text-xs transition flex items-center justify-center gap-2 border border-white/[0.08] cursor-pointer active:scale-95"
             >
-              <Download className="w-4 h-4 text-purple-400" />
+              <Download className="w-4 h-4 text-zinc-400" />
               <span>Download .M3U File</span>
             </button>
           </div>
@@ -214,9 +211,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             <button
               onClick={handleCopyShare}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="py-3 px-4 bg-purple-950/70 hover:bg-purple-900/80 text-purple-100 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-purple-700/70 cursor-pointer"
+              className="py-3 px-4 bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold rounded-full text-xs transition flex items-center justify-center gap-2 border border-white/[0.08] cursor-pointer active:scale-95"
             >
-              {shareCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              {shareCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
               <span>{shareCopied ? 'Copied Share Link!' : 'Copy Share Link'}</span>
             </button>
             <a
@@ -224,26 +221,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => playDraftLockSound(audioEnabled)}
-              className="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-gray-700"
+              className="py-3 px-4 bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold rounded-full text-xs transition flex items-center justify-center gap-2 border border-white/[0.08] active:scale-95"
             >
-              <ExternalLink className="w-4 h-4 text-cyan-300" />
+              <ExternalLink className="w-4 h-4 text-rose-500" />
               <span>Open Share Card</span>
             </a>
           </div>
         </div>
 
         {/* Preview Tracklist Snippet */}
-        <div className="mt-5 pt-4 border-t border-gray-800">
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-2">
+        <div className="mt-5 pt-4 border-t border-white/[0.08]">
+          <span className="text-[11px] font-extrabold text-zinc-400 uppercase tracking-wider block mb-2">
             Master Tracklist Sequence
           </span>
-          <div className="max-h-36 overflow-y-auto bg-gray-950 rounded-xl p-3 border border-gray-800/80 space-y-1.5 font-mono text-[11px] text-gray-300">
+          <div className="max-h-36 overflow-y-auto bg-black/60 rounded-2xl p-3 border border-white/[0.06] space-y-1.5 font-mono text-[11px] text-zinc-300">
             {draftedTracks.map((t, idx) => (
               <div key={idx} className="flex justify-between">
                 <span className="truncate">
                   {idx + 1}. {t.song.title} - {t.song.artist}
                 </span>
-                <span className="text-gray-500 ml-2">{t.song.bpm} BPM</span>
+                <span className="text-zinc-500 ml-2">{t.song.bpm} BPM</span>
               </div>
             ))}
           </div>

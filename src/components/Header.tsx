@@ -81,24 +81,24 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="w-full max-w-6xl mx-auto py-2.5 px-3.5 sm:px-6 mb-4 sm:mb-6 border border-gray-800/80 bg-gray-950/85 backdrop-blur-xl sticky top-2 sm:top-3 z-40 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/40">
+      <header className="w-full max-w-6xl mx-auto py-2.5 px-3.5 sm:px-5 mb-4 sm:mb-6 border border-white/[0.08] bg-[#121216]/75 backdrop-blur-2xl sticky top-2 sm:top-3 z-40 rounded-2xl sm:rounded-3xl shadow-[0_16px_40px_-10px_rgba(0,0,0,0.65)] ring-1 ring-inset ring-white/[0.05]">
         {/* MOBILE TOP BAR (screens < lg) */}
         <div className="flex lg:hidden items-center justify-between gap-2 h-11 sm:h-12">
           {/* Left: Brand Logo & Title */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-md shadow-purple-900/30 border border-purple-300/30">
-              <Disc3 className="w-4 h-4 text-white animate-spin-slow" />
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-white/[0.08] border border-white/10 shadow-inner">
+              <Disc3 className="w-4 h-4 text-rose-500 animate-spin-slow" />
             </div>
             <div>
-              <h1 className="text-base font-black tracking-[0.14em] bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-300 bg-clip-text text-transparent">
+              <h1 className="text-base font-extrabold tracking-tight text-white">
                 TRACKDRAFT
               </h1>
             </div>
           </div>
 
           {/* Center: Current Round Pill */}
-          <div className="px-2.5 py-1 rounded-full bg-purple-950/70 border border-purple-800/60 text-[11px] font-black text-purple-200 flex items-center gap-1.5 truncate max-w-[150px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+          <div className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-bold text-zinc-200 flex items-center gap-1.5 truncate max-w-[150px]">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
             <span className="truncate">
               {isCompleted ? 'Complete' : `R${currentRoundIndex + 1}/${slots.length}: ${activeSlot?.name}`}
             </span>
@@ -108,11 +108,11 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={toggleAudio}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-900 border border-gray-800 text-gray-300 active:text-purple-300 transition-colors cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-300 active:text-white transition-colors cursor-pointer"
               title={audioEnabled ? 'Mute Audio' : 'Enable Audio'}
               aria-label={audioEnabled ? 'Mute Sound' : 'Unmute Sound'}
             >
-              {audioEnabled ? <Volume2 className="w-4 h-4 text-purple-400" /> : <VolumeX className="w-4 h-4 text-gray-500" />}
+              {audioEnabled ? <Volume2 className="w-4 h-4 text-rose-400" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
             </button>
 
             <button
@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
                 playHoverSound(audioEnabled);
                 setIsMobileMenuOpen(true);
               }}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-purple-950 to-pink-950 border border-purple-700/60 text-pink-300 active:scale-95 transition-all cursor-pointer"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-white active:scale-95 transition-all cursor-pointer shadow-sm"
               title="Open Navigation Menu"
               aria-label="Open Menu"
             >
@@ -133,17 +133,17 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="hidden lg:flex lg:justify-between lg:items-center gap-4">
           {/* 1. Left: Brand & Round Status */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-900/30 border border-purple-300/30">
-              <Disc3 className="w-5 h-5 text-white animate-spin-slow" />
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/10 shadow-inner">
+              <Disc3 className="w-5 h-5 text-rose-500 animate-spin-slow" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold tracking-[0.16em] bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-extrabold tracking-tight text-white">
                   TRACKDRAFT
                 </h1>
                 {/* Round Progress Badge */}
-                <span className="px-2.5 py-0.5 rounded-full bg-purple-950/80 border border-purple-800/70 text-[11px] font-black text-purple-200 flex items-center gap-1.5 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                <span className="px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-bold text-zinc-200 flex items-center gap-1.5 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
                   <span>
                     {isCompleted ? (
                       <span className="text-emerald-400 font-bold">{completionLabel}</span>
@@ -155,23 +155,23 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 </span>
               </div>
-              <p className="text-[10px] text-gray-400 font-semibold tracking-wider">
+              <p className="text-[10px] text-zinc-400 font-medium tracking-wide">
                 {activeSlot ? `Current: ${activeSlot.name}` : 'A&R Curation Studio'}
               </p>
             </div>
           </div>
 
-          {/* 2. Center: Primary Navigation Segmented Tabs */}
-          <nav aria-label="Primary Navigation" className="flex items-center gap-1 p-1 bg-gray-900/90 border border-gray-800 rounded-2xl shadow-inner">
+          {/* 2. Center: Primary Navigation Segmented Tabs (Apple Liquid Glass Pill) */}
+          <nav aria-label="Primary Navigation" className="flex items-center gap-1 p-1 bg-black/40 border border-white/[0.06] rounded-2xl backdrop-blur-xl shadow-inner">
             <button
               onClick={() => {
                 playHoverSound(audioEnabled);
                 if (onSelectSurface) onSelectSurface('game');
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeSurface === 'game'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-950/40 border border-purple-300/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
+                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
               }`}
               title="Open active Draft Board"
             >
@@ -185,14 +185,14 @@ export const Header: React.FC<HeaderProps> = ({
                 if (onOpenHowToPlay) onOpenHowToPlay();
                 else if (onSelectSurface) onSelectSurface('how-to-play');
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeSurface === 'how-to-play'
-                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-950/40 border border-cyan-300/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
+                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
               }`}
               title="Open How to Play Rulebook"
             >
-              <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
+              <BookOpen className="w-3.5 h-3.5" />
               <span>How to Play</span>
             </button>
 
@@ -201,14 +201,14 @@ export const Header: React.FC<HeaderProps> = ({
                 playHoverSound(audioEnabled);
                 onOpenSetup();
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeSurface === 'setup'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-950/40 border border-purple-300/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
+                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
               }`}
               title="Open Taste Preferences Setup"
             >
-              <Settings2 className="w-3.5 h-3.5 text-pink-300" />
+              <Settings2 className="w-3.5 h-3.5" />
               <span>Setup</span>
             </button>
 
@@ -217,14 +217,14 @@ export const Header: React.FC<HeaderProps> = ({
                 playHoverSound(audioEnabled);
                 onOpenLibrary();
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeSurface === 'library'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-950/40 border border-purple-300/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
+                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
               }`}
               title="Browse Song Catalog Library"
             >
-              <Library className="w-3.5 h-3.5 text-purple-300" />
+              <Library className="w-3.5 h-3.5" />
               <span>Library</span>
             </button>
 
@@ -233,14 +233,14 @@ export const Header: React.FC<HeaderProps> = ({
                 playHoverSound(audioEnabled);
                 onOpenProfile();
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 activeSurface === 'profile'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-950/40 border border-purple-300/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
+                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
               }`}
               title="View Curator Profile & Stats"
             >
-              <UserRound className="w-3.5 h-3.5 text-emerald-300" />
+              <UserRound className="w-3.5 h-3.5" />
               <span>Profile</span>
             </button>
           </nav>
@@ -254,10 +254,10 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenModeSelector();
               }}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="px-2.5 py-1.5 rounded-xl bg-purple-950/50 hover:bg-purple-900/70 border border-purple-800/60 text-purple-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-200 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
               title="Change Game Mode & Era"
             >
-              <Sliders className="w-3.5 h-3.5 text-purple-400" />
+              <Sliders className="w-3.5 h-3.5 text-zinc-400" />
               <span>{formatLabel}</span>
             </button>
 
@@ -268,14 +268,14 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenFriendsModal();
               }}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer shadow-sm ${
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm ${
                 draftSeed
-                  ? 'bg-gradient-to-r from-amber-600 to-purple-600 text-white border-amber-400/80 animate-pulse'
-                  : 'bg-gradient-to-r from-pink-950/80 to-purple-950/80 hover:from-pink-900 hover:to-purple-900 border-pink-700/60 text-pink-200'
+                  ? 'bg-rose-500 text-white border-rose-400 shadow-md shadow-rose-950/50 animate-pulse'
+                  : 'bg-white/[0.06] hover:bg-white/[0.1] border-white/[0.08] text-zinc-200'
               }`}
               title="Play 1v1 Against Friends with matched seeds"
             >
-              <Swords className="w-3.5 h-3.5 text-pink-400" />
+              <Swords className="w-3.5 h-3.5 text-rose-400" />
               <span>{draftSeed ? `1v1: ${draftSeed}` : '1v1'}</span>
             </button>
 
@@ -286,13 +286,13 @@ export const Header: React.FC<HeaderProps> = ({
                 onToggleTracklist();
               }}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer relative"
+              className="px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-200 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer relative"
               title="Open Tracklist Drawer"
             >
-              <Disc3 className="w-3.5 h-3.5 text-cyan-400" />
+              <Disc3 className="w-3.5 h-3.5 text-rose-400" />
               <span>Tracks ({draftedTracks.length})</span>
               {draftedTracks.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full border border-gray-950" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-black" />
               )}
             </button>
 
@@ -303,11 +303,11 @@ export const Header: React.FC<HeaderProps> = ({
                 onScrollToLeaderboard();
               }}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="p-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-amber-300 hover:text-amber-200 transition cursor-pointer"
+              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-300 hover:text-white transition cursor-pointer"
               title="Scroll to Leaderboard"
               aria-label="View Leaderboard"
             >
-              <Trophy className="w-4 h-4" />
+              <Trophy className="w-4 h-4 text-amber-400" />
             </button>
 
             {/* Reset Draft */}
@@ -318,7 +318,7 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               title={`Restart ${formatLabel}`}
               aria-label="Restart Draft"
-              className="p-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-400 hover:text-white transition cursor-pointer"
+              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-400 hover:text-white transition cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -328,37 +328,37 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={toggleAudio}
               title={audioEnabled ? 'Mute Sound FX' : 'Enable Sound FX'}
               aria-label={audioEnabled ? 'Mute Sound' : 'Enable Sound'}
-              className="p-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-400 hover:text-white transition cursor-pointer"
+              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-400 hover:text-white transition cursor-pointer"
             >
-              {audioEnabled ? <Volume2 className="w-4 h-4 text-purple-400" /> : <VolumeX className="w-4 h-4 text-gray-500" />}
+              {audioEnabled ? <Volume2 className="w-4 h-4 text-rose-400" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
             </button>
           </div>
         </div>
       </header>
 
-      {/* MOBILE SETTINGS DRAWER / SHEET */}
+      {/* MOBILE SETTINGS DRAWER / SHEET (Apple iOS Smoked Glass) */}
       {isMobileMenuOpen && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-md animate-fade-in lg:hidden"
+          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-xl animate-fade-in lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
-            className="w-full bg-gray-950 border-t border-purple-900/40 rounded-t-3xl p-5 pb-safe shadow-2xl flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
+            className="w-full bg-[#121216]/95 border-t border-white/[0.12] rounded-t-3xl p-5 pb-safe shadow-2xl flex flex-col gap-4 max-h-[85vh] overflow-y-auto backdrop-blur-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Sheet Handle */}
-            <div className="w-12 h-1.5 bg-slate-700 rounded-full mx-auto -mt-1 mb-1" />
+            <div className="w-12 h-1.5 bg-zinc-600 rounded-full mx-auto -mt-1 mb-1" />
 
-            <div className="flex items-center justify-between pb-3 border-b border-gray-800">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
               <div className="flex items-center gap-2">
-                <Disc3 className="w-5 h-5 text-purple-400 animate-spin-slow" />
-                <h3 className="text-lg font-black text-white">TrackDraft Menu</h3>
+                <Disc3 className="w-5 h-5 text-rose-500 animate-spin-slow" />
+                <h3 className="text-lg font-bold text-white tracking-tight">TrackDraft Menu</h3>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-full bg-gray-900 text-gray-400 hover:text-white cursor-pointer"
+                className="p-2 rounded-full bg-white/[0.08] text-zinc-400 hover:text-white cursor-pointer"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
@@ -367,7 +367,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Category 1: Navigation & Surfaces */}
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-2 px-1">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 block mb-2 px-1">
                 Navigation & Views
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -378,13 +378,13 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`p-3.5 rounded-2xl border text-left flex flex-col gap-1 active:scale-98 cursor-pointer transition ${
                     activeSurface === 'game'
-                      ? 'bg-purple-950/80 border-purple-500/80 text-white'
-                      : 'bg-gray-900 border-gray-800 text-gray-300'
+                      ? 'bg-white text-black font-bold'
+                      : 'bg-white/[0.04] border-white/[0.08] text-zinc-300 hover:bg-white/[0.08]'
                   }`}
                 >
-                  <Disc3 className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs font-black">Draft Board</span>
-                  <span className="text-[10px] text-gray-400">
+                  <Disc3 className={`w-4 h-4 ${activeSurface === 'game' ? 'text-black' : 'text-rose-400'}`} />
+                  <span className="text-xs font-bold">Draft Board</span>
+                  <span className={`text-[10px] ${activeSurface === 'game' ? 'text-black/70' : 'text-zinc-500'}`}>
                     {isCompleted ? 'View Results' : `Round ${currentRoundIndex + 1}/${slots.length}`}
                   </span>
                 </button>
@@ -397,13 +397,13 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`p-3.5 rounded-2xl border text-left flex flex-col gap-1 active:scale-98 cursor-pointer transition ${
                     activeSurface === 'how-to-play'
-                      ? 'bg-cyan-950/80 border-cyan-500/80 text-white'
-                      : 'bg-gray-900 border-gray-800 text-gray-300'
+                      ? 'bg-white text-black font-bold'
+                      : 'bg-white/[0.04] border-white/[0.08] text-zinc-300 hover:bg-white/[0.08]'
                   }`}
                 >
-                  <BookOpen className="w-4 h-4 text-cyan-300" />
-                  <span className="text-xs font-black">How to Play</span>
-                  <span className="text-[10px] text-gray-400">Rules & Strategy</span>
+                  <BookOpen className={`w-4 h-4 ${activeSurface === 'how-to-play' ? 'text-black' : 'text-zinc-400'}`} />
+                  <span className="text-xs font-bold">How to Play</span>
+                  <span className={`text-[10px] ${activeSurface === 'how-to-play' ? 'text-black/70' : 'text-zinc-500'}`}>Rules & Strategy</span>
                 </button>
 
                 <button
@@ -413,13 +413,13 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`p-3.5 rounded-2xl border text-left flex flex-col gap-1 active:scale-98 cursor-pointer transition ${
                     activeSurface === 'setup'
-                      ? 'bg-pink-950/80 border-pink-500/80 text-white'
-                      : 'bg-gray-900 border-gray-800 text-gray-300'
+                      ? 'bg-white text-black font-bold'
+                      : 'bg-white/[0.04] border-white/[0.08] text-zinc-300 hover:bg-white/[0.08]'
                   }`}
                 >
-                  <Settings2 className="w-4 h-4 text-pink-300" />
-                  <span className="text-xs font-black">Setup</span>
-                  <span className="text-[10px] text-gray-400">Taste Preferences</span>
+                  <Settings2 className={`w-4 h-4 ${activeSurface === 'setup' ? 'text-black' : 'text-zinc-400'}`} />
+                  <span className="text-xs font-bold">Setup</span>
+                  <span className={`text-[10px] ${activeSurface === 'setup' ? 'text-black/70' : 'text-zinc-500'}`}>Taste Preferences</span>
                 </button>
 
                 <button
@@ -429,13 +429,13 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`p-3.5 rounded-2xl border text-left flex flex-col gap-1 active:scale-98 cursor-pointer transition ${
                     activeSurface === 'library'
-                      ? 'bg-purple-950/80 border-purple-500/80 text-white'
-                      : 'bg-gray-900 border-gray-800 text-gray-300'
+                      ? 'bg-white text-black font-bold'
+                      : 'bg-white/[0.04] border-white/[0.08] text-zinc-300 hover:bg-white/[0.08]'
                   }`}
                 >
-                  <Library className="w-4 h-4 text-purple-300" />
-                  <span className="text-xs font-black">Library</span>
-                  <span className="text-[10px] text-gray-400">Search Catalog</span>
+                  <Library className={`w-4 h-4 ${activeSurface === 'library' ? 'text-black' : 'text-zinc-400'}`} />
+                  <span className="text-xs font-bold">Library</span>
+                  <span className={`text-[10px] ${activeSurface === 'library' ? 'text-black/70' : 'text-zinc-500'}`}>Search Catalog</span>
                 </button>
 
                 <button
@@ -445,13 +445,13 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`p-3.5 rounded-2xl border text-left flex flex-col gap-1 active:scale-98 cursor-pointer transition ${
                     activeSurface === 'profile'
-                      ? 'bg-emerald-950/80 border-emerald-500/80 text-white'
-                      : 'bg-gray-900 border-gray-800 text-gray-300'
+                      ? 'bg-white text-black font-bold'
+                      : 'bg-white/[0.04] border-white/[0.08] text-zinc-300 hover:bg-white/[0.08]'
                   }`}
                 >
-                  <UserRound className="w-4 h-4 text-emerald-300" />
-                  <span className="text-xs font-black">Profile</span>
-                  <span className="text-[10px] text-gray-400">Curator Stats</span>
+                  <UserRound className={`w-4 h-4 ${activeSurface === 'profile' ? 'text-black' : 'text-zinc-400'}`} />
+                  <span className="text-xs font-bold">Profile</span>
+                  <span className={`text-[10px] ${activeSurface === 'profile' ? 'text-black/70' : 'text-zinc-500'}`}>Curator Stats</span>
                 </button>
 
                 <button
@@ -459,18 +459,18 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsMobileMenuOpen(false);
                     onScrollToLeaderboard();
                   }}
-                  className="p-3.5 rounded-2xl bg-gray-900 border border-gray-800 text-left flex flex-col gap-1 active:scale-98 cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-left flex flex-col gap-1 active:scale-98 cursor-pointer hover:bg-white/[0.08]"
                 >
-                  <Trophy className="w-4 h-4 text-amber-300" />
-                  <span className="text-xs font-black text-white">Leaderboard</span>
-                  <span className="text-[10px] text-gray-400">High Scores</span>
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-white">Leaderboard</span>
+                  <span className="text-[10px] text-zinc-500">High Scores</span>
                 </button>
               </div>
             </div>
 
             {/* Category 2: Mode & Multiplayer */}
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 block mb-2 px-1">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 block mb-2 px-1">
                 Game Modes & Multiplayer
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -479,11 +479,11 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsMobileMenuOpen(false);
                     onOpenModeSelector();
                   }}
-                  className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-800/60 text-left flex flex-col gap-1 active:scale-98 cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-left flex flex-col gap-1 active:scale-98 cursor-pointer hover:bg-white/[0.08]"
                 >
-                  <Sliders className="w-4 h-4 text-purple-300" />
-                  <span className="text-xs font-black text-white">{formatLabel}</span>
-                  <span className="text-[10px] text-purple-300">Change Mode</span>
+                  <Sliders className="w-4 h-4 text-zinc-400" />
+                  <span className="text-xs font-bold text-white">{formatLabel}</span>
+                  <span className="text-[10px] text-zinc-400">Change Mode</span>
                 </button>
 
                 <button
@@ -491,11 +491,11 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsMobileMenuOpen(false);
                     onOpenFriendsModal();
                   }}
-                  className="p-3.5 rounded-2xl bg-pink-950/40 border border-pink-800/60 text-left flex flex-col gap-1 active:scale-98 cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-left flex flex-col gap-1 active:scale-98 cursor-pointer hover:bg-white/[0.08]"
                 >
-                  <Swords className="w-4 h-4 text-pink-300" />
-                  <span className="text-xs font-black text-white">1v1 Battle</span>
-                  <span className="text-[10px] text-pink-300">{draftSeed ? `Seed: ${draftSeed}` : 'Challenge Friends'}</span>
+                  <Swords className="w-4 h-4 text-rose-400" />
+                  <span className="text-xs font-bold text-white">1v1 Battle</span>
+                  <span className="text-[10px] text-zinc-400">{draftSeed ? `Seed: ${draftSeed}` : 'Challenge Friends'}</span>
                 </button>
               </div>
             </div>
@@ -506,7 +506,7 @@ export const Header: React.FC<HeaderProps> = ({
                 setIsMobileMenuOpen(false);
                 setIsResetConfirmOpen(true);
               }}
-              className="w-full py-3 rounded-xl bg-red-950/40 border border-red-800/60 text-red-300 font-extrabold text-xs flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-1"
+              className="w-full py-3 rounded-xl bg-rose-950/30 border border-rose-800/40 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 active:scale-98 cursor-pointer mt-1"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Restart {formatLabel}</span>

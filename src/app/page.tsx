@@ -103,11 +103,10 @@ export default function Home() {
   const showLanding = !hasStarted;
 
   return (
-    <div className="min-h-screen min-w-0 bg-[#0f1117] text-slate-100 flex flex-col justify-between selection:bg-purple-500 selection:text-white relative pb-32 sm:pb-28">
-      {/* Background Neon Ambient Glow Orbs */}
-      <div className="fixed top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-10 right-1/4 translate-x-1/2 w-[30rem] h-[30rem] bg-pink-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-cyan-600/5 rounded-full blur-[160px] pointer-events-none" />
+    <div className="min-h-screen min-w-0 bg-[#050507] text-white flex flex-col justify-between selection:bg-white selection:text-black relative pb-32 sm:pb-28">
+      {/* Apple Music Deep Atmospheric Lighting (High-end smoked glass vignette) */}
+      <div className="fixed inset-0 bg-gradient-to-b from-white/[0.02] via-transparent to-black pointer-events-none" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[420px] bg-gradient-to-b from-rose-500/[0.04] via-white/[0.01] to-transparent blur-3xl pointer-events-none" />
 
       {/* Header — always visible */}
       <Header
