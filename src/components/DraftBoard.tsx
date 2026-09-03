@@ -4,7 +4,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { useSnippetAudio } from '@/hooks/useSnippetAudio';
 import { DraftCard } from './DraftCard';
-import { ProgressStrip } from './ProgressStrip';
 import { CompareModal } from './CompareModal';
 import {
   RefreshCw,
@@ -23,6 +22,7 @@ import {
   Plus,
   DollarSign,
   Crown,
+  Disc3,
 } from 'lucide-react';
 import { playHoverSound, playRerollSound, playDraftLockSound } from '@/lib/audioEngine';
 import { eraLabel } from '@/lib/eraSequence';
@@ -286,37 +286,47 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   }
 
   return (
-    <div className="w-full flex flex-col gap-4 my-4">
-      {/* Persistent progress strip */}
-      <ProgressStrip />
-
-      {/* Current Draft Slot Banner */}
-      <section aria-labelledby="current-slot-heading" className="bg-gray-900/80 border border-gray-800 rounded-2xl p-5 sm:p-6 backdrop-blur-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl shadow-black/10">
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 rounded bg-purple-950 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-800">
-              {trackLabel} {currentSlot.roundNumber} of {slots.length}
+    <div className="w-full flex flex-col gap-2 my-2">
+      {/* Current Draft Slot Banner — Sticky & Always In View */}
+      <section
+        aria-labelledby="current-slot-heading"
+        className="sticky top-16 z-30 bg-[#0c0e14]/95 border border-purple-900/50 rounded-2xl p-3 sm:p-3.5 backdrop-blur-xl flex flex-col gap-2 shadow-2xl shadow-purple-950/40 transition-all"
+      >
+        {/* Row 1: Badges, Progress, Energy Target & Action Buttons */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="px-2 py-0.5 rounded bg-purple-950 text-purple-300 text-[11px] font-black uppercase tracking-wider border border-purple-800 shadow-sm flex items-center gap-1.5">
+              <Disc3 className="w-3 h-3 text-pink-400" />
+              <span>{trackLabel} {currentSlot.roundNumber} of {slots.length}</span>
             </span>
+
+            {/* Mini progress track */}
+            <div className="w-14 h-1.5 bg-gray-800 rounded-full overflow-hidden hidden sm:block">
+              <div
+                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+                style={{ width: `${Math.round((draftedTracks.length / slots.length) * 100)}%` }}
+              />
+            </div>
 
             {/* Auto-era badge */}
             {currentEraLabel && (
-              <span className="px-2.5 py-0.5 rounded bg-indigo-950 text-indigo-300 text-xs font-bold uppercase tracking-wider border border-indigo-800">
+              <span className="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 text-[11px] font-bold uppercase tracking-wider border border-indigo-800">
                 {currentEraLabel}
               </span>
             )}
 
             {/* Budget Mode Counter */}
             {gameMode === 'budget' && (
-              <span className="px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-300 text-xs font-black uppercase tracking-wider border border-emerald-700 flex items-center gap-1 shadow-sm">
-                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                Budget: ${budgetRemaining} remaining
+              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[11px] font-black uppercase tracking-wider border border-emerald-700 flex items-center gap-1 shadow-sm">
+                <DollarSign className="w-3 h-3 text-emerald-400" />
+                Budget: ${budgetRemaining}
               </span>
             )}
 
             {/* Challenge Gauntlet Badge */}
             {challengeTheme && challengeTheme !== 'standard' && (
-              <span className="px-2.5 py-0.5 rounded bg-amber-950 text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-700 flex items-center gap-1 shadow-sm">
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="px-2 py-0.5 rounded bg-amber-950 text-amber-300 text-[11px] font-bold uppercase tracking-wider border border-amber-700 flex items-center gap-1 shadow-sm">
+                <Crown className="w-3 h-3 text-amber-400" />
                 {challengeTheme === 'year-2016'
                   ? 'Class of 2016'
                   : challengeTheme === 'era-90s'
@@ -332,64 +342,72 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             )}
 
             {draftSeed && (
-              <span className="px-2.5 py-0.5 rounded bg-amber-950 text-amber-300 text-xs font-mono font-extrabold tracking-wider border border-amber-800 flex items-center gap-1">
-                <Swords className="w-3 h-3 text-amber-400" /> 1v1: {draftSeed}
+              <span className="px-2 py-0.5 rounded bg-amber-950 text-amber-300 text-[10px] font-mono font-extrabold tracking-wider border border-amber-800 flex items-center gap-1">
+                <Swords className="w-2.5 h-2.5 text-amber-400" /> 1v1: {draftSeed}
               </span>
             )}
 
             {difficulty === 'hardcore' ? (
-              <span className="text-xs text-red-400 font-bold flex items-center gap-1">
-                <EyeOff className="w-3.5 h-3.5" /> Target: Classified
+              <span className="text-[11px] text-red-400 font-bold flex items-center gap-1">
+                <EyeOff className="w-3 h-3" /> Target: Classified
               </span>
             ) : (
-              <span className="text-xs text-gray-500 font-medium">
-                Target energy: {currentSlot.targetEnergy.ideal}%
+              <span className="text-[11px] text-gray-400 font-medium">
+                Target: <strong className="text-purple-300">{currentSlot.targetEnergy.ideal}%</strong>
               </span>
             )}
           </div>
 
-          <h2 id="current-slot-heading" className="font-display text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-            {gameMode === 'draft' ? 'Pick your' : `Select a track for your ${projectLabel.toLowerCase()}:`} <span className="text-purple-300">{currentSlot.name}</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-xl leading-relaxed">
-            {currentSlot.description}
-          </p>
+          {/* Action Controls: Undo Pick + Reroll Token */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {draftedTracks.length > 0 && (
+              <button
+                onClick={handleUndo}
+                onMouseEnter={() => playHoverSound(audioEnabled)}
+                className="px-2.5 py-1 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                title="Undo last draft pick (Cmd+Z / Ctrl+Z)"
+              >
+                <Undo2 className="w-3 h-3 text-purple-400" />
+                <span>Undo</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleReroll}
+              disabled={rerollTokens <= 0}
+              onMouseEnter={() => playHoverSound(audioEnabled)}
+              className={`px-3 py-1 rounded-lg border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
+                rerollTokens > 0
+                  ? 'bg-purple-950/80 hover:bg-purple-900 border-purple-700 text-purple-200 shadow-md shadow-purple-950/40 hover:scale-105'
+                  : 'bg-gray-950 border-gray-800 text-gray-600 cursor-not-allowed opacity-60'
+              }`}
+              title="Refresh the candidate pool for this round"
+              aria-label={`Reroll candidate pool — ${rerollTokens} remaining`}
+            >
+              <RefreshCw className={`w-3 h-3 ${rerollTokens > 0 ? 'text-pink-400' : ''}`} />
+              <span>Reroll ({rerollTokens})</span>
+            </button>
+          </div>
         </div>
 
-        {/* Action Controls: Undo Pick + Reroll Token */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {draftedTracks.length > 0 && (
-            <button
-              onClick={handleUndo}
-              onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="px-3.5 py-2.5 rounded-xl border border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
-              title="Undo last draft pick (Cmd+Z / Ctrl+Z)"
-            >
-              <Undo2 className="w-3.5 h-3.5 text-purple-400" />
-              <span>Undo</span>
-            </button>
-          )}
-
-          <button
-            onClick={handleReroll}
-            disabled={rerollTokens <= 0}
-            onMouseEnter={() => playHoverSound(audioEnabled)}
-            className={`px-4 py-2.5 rounded-xl border font-bold text-xs flex items-center gap-2 transition cursor-pointer ${
-              rerollTokens > 0
-                ? 'bg-purple-950/80 hover:bg-purple-900 border-purple-700 text-purple-200 shadow-md shadow-purple-950/40 hover:scale-105'
-                : 'bg-gray-950 border-gray-800 text-gray-600 cursor-not-allowed opacity-60'
-            }`}
-            title="Refresh the candidate pool for this round"
-            aria-label={`Reroll candidate pool — ${rerollTokens} remaining`}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${rerollTokens > 0 ? 'text-pink-400' : ''}`} />
-            <span>Reroll ({rerollTokens})</span>
-          </button>
+        {/* Row 2: Prominent Category Title & Description */}
+        <div className="flex items-baseline justify-between gap-3 border-t border-purple-900/30 pt-1.5">
+          <div className="min-w-0">
+            <h2 id="current-slot-heading" className="font-display text-lg sm:text-xl font-extrabold text-white tracking-tight flex items-baseline gap-2 flex-wrap">
+              <span>{gameMode === 'draft' ? 'Pick your' : `Select a track for your ${projectLabel.toLowerCase()}:`}</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-cyan-300 font-black drop-shadow-sm">
+                {currentSlot.name}
+              </span>
+            </h2>
+            <p className="text-[11px] sm:text-xs text-gray-300 mt-0.5 max-w-2xl leading-snug">
+              {currentSlot.description}
+            </p>
+          </div>
         </div>
       </section>
 
       {/* Real-time Aux Crowd Hype & Active Synergies Deck */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
         <div className="md:col-span-1">
           <AuxHypeMeter crowdHype={crowdHype} />
         </div>
@@ -399,7 +417,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
       </div>
 
       {/* Interactive Audition & Shortcut Deck Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-purple-900/30 bg-purple-950/20 px-4 py-2 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-purple-900/30 bg-purple-950/20 px-3 py-1.5 text-xs">
         <div className="flex items-center gap-2.5 text-purple-200">
           <Headphones className="w-4 h-4 text-pink-400 animate-pulse" />
           <span className="font-extrabold uppercase tracking-wider text-[11px]">Audition Deck:</span>
@@ -486,6 +504,21 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       ) : (
         <div className="w-full pb-32 sm:pb-24">
+          {/* Active Slot Context Strip — Anchors category right above the 5 choices */}
+          <div className="flex items-center justify-between px-3 py-1.5 mb-2.5 rounded-xl bg-purple-950/30 border border-purple-900/40 text-xs font-bold text-gray-300 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+              <span className="text-[11px] uppercase tracking-wider text-purple-300 font-extrabold">Drafting For:</span>
+              <span className="text-white font-black text-xs sm:text-sm tracking-tight">{currentSlot.name}</span>
+              <span className="text-gray-400 font-medium text-[11px] hidden sm:inline">({trackLabel} {currentSlot.roundNumber} of {slots.length})</span>
+            </div>
+            <div className="text-[11px] text-cyan-300/80 font-mono hidden md:flex items-center gap-2">
+              <span>Target: {currentSlot.targetEnergy.ideal}% Energy</span>
+              <span className="text-gray-600">•</span>
+              <span className="text-slate-400">5 Candidate Options</span>
+            </div>
+          </div>
+
           {/* Candidates Container: 5-column responsive grid with perfect equal width and height */}
           <div
             aria-label={`${enrichedOptions.length} candidate tracks`}

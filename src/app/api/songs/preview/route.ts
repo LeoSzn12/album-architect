@@ -20,6 +20,19 @@ function cacheKey(title: string, artist: string): string {
   return `${title.toLowerCase().trim()}::${artist.toLowerCase().trim()}`;
 }
 
+function normalizeStr(str?: string): string {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function matchesArtist(candidateArtist?: string, targetArtist?: string): boolean {
+  if (!candidateArtist || !targetArtist) return false;
+  const c = normalizeStr(candidateArtist);
+  const t = normalizeStr(targetArtist);
+  if (!c || !t) return false;
+  const targetToken = normalizeStr(targetArtist.split(/[\s,&feat\.]+/)[0] || '');
+  return c.includes(t) || t.includes(c) || (targetToken.length >= 3 && c.includes(targetToken));
+}
+
 async function fetchFromItunes(title: string, artist: string): Promise<PreviewResponse | null> {
   try {
     const query = `${title} ${artist}`.slice(0, 100);
@@ -43,19 +56,20 @@ async function fetchFromItunes(title: string, artist: string): Promise<PreviewRe
 
     if (!data.results || data.results.length === 0) return null;
 
-    const firstWithPreview = data.results.find((r) => r.previewUrl);
-    if (!firstWithPreview || !firstWithPreview.previewUrl) return null;
+    // Must match artist and have valid previewUrl
+    const match = data.results.find((r) => r.previewUrl && matchesArtist(r.artistName, artist));
+    if (!match || !match.previewUrl) return null;
 
-    const artwork = firstWithPreview.artworkUrl100
-      ? firstWithPreview.artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg')
+    const artwork = match.artworkUrl100
+      ? match.artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg')
       : null;
 
     return {
-      previewUrl: firstWithPreview.previewUrl,
+      previewUrl: match.previewUrl,
       artworkUrl: artwork,
-      title: firstWithPreview.trackName,
-      artist: firstWithPreview.artistName,
-      album: firstWithPreview.collectionName,
+      title: match.trackName,
+      artist: match.artistName,
+      album: match.collectionName,
       source: 'itunes',
     };
   } catch {
@@ -66,7 +80,7 @@ async function fetchFromItunes(title: string, artist: string): Promise<PreviewRe
 async function fetchFromDeezer(title: string, artist: string): Promise<PreviewResponse | null> {
   try {
     const query = `${title} ${artist}`.slice(0, 100);
-    const deezerUrl = `https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=3`;
+    const deezerUrl = `https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=5`;
     const res = await fetch(deezerUrl, {
       signal: AbortSignal.timeout(4000),
     });
@@ -83,7 +97,8 @@ async function fetchFromDeezer(title: string, artist: string): Promise<PreviewRe
 
     if (!data.data || data.data.length === 0) return null;
 
-    const match = data.data.find((item) => item.preview);
+    // Must match artist and have valid preview
+    const match = data.data.find((item) => item.preview && matchesArtist(item.artist?.name, artist));
     if (!match || !match.preview) return null;
 
     return {

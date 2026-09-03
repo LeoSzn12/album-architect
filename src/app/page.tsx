@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Header } from '@/components/Header';
-import { OscilloscopeEnergyBar } from '@/components/OscilloscopeEnergyBar';
-import { ArtistMonopolyTracker } from '@/components/ArtistMonopolyTracker';
+import { DraftTelemetryBar } from '@/components/DraftTelemetryBar';
 import { DraftBoard } from '@/components/DraftBoard';
 import { AICriticPanel } from '@/components/AICriticPanel';
 import { LandingScreen } from '@/components/LandingScreen';
@@ -152,11 +151,8 @@ export default function Home() {
         ) : (
           /* ── Active Draft or Results ── */
           <>
-            {/* Oscilloscope waveform – only when drafting */}
-            {!isCompleted && <OscilloscopeEnergyBar />}
-
-            {/* Artist monopoly tracker – only when drafting */}
-            {!isCompleted && <ArtistMonopolyTracker />}
+            {/* Compact Telemetry HUD with collapsible deep waveform & monopoly radar */}
+            {!isCompleted && <DraftTelemetryBar />}
 
             {/* Main panel: critic results OR draft board */}
             {isCompleted && evaluationResult ? (
