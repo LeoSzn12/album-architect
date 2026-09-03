@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { EyeOff, Heart, Library, Link2, Play, Search, Tag, X } from 'lucide-react';
+import { EyeOff, Heart, Library, Link2, Play, Search, Tag, X, ArrowLeft } from 'lucide-react';
 import { SONG_LIBRARY } from '@/data/songs';
 import { providers } from '@/lib/providers';
 import type { Song } from '@/types/draft';
@@ -15,9 +15,10 @@ interface LibraryPanelProps {
   onFavoritesChange?: (songIds: string[]) => void;
   onTagsChange?: (tags: Record<string, string[]>) => void;
   onHiddenChange?: (songIds: string[]) => void;
+  onBackToGame?: () => void;
 }
 
-export const LibraryPanel: React.FC<LibraryPanelProps> = ({ songs = SONG_LIBRARY, exportSongs = [], sourceScope = 'all', onSelectSong, onFavoritesChange, onTagsChange, onHiddenChange }) => {
+export const LibraryPanel: React.FC<LibraryPanelProps> = ({ songs = SONG_LIBRARY, exportSongs = [], sourceScope = 'all', onSelectSong, onFavoritesChange, onTagsChange, onHiddenChange, onBackToGame }) => {
   const [query, setQuery] = useState('');
   const [genre, setGenre] = useState('all');
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -105,6 +106,18 @@ export const LibraryPanel: React.FC<LibraryPanelProps> = ({ songs = SONG_LIBRARY
   };
 
   return <section aria-labelledby="library-panel-title" className="w-full max-w-6xl rounded-3xl border border-purple-500/30 bg-gray-900/90 p-5 shadow-2xl backdrop-blur-md sm:p-7">
+    {onBackToGame && (
+      <div className="mb-5 flex items-center justify-between pb-4 border-b border-gray-800">
+        <button
+          onClick={onBackToGame}
+          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 border border-purple-800/60 text-purple-300 font-extrabold text-xs transition active:scale-95 cursor-pointer shadow-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Return to Draft Board</span>
+        </button>
+        <span className="text-xs text-gray-500 font-semibold">Track Catalog & Playlist Desk</span>
+      </div>
+    )}
     <div className="mb-5 flex flex-col gap-3 border-b border-gray-800 pb-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400">Catalog desk</p><h2 id="library-panel-title" className="flex items-center gap-2 text-2xl font-black text-white"><Library className="h-5 w-5 text-purple-300" aria-hidden="true" />Library</h2><p className="mt-1 text-sm text-gray-400">Search, mark, and shape your personal cut list.</p></div>{provider && <span className="rounded-lg border border-gray-700 bg-gray-950 px-2.5 py-1.5 text-[10px] font-black uppercase text-gray-400">{provider.name} · {provider.capabilities.search.enabled ? 'search ready' : 'scaffolded'}</span>}</div>
     <div className="mb-4 grid gap-3 md:grid-cols-[1fr_auto]"><label className="relative"><span className="sr-only">Search catalog</span><Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" aria-hidden="true" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, artist, album, or mood" className="w-full rounded-xl border border-gray-700 bg-gray-950 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30" /></label><label><span className="sr-only">Filter by genre</span><select value={genre} onChange={(event) => setGenre(event.target.value)} className="w-full rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm font-bold text-gray-300 outline-none focus:border-purple-400 md:w-56">{genres.map((item) => <option key={item} value={item}>{item === 'all' ? 'All genres' : item}</option>)}</select></label></div>
     <div className="mb-4 rounded-2xl border border-purple-500/20 bg-purple-950/10 p-4"><div className="mb-2 flex items-center justify-between gap-3"><div className="text-xs font-black uppercase tracking-wider text-purple-200">Provider desk</div><span className="rounded-lg border border-gray-700 bg-gray-950 px-2 py-1 text-[10px] font-black uppercase text-gray-400">{remoteProvider ? `${remoteProvider} account` : 'Select Spotify or YouTube in Setup'}</span></div><div className="grid gap-2 sm:grid-cols-[1fr_auto]"><input value={providerQuery} onChange={(event) => setProviderQuery(event.target.value)} placeholder="Search connected provider catalog" className="min-w-0 rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-400" /><button type="button" disabled={!remoteProvider || !providerQuery.trim() || providerState.status === 'loading'} onClick={searchRemote} className="rounded-xl border border-purple-500/40 bg-purple-950/60 px-4 py-2.5 text-xs font-black text-purple-100 transition hover:bg-purple-900/70 disabled:cursor-not-allowed disabled:opacity-50">Search provider</button></div><div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]"><input value={playlistReference} onChange={(event) => setPlaylistReference(event.target.value)} placeholder="Paste a Spotify or YouTube playlist URL" className="min-w-0 rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-400" /><button type="button" disabled={!remoteProvider || !playlistReference.trim() || providerState.status === 'loading'} onClick={importPlaylist} className="rounded-xl border border-cyan-500/40 bg-cyan-950/50 px-4 py-2.5 text-xs font-black text-cyan-100 transition hover:bg-cyan-900/60 disabled:cursor-not-allowed disabled:opacity-50">Import playlist</button></div><div className="mt-2 flex flex-col gap-2 sm:flex-row"><input value={exportName} onChange={(event) => setExportName(event.target.value)} aria-label="Export playlist name" className="min-w-0 flex-1 rounded-xl border border-gray-700 bg-gray-950 px-3 py-2.5 text-xs text-white outline-none focus:border-purple-400" /><button type="button" disabled={!remoteProvider || !exportSongs.length || providerState.status === 'loading'} onClick={exportPlaylist} className="rounded-xl border border-emerald-500/40 bg-emerald-950/50 px-4 py-2.5 text-xs font-black text-emerald-100 transition hover:bg-emerald-900/60 disabled:cursor-not-allowed disabled:opacity-50">Export {exportSongs.length ? `${exportSongs.length} tracks` : 'draft'}</button></div>{providerState.message && <p className={`mt-2 break-words text-xs ${providerState.status === 'success' ? 'text-emerald-300' : 'text-amber-300'}`}>{providerState.message}</p>}{providerSongs.length > 0 && <div className="mt-3 grid gap-2 sm:grid-cols-2">{providerSongs.slice(0, 12).map((song) => <button type="button" key={song.id} onClick={() => onSelectSong?.(song)} className="rounded-xl border border-gray-800 bg-gray-950/80 px-3 py-2 text-left hover:border-purple-500/70"><span className="block truncate text-xs font-black text-white">{song.title}</span><span className="block truncate text-[11px] text-gray-500">{song.rawArtistString || song.artist}</span></button>)}</div>}</div>

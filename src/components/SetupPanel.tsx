@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Check, ChevronDown, Disc3, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { Check, ChevronDown, Disc3, SlidersHorizontal, Sparkles, ArrowLeft } from 'lucide-react';
 import { SONG_LIBRARY } from '@/data/songs';
 import { providers } from '@/lib/providers';
 import type { ProviderId } from '@/lib/providers/types';
@@ -18,6 +18,7 @@ interface SetupPanelProps {
   initialSourceScope?: SourceScope;
   onPreferencesChange?: (preferences: SetupPreferences) => void;
   onContinue?: (preferences: SetupPreferences) => void;
+  onBackToGame?: () => void;
 }
 
 const TAGS = ['Hip-Hop', 'R&B', 'High Energy', 'Cinematic', 'Lyrical', 'Experimental', 'Introspective', 'Club'];
@@ -27,6 +28,7 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
   initialSourceScope = 'all',
   onPreferencesChange,
   onContinue,
+  onBackToGame,
 }) => {
   const [tasteTags, setTasteTags] = useState(initialTasteTags);
   const [sourceScope, setSourceScope] = useState<SourceScope>(initialSourceScope);
@@ -42,6 +44,18 @@ export const SetupPanel: React.FC<SetupPanelProps> = ({
 
   return (
     <section aria-labelledby="setup-panel-title" className="w-full max-w-5xl rounded-3xl border border-purple-500/30 bg-gray-900/90 p-6 shadow-2xl backdrop-blur-md sm:p-8">
+      {onBackToGame && (
+        <div className="mb-5 flex items-center justify-between pb-4 border-b border-gray-800">
+          <button
+            onClick={onBackToGame}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 border border-purple-800/60 text-purple-300 font-extrabold text-xs transition active:scale-95 cursor-pointer shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Draft Board</span>
+          </button>
+          <span className="text-xs text-gray-500 font-semibold">Session Preferences</span>
+        </div>
+      )}
       <div className="mb-7 flex flex-col gap-4 border-b border-gray-800 pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-950/40">

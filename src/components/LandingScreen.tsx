@@ -2,14 +2,15 @@
 
 import React from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
-import { Disc3, Zap, Trophy, Swords, ChevronRight } from 'lucide-react';
-import { playDraftLockSound } from '@/lib/audioEngine';
+import { Disc3, Zap, Trophy, Swords, ChevronRight, BookOpen } from 'lucide-react';
+import { playDraftLockSound, playHoverSound } from '@/lib/audioEngine';
 import { DailyDropHero } from './DailyDropHero';
 
 interface LandingScreenProps {
   onStart: () => void;
   onOpenFriendsModal: () => void;
   onScrollToLeaderboard: () => void;
+  onOpenHowToPlay?: () => void;
 }
 
 /**
@@ -21,6 +22,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
   onStart,
   onOpenFriendsModal,
   onScrollToLeaderboard,
+  onOpenHowToPlay,
 }) => {
   const { audioEnabled, gameMode, slots } = useDraftStore();
   const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
@@ -67,25 +69,51 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           )}
         </p>
 
-        {/* Primary CTA */}
-        <button
-          onClick={handleStart}
-          className="mt-2 flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-cyan-500 px-10 py-4 text-lg font-extrabold text-white shadow-xl shadow-fuchsia-950/40 transition-transform hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0"
-        >
-          <Zap className="w-5 h-5 text-amber-300" />
-          <span>{startLabel}</span>
-          <ChevronRight className="w-5 h-5 opacity-70" />
-        </button>
+        {/* Primary & Secondary Hero CTAs */}
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={handleStart}
+            className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-cyan-500 px-8 py-4 text-base sm:text-lg font-extrabold text-white shadow-xl shadow-fuchsia-950/40 transition-transform hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0"
+          >
+            <Zap className="w-5 h-5 text-amber-300" />
+            <span>{startLabel}</span>
+            <ChevronRight className="w-5 h-5 opacity-70" />
+          </button>
+
+          {onOpenHowToPlay && (
+            <button
+              onClick={() => {
+                playHoverSound(audioEnabled);
+                onOpenHowToPlay();
+              }}
+              className="flex min-h-14 cursor-pointer items-center gap-2.5 rounded-2xl border border-cyan-500/40 bg-cyan-950/30 px-6 py-4 text-base font-extrabold text-cyan-200 shadow-lg shadow-cyan-950/30 transition hover:-translate-y-0.5 hover:bg-cyan-900/40"
+            >
+              <BookOpen className="w-5 h-5 text-cyan-400" />
+              <span>How to Play</span>
+            </button>
+          )}
+        </div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">No account or provider connection required</p>
       </section>
 
       {/* Rules Summary */}
       <section aria-labelledby="how-to-play" className="w-full max-w-3xl rounded-[1.75rem] border border-slate-700/70 bg-slate-900/70 p-6 shadow-xl shadow-black/10 backdrop-blur-sm sm:p-8">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-2 border-b border-slate-700/70 pb-4">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/70 pb-4">
           <h2 id="how-to-play" className="text-sm font-extrabold uppercase tracking-[0.2em] text-fuchsia-300">
-          {isBuilder ? `How to build your ${projectLabel}` : 'How to Draft'}
+            {isBuilder ? `How to build your ${projectLabel}` : 'How to Draft'}
           </h2>
-          <span className="text-xs font-semibold text-slate-500">Four moves, one finished project</span>
+          {onOpenHowToPlay && (
+            <button
+              onClick={() => {
+                playHoverSound(audioEnabled);
+                onOpenHowToPlay();
+              }}
+              className="text-xs font-bold text-cyan-300 hover:text-cyan-200 underline decoration-cyan-500/40 hover:decoration-cyan-300 flex items-center gap-1 cursor-pointer"
+            >
+              <span>Full Rulebook & Strategies</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <ol className="flex flex-col gap-3">
           {[
@@ -129,6 +157,19 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
       {/* Secondary Actions */}
       <div className="flex flex-wrap items-center justify-center gap-3">
+        {onOpenHowToPlay && (
+          <button
+            onClick={() => {
+              playHoverSound(audioEnabled);
+              onOpenHowToPlay();
+            }}
+            className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-cyan-500/50 bg-cyan-950/30 px-5 py-2.5 text-sm font-bold text-cyan-200 transition hover:-translate-y-0.5 hover:bg-cyan-900/50"
+          >
+            <BookOpen className="w-4 h-4 text-cyan-400" />
+            <span>How to Play</span>
+          </button>
+        )}
+
         <button
           onClick={onOpenFriendsModal}
           className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-pink-500/50 bg-pink-950/30 px-5 py-2.5 text-sm font-bold text-pink-100 transition hover:-translate-y-0.5 hover:bg-pink-900/50"

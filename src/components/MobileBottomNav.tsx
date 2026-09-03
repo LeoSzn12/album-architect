@@ -6,6 +6,8 @@ import { Disc3, Flame, Music2, Swords, Trophy } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 
 interface MobileBottomNavProps {
+  activeSurface?: string;
+  onSelectSurface?: (surface: 'game' | 'how-to-play' | 'setup' | 'library' | 'profile') => void;
   onToggleTracklist: () => void;
   onOpenFriendsModal: () => void;
   onScrollToLeaderboard: () => void;
@@ -13,6 +15,8 @@ interface MobileBottomNavProps {
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
+  activeSurface = 'game',
+  onSelectSurface,
   onToggleTracklist,
   onOpenFriendsModal,
   onScrollToLeaderboard,
@@ -20,8 +24,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 }) => {
   const { draftedTracks, slots, crowdHype, audioEnabled } = useDraftStore();
 
-  const handleScrollToTop = () => {
+  const handleBoardClick = () => {
     playHoverSound(audioEnabled);
+    if (activeSurface !== 'game' && onSelectSurface) {
+      onSelectSurface('game');
+    }
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -29,6 +36,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   const handleScrollToCrowdSection = () => {
     playHoverSound(audioEnabled);
+    if (activeSurface !== 'game' && onSelectSurface) {
+      onSelectSurface('game');
+    }
     if (onScrollToCrowd) {
       onScrollToCrowd();
       return;
@@ -47,12 +57,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       <div className="flex items-center justify-around px-2 py-1.5 min-h-[52px]">
         {/* 1. Board / Draft */}
         <button
-          onClick={handleScrollToTop}
-          className="flex flex-col items-center justify-center flex-1 min-h-[44px] text-slate-300 active:text-purple-300 transition-colors cursor-pointer"
-          title="Scroll to Draft Board"
+          onClick={handleBoardClick}
+          className={`flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors cursor-pointer ${
+            activeSurface === 'game' ? 'text-purple-300 font-black' : 'text-slate-400 active:text-purple-300'
+          }`}
+          title="Return to Draft Board"
         >
-          <Disc3 className="w-5 h-5 text-purple-400" />
-          <span className="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">
+          <Disc3 className={`w-5 h-5 ${activeSurface === 'game' ? 'text-purple-400 animate-spin-slow' : 'text-slate-400'}`} />
+          <span className="text-[10px] uppercase tracking-wider mt-0.5">
             Board
           </span>
         </button>

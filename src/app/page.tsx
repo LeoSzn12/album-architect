@@ -20,6 +20,7 @@ import { SetupPanel, type SetupPreferences } from '@/components/SetupPanel';
 import { LibraryPanel } from '@/components/LibraryPanel';
 import { ProfilePanel } from '@/components/ProfilePanel';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
+import { HowToPlayPanel } from '@/components/HowToPlayPanel';
 
 export default function Home() {
   const {
@@ -42,7 +43,7 @@ export default function Home() {
   const [hasStarted, setHasStarted] = useState(
     () => draftedTracks.length > 0 || currentRoundIndex > 0 || evaluationResult !== null
   );
-  const [activeSurface, setActiveSurface] = useState<'game' | 'setup' | 'library' | 'profile'>('game');
+  const [activeSurface, setActiveSurface] = useState<'game' | 'how-to-play' | 'setup' | 'library' | 'profile'>('game');
   const [setupPreferences, setSetupPreferences] = useState<SetupPreferences>({ tasteTags: [], sourceScope: 'all' });
 
   const leaderboardRef = useRef<HTMLDivElement>(null);
@@ -110,6 +111,8 @@ export default function Home() {
 
       {/* Header — always visible */}
       <Header
+        activeSurface={activeSurface}
+        onSelectSurface={setActiveSurface}
         onOpenModeSelector={() => { setActiveSurface('game'); setIsModeSelectorOpen(true); }}
         onToggleTracklist={() => { setActiveSurface('game'); setIsTracklistOpen(true); }}
         onOpenFriendsModal={() => { setActiveSurface('game'); setIsFriendsModalOpen(true); }}
@@ -117,20 +120,29 @@ export default function Home() {
         onOpenSetup={() => setActiveSurface('setup')}
         onOpenLibrary={() => setActiveSurface('library')}
         onOpenProfile={() => setActiveSurface('profile')}
+        onOpenHowToPlay={() => setActiveSurface('how-to-play')}
       />
 
       {/* Main Container */}
       <main className="box-border min-w-0 w-full max-w-6xl mx-auto px-4 sm:px-6 flex-grow flex flex-col gap-6 relative z-10">
 
-        {activeSurface === 'setup' ? (
+        {activeSurface === 'how-to-play' ? (
+          <HowToPlayPanel onBackToDraft={() => setActiveSurface('game')} />
+        ) : activeSurface === 'setup' ? (
           <SetupPanel
             initialTasteTags={setupPreferences.tasteTags}
             initialSourceScope={setupPreferences.sourceScope}
             onPreferencesChange={setSetupPreferences}
             onContinue={() => setActiveSurface('library')}
+            onBackToGame={() => setActiveSurface('game')}
           />
         ) : activeSurface === 'library' ? (
-          <LibraryPanel sourceScope={setupPreferences.sourceScope} exportSongs={draftedTracks.map((track) => track.song)} onSelectSong={() => setActiveSurface('game')} />
+          <LibraryPanel
+            sourceScope={setupPreferences.sourceScope}
+            exportSongs={draftedTracks.map((track) => track.song)}
+            onSelectSong={() => setActiveSurface('game')}
+            onBackToGame={() => setActiveSurface('game')}
+          />
         ) : activeSurface === 'profile' ? (
           <ProfilePanel
             displayName={playerAlias}
@@ -141,6 +153,7 @@ export default function Home() {
               averageScore: pastDrafts.length ? pastDrafts.reduce((total, draft) => total + draft.overallScore, 0) / pastDrafts.length : 0,
             }}
             onProfileChange={({ displayName }) => setPlayerAlias(displayName)}
+            onBackToGame={() => setActiveSurface('game')}
           />
         ) : showLanding ? (
           /* ── Landing (first-time experience) ── */
@@ -148,6 +161,7 @@ export default function Home() {
             onStart={handleStartDraft}
             onOpenFriendsModal={() => setIsFriendsModalOpen(true)}
             onScrollToLeaderboard={handleScrollToLeaderboard}
+            onOpenHowToPlay={() => setActiveSurface('how-to-play')}
           />
         ) : (
           /* ── Active Draft or Results ── */
@@ -216,6 +230,8 @@ export default function Home() {
       {/* Mobile Bottom Navigation Dock */}
       {!showLanding && (
         <MobileBottomNav
+          activeSurface={activeSurface}
+          onSelectSurface={setActiveSurface}
           onToggleTracklist={() => {
             setActiveSurface('game');
             setIsTracklistOpen(true);
