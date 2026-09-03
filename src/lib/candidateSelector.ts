@@ -161,9 +161,9 @@ function enforceCinematicOutroRequirements(selected: Song[], pool: Song[], conte
 }
 
 /**
- * Strategic 4-Bucket Candidate Selector.
+ * Strategic Candidate Selector (5 options per round).
  */
-export function generateCandidatePool(context: CandidateContext, count: number = 4): Song[] {
+export function generateCandidatePool(context: CandidateContext, count: number = 5): Song[] {
   const { slotId, era, seed, rerollIndex, draftedSongIds, draftedArtists } = context;
 
   // 1. Initial era & theme filtering

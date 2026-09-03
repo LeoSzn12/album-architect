@@ -95,9 +95,9 @@ export const DraftCard: React.FC<DraftCardProps> = ({
   return (
     <div
       onMouseEnter={() => playHoverSound(audioEnabled)}
-      className={`group relative min-h-[360px] rounded-2xl p-4 sm:p-5 border transition-all duration-300 flex flex-col justify-between overflow-hidden backdrop-blur-xl ${
+      className={`group relative h-full min-h-[490px] rounded-2xl p-3.5 sm:p-4 border transition-all duration-300 flex flex-col justify-between overflow-hidden backdrop-blur-xl ${
         isPlaying
-          ? 'bg-slate-900/95 border-pink-500 shadow-2xl shadow-pink-950/50 ring-2 ring-pink-500/50 -translate-y-1'
+          ? 'bg-slate-900/95 border-pink-500 shadow-2xl shadow-pink-950/50 ring-2 ring-pink-500/50'
           : song.flowInsight?.isTopCuratorPick
           ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-emerald-950/30 border-emerald-500/70 shadow-2xl shadow-emerald-950/30 ring-1 ring-emerald-400/60 hover:border-emerald-400'
           : hasMonopolyWarning
@@ -112,104 +112,121 @@ export const DraftCard: React.FC<DraftCardProps> = ({
         } transition-opacity pointer-events-none`}
       />
 
-      {/* Top Header Row: Badges & Hotkey */}
-      <div className="flex justify-between items-start mb-2 z-10 gap-1.5">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {candidateIndex !== undefined && (
+      {/* ZONE 1: Header Bar & Badges (Strict Fixed Height) */}
+      <div className="z-10 flex flex-col gap-1.5 flex-shrink-0">
+        {/* Row 1: Key Shortcut, Price & Action Icons */}
+        <div className="h-7 flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5">
+            {candidateIndex !== undefined && (
+              <span
+                title={`Press '${candidateIndex + 1}' on keyboard to audition snippet`}
+                className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-900/60 border border-purple-500/40 text-[10px] font-black text-purple-200"
+              >
+                {candidateIndex + 1}
+              </span>
+            )}
             <span
-              title={`Press '${candidateIndex + 1}' on keyboard to audition snippet`}
-              className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-900/60 border border-purple-500/40 text-[10px] font-black text-purple-200"
-            >
-              {candidateIndex + 1}
-            </span>
-          )}
-          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 bg-purple-950/90 border border-purple-800/60 text-purple-300 rounded-md truncate max-w-[140px]">
-            {song.typeTag}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 flex-wrap justify-end">
-          <span
-            title={`Card cost: $${songPrice} (${songPrice === 5 ? 'Megastar' : songPrice === 4 ? 'Heavy Hitter' : songPrice === 3 ? 'Fan Favorite' : songPrice === 2 ? 'Quality Cut' : 'Sleeper Value'})`}
-            className={`px-2 py-0.5 rounded text-[10px] font-black border flex items-center gap-0.5 ${
-              isOverBudget
-                ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
-                : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm'
-            }`}
-          >
-            {songPrice === 0 ? '🆓 $0 Waiver' : `💰 $${songPrice}`}
-          </span>
-
-          {isNewMonopolyRisk && (
-            <span
-              title="Drafting another solo track for this artist will trigger a -1.5pt Monopoly Penalty!"
-              className="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold flex items-center gap-1 animate-pulse"
-            >
-              <AlertTriangle className="w-3 h-3" /> Solo Risk (-1.5)
-            </span>
-          )}
-
-          {isExtendingMonopoly && (
-            <span
-              title="Artist already has multiple solo tracks! Drafting adds an additional -2.0pt penalty."
-              className="px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-700 text-[10px] font-extrabold flex items-center gap-1 animate-pulse"
-            >
-              <AlertTriangle className="w-3 h-3" /> Extends Penalty (-2.0)
-            </span>
-          )}
-
-          {song.featuredArtists.length > 0 && (
-            <span
-              title="Guest features do NOT trigger solo monopoly penalties!"
-              className="px-2 py-0.5 rounded bg-pink-950/80 text-pink-300 border border-pink-800/70 text-[10px] font-bold flex items-center gap-1"
-            >
-              <Sparkles className="w-3 h-3 text-pink-400" /> Feat.
-            </span>
-          )}
-
-          {/* Quick Compare Button */}
-          {onCompareToggle && (
-            <button
-              onClick={handleCompare}
-              title={isComparing ? 'Remove from A/B Compare' : 'Add to A/B Compare Face-Off'}
-              className={`p-1.5 rounded-lg border text-xs transition-all cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center ${
-                isComparing
-                  ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md font-bold'
-                  : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/50'
+              title={`Card cost: $${songPrice} (${songPrice === 5 ? 'Megastar' : songPrice === 4 ? 'Heavy Hitter' : songPrice === 3 ? 'Fan Favorite' : songPrice === 2 ? 'Quality Cut' : 'Sleeper Value'})`}
+              className={`px-2 py-0.5 rounded text-[10px] font-black border flex items-center gap-0.5 ${
+                isOverBudget
+                  ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
+                  : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm'
               }`}
             >
-              <GitCompare className="w-3.5 h-3.5" />
-            </button>
-          )}
+              {songPrice === 0 ? '🆓 $0 Waiver' : `💰 $${songPrice}`}
+            </span>
+          </div>
 
-          {/* Modal deep-dive button */}
-          <button
-            onClick={handleOpenModal}
-            title="Open full player & official video"
-            className="p-1.5 rounded-lg border border-slate-800 bg-slate-950/80 text-slate-400 hover:text-white hover:border-purple-500/60 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Quick Compare Button */}
+            {onCompareToggle && (
+              <button
+                onClick={handleCompare}
+                title={isComparing ? 'Remove from A/B Compare' : 'Add to A/B Compare Face-Off'}
+                className={`p-1.5 rounded-lg border text-xs transition-all cursor-pointer h-7 w-7 flex items-center justify-center ${
+                  isComparing
+                    ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md font-bold'
+                    : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/50'
+                }`}
+              >
+                <GitCompare className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            {/* Modal deep-dive button */}
+            <button
+              onClick={handleOpenModal}
+              title="Open full player & official video"
+              className="p-1.5 rounded-lg border border-slate-800 bg-slate-950/80 text-slate-400 hover:text-white hover:border-purple-500/60 transition-colors cursor-pointer h-7 w-7 flex items-center justify-center"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: Tag & Penalty Status */}
+        <div className="h-6 flex items-center justify-between gap-1 text-[10px]">
+          <span className="font-bold uppercase tracking-wider px-2 py-0.5 bg-purple-950/90 border border-purple-800/60 text-purple-300 rounded-md truncate max-w-[130px]">
+            {song.typeTag}
+          </span>
+
+          <div className="flex items-center gap-1 overflow-hidden">
+            {isNewMonopolyRisk && (
+              <span
+                title="Drafting another solo track for this artist will trigger a -1.5pt Monopoly Penalty!"
+                className="px-1.5 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-bold flex items-center gap-1 animate-pulse truncate"
+              >
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Solo Risk
+              </span>
+            )}
+
+            {isExtendingMonopoly && (
+              <span
+                title="Artist already has multiple solo tracks! Drafting adds an additional -2.0pt penalty."
+                className="px-1.5 py-0.5 rounded bg-red-950 text-red-300 border border-red-700 font-extrabold flex items-center gap-1 animate-pulse truncate"
+              >
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Monopoly
+              </span>
+            )}
+
+            {!hasMonopolyWarning && song.featuredArtists.length > 0 && (
+              <span
+                title="Guest features do NOT trigger solo monopoly penalties!"
+                className="px-1.5 py-0.5 rounded bg-pink-950/80 text-pink-300 border border-pink-800/70 font-bold flex items-center gap-0.5"
+              >
+                <Sparkles className="w-3 h-3 text-pink-400 flex-shrink-0" /> Feat.
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* A&R Spotlight Banner */}
-      {song.flowInsight?.isTopCuratorPick && (
-        <div className="z-10 mb-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 text-[10px] font-black uppercase tracking-wider shadow-sm animate-pulse">
-          <Sparkles className="w-3 h-3 text-emerald-400 fill-current" />
-          <span>A&R TOP RECOMMENDATION • {song.flowInsight.synergyScore}% SYNERGY</span>
-        </div>
-      )}
+      {/* ZONE 2: Dedicated A&R Spotlight Slot (Constant Fixed Height for Perfect Grid Alignment) */}
+      <div className="h-6 my-1 flex items-center justify-center z-10 flex-shrink-0">
+        {song.flowInsight?.isTopCuratorPick ? (
+          <div className="w-full flex items-center justify-center gap-1.5 py-0.5 px-2 rounded-lg bg-emerald-950/90 border border-emerald-500/70 text-emerald-300 text-[9.5px] font-black uppercase tracking-wider shadow-sm animate-pulse">
+            <Sparkles className="w-3 h-3 text-emerald-400 fill-current flex-shrink-0" />
+            <span className="truncate">A&R TOP RECOMMENDATION • {song.flowInsight.synergyScore}%</span>
+          </div>
+        ) : song.flowInsight?.synergyScore && song.flowInsight.synergyScore >= 80 ? (
+          <div className="flex items-center gap-1 text-[9.5px] text-slate-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60" />
+            <span>{song.flowInsight.synergyScore}% Synergy Rating</span>
+          </div>
+        ) : (
+          <div className="h-6" aria-hidden="true" />
+        )}
+      </div>
 
-      {/* Main Track Info with Centered Album Art & Vinyl */}
-      <div className="my-1 z-10 flex flex-col items-center text-center">
-        {/* Album Artwork & Spinning Vinyl Record */}
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28 group/art my-1.5">
+      {/* ZONE 3: Artwork & Vinyl Record (Constant Fixed Height) */}
+      <div className="h-28 my-1 flex items-center justify-center relative flex-shrink-0 z-10">
+        {/* Album Artwork & Spinning Vinyl Record Container */}
+        <div className="relative w-24 h-24 sm:w-26 sm:h-26 group/art">
           {/* Vinyl Disc behind cover */}
           <div
-            className={`absolute top-0 right-0 w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-950 border-2 border-slate-800 shadow-2xl transition-transform duration-500 flex items-center justify-center overflow-hidden ${
+            className={`absolute top-0 right-0 w-24 h-24 sm:w-26 sm:h-26 rounded-full bg-slate-950 border-2 border-slate-800 shadow-2xl transition-transform duration-500 flex items-center justify-center overflow-hidden ${
               isPlaying
-                ? 'translate-x-4 sm:translate-x-5 animate-spin-slow'
+                ? 'translate-x-4 animate-spin-slow'
                 : 'group-hover:translate-x-2.5'
             }`}
           >
@@ -222,84 +239,86 @@ export const DraftCard: React.FC<DraftCardProps> = ({
           </div>
 
           {/* Album Cover Art */}
-          <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-slate-950">
+          <div className="relative z-10 w-full h-full rounded-xl overflow-hidden shadow-xl border border-white/10 bg-slate-950 flex items-center justify-center">
             {song.artwork ? (
               <img
                 src={song.artwork}
                 alt={`${song.title} album cover`}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                  const fb = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement;
+                  if (fb) fb.classList.remove('hidden');
+                }}
               />
-            ) : (
-              <div
-                className={`w-full h-full bg-gradient-to-br ${song.gradient} flex items-center justify-center`}
-              >
-                <Disc className="w-10 h-10 text-white/60" />
-              </div>
-            )}
+            ) : null}
+
+            {/* Robust Fallback for Missing / Broken Artwork */}
+            <div
+              className={`w-full h-full bg-gradient-to-br ${song.gradient} flex flex-col items-center justify-center text-center p-2 ${
+                song.artwork ? 'hidden' : 'flex'
+              }`}
+            >
+              <Disc className="w-8 h-8 text-white/60 mb-0.5" />
+              <span className="text-[9px] font-black text-white/90 truncate max-w-full px-1">
+                {song.title}
+              </span>
+            </div>
 
             {/* Quick Play/Pause Overlay over Artwork */}
             <button
               onClick={handleSnippetToggle}
               aria-label={isPlaying ? `Pause snippet for ${song.title}` : `Play snippet for ${song.title}`}
-              className="absolute inset-0 bg-black/40 hover:bg-black/20 flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+              className="absolute inset-0 bg-black/35 hover:bg-black/15 flex items-center justify-center transition-colors cursor-pointer active:scale-95"
             >
               {isLoading && isActive ? (
-                <Loader2 className="w-8 h-8 text-white animate-spin drop-shadow" />
+                <Loader2 className="w-7 h-7 text-white animate-spin drop-shadow" />
               ) : isPlaying ? (
-                <div className="w-9 h-9 rounded-full bg-pink-500 text-white flex items-center justify-center shadow-lg shadow-pink-950/80">
-                  <Pause className="w-4 h-4 fill-current" />
+                <div className="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center shadow-lg shadow-pink-950/80">
+                  <Pause className="w-3.5 h-3.5 fill-current" />
                 </div>
               ) : (
-                <div className="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-950 flex items-center justify-center shadow-lg shadow-black/60 transition-transform group-hover:scale-110">
-                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                <div className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-slate-950 flex items-center justify-center shadow-lg shadow-black/60 transition-transform group-hover:scale-110">
+                  <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
                 </div>
               )}
             </button>
-          </div>
-        </div>
 
-        {/* Text Details */}
-        <div className="w-full px-1 mt-1">
-          <h3 className="font-display text-sm sm:text-base font-black text-white group-hover:text-purple-200 transition-colors line-clamp-1">
-            {song.title}
-          </h3>
-          <p className="text-xs font-semibold text-slate-300 truncate mt-0.5">
-            {song.rawArtistString}
-          </p>
-          <p className="text-[11px] text-slate-400 truncate mt-0.5">
-            {song.album} ({song.year}) • {song.genre}
-          </p>
-
-          {/* Real-time Audio Snippet Equalizer Bars */}
-          {isPlaying && (
-            <div className="mt-1 flex items-center justify-center gap-2">
-              <div className="flex items-end gap-0.5 h-3">
-                <span className="w-1 bg-pink-400 rounded-full animate-pulse h-2.5" />
-                <span className="w-1 bg-fuchsia-400 rounded-full animate-pulse h-1.5" style={{ animationDelay: '150ms' }} />
-                <span className="w-1 bg-cyan-400 rounded-full animate-pulse h-3" style={{ animationDelay: '300ms' }} />
-                <span className="w-1 bg-pink-400 rounded-full animate-pulse h-1" style={{ animationDelay: '75ms' }} />
+            {/* Playing Badge Overlay (Zero Layout Shift) */}
+            {isPlaying && (
+              <div className="absolute bottom-1 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur border border-pink-500/60 text-[8.5px] font-black text-pink-300 z-20 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-pink-400 animate-ping" />
+                <span>{Math.floor(currentTime)}s</span>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-pink-300 tabular-nums">
-                {Math.floor(currentTime)}s / 30s
-              </span>
-            </div>
-          )}
-
-          {/* Dynamic A&R Flow Insight Commentary */}
-          {song.flowInsight?.curatorInsight && (
-            <div className="mt-1.5 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] text-left">
-              <p className="text-[10.5px] leading-snug text-slate-300 line-clamp-2 italic">
-                "{song.flowInsight.curatorInsight}"
-              </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Snippet Progress Bar (only visible when playing) */}
+      {/* ZONE 4: Text Details (Strict Fixed Heights) */}
+      <div className="h-[52px] my-1 flex flex-col items-center justify-center text-center px-1 z-10 flex-shrink-0 overflow-hidden">
+        <h3 className="font-display text-xs sm:text-sm font-black text-white group-hover:text-purple-200 transition-colors line-clamp-1 w-full text-center">
+          {song.title}
+        </h3>
+        <p className="text-[11px] font-semibold text-slate-300 truncate w-full text-center mt-0.5">
+          {song.rawArtistString}
+        </p>
+        <p className="text-[10px] text-slate-400 truncate w-full text-center mt-0.5">
+          {song.album} ({song.year}) • {song.genre}
+        </p>
+      </div>
+
+      {/* ZONE 5: Dynamic Curator Insight Box (Constant Fixed Height) */}
+      <div className="h-11 my-1 px-2 py-1 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-center z-10 flex-shrink-0 overflow-hidden">
+        <p className="text-[9.5px] leading-snug text-slate-300 line-clamp-2 italic text-center w-full">
+          &ldquo;{song.flowInsight?.curatorInsight || `High-affinity placement candidate for ${song.typeTag}.`}&rdquo;
+        </p>
+      </div>
+
+      {/* ZONE 6: Audio Playback Progress Indicator (Absolute to Prevent Height Shift) */}
       {isPlaying && (
-        <div className="w-full bg-slate-950 rounded-full h-1 overflow-hidden my-1 z-10 border border-slate-800">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-950 overflow-hidden z-20">
           <div
             style={{ width: `${progressPercent}%` }}
             className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 transition-all duration-150"
@@ -307,24 +326,24 @@ export const DraftCard: React.FC<DraftCardProps> = ({
         </div>
       )}
 
-      {/* Stats Chips & Draft Action Button */}
-      <div className="mt-2 pt-2.5 border-t border-white/[0.08] flex flex-col gap-2.5 z-10">
-        <div className="flex justify-between items-center text-xs">
+      {/* ZONE 7: Bottom Stats & Action Buttons (Strict Alignment) */}
+      <div className="pt-2 border-t border-white/[0.08] flex flex-col gap-2 z-10 flex-shrink-0 mt-auto">
+        <div className="h-5 flex justify-between items-center text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="flex items-center gap-1 text-cyan-400 font-semibold text-[11px]">
+            <span className="flex items-center gap-1 text-cyan-400 font-semibold text-[10.5px]">
               <Disc className="w-3.5 h-3.5" />
               {song.bpm} BPM
             </span>
             {song.flowInsight?.bpmTransitionLabel && (
-              <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-slate-800/80 text-cyan-300/90 border border-slate-700/60 hidden sm:inline-block">
+              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800/80 text-cyan-300/90 border border-slate-700/60 hidden sm:inline-block">
                 {song.flowInsight.bpmTransitionLabel}
               </span>
             )}
           </div>
 
           <div className="flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 text-pink-400" />
-            <div className="w-16 sm:w-20 bg-gray-950 rounded-full h-2 border border-gray-800 overflow-hidden">
+            <Flame className="w-3 h-3 text-pink-400" />
+            <div className="w-14 sm:w-16 bg-gray-950 rounded-full h-1.5 border border-gray-800 overflow-hidden">
               <div
                 style={{ width: `${song.energy}%` }}
                 className={`h-full rounded-full ${
@@ -336,15 +355,15 @@ export const DraftCard: React.FC<DraftCardProps> = ({
                 }`}
               />
             </div>
-            <span className="font-extrabold text-white text-[11px]">{song.energy}%</span>
+            <span className="font-extrabold text-white text-[10px]">{song.energy}%</span>
           </div>
         </div>
 
-        {/* Buttons Row: Snippet Audition + Lock In Pick (Apple / Spotify Touch Targets) */}
-        <div className="flex items-center gap-2">
+        {/* Buttons Row: Snippet Audition + Lock In Pick */}
+        <div className="h-10 flex items-center gap-1.5">
           <button
             onClick={handleSnippetToggle}
-            className={`min-h-[44px] py-2 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border flex-shrink-0 active:scale-95 ${
+            className={`h-9 py-1 px-2.5 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-1 cursor-pointer border flex-shrink-0 active:scale-95 ${
               isPlaying
                 ? 'bg-pink-600 text-white border-pink-400 shadow-md shadow-pink-950/50'
                 : 'bg-slate-950/90 hover:bg-purple-950/60 border-slate-800 hover:border-purple-500/60 text-slate-300 hover:text-white'
@@ -353,12 +372,12 @@ export const DraftCard: React.FC<DraftCardProps> = ({
           >
             {isPlaying ? (
               <>
-                <Pause className="w-3.5 h-3.5 fill-current" />
+                <Pause className="w-3 h-3 fill-current" />
                 <span>Pause</span>
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 fill-current text-pink-400" />
+                <Play className="w-3 h-3 fill-current text-pink-400" />
                 <span>Sample</span>
               </>
             )}
@@ -367,7 +386,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
           <button
             disabled={isOverBudget}
             onClick={handleDraftClick}
-            className={`min-h-[44px] flex-1 py-2 rounded-xl font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 shadow-lg cursor-pointer active:scale-95 ${
+            className={`h-9 flex-1 py-1 px-2 rounded-xl font-black text-[11px] tracking-wide uppercase transition-all flex items-center justify-center gap-1 shadow-lg cursor-pointer active:scale-95 ${
               isOverBudget
                 ? 'bg-gray-800/80 border border-gray-700 text-gray-500 cursor-not-allowed'
                 : hasMonopolyWarning
@@ -377,8 +396,8 @@ export const DraftCard: React.FC<DraftCardProps> = ({
                 : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-purple-900/40'
             }`}
           >
-            <Plus className="w-4 h-4" />
-            <span>
+            <Plus className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">
               {isOverBudget
                 ? `Over Budget ($${songPrice})`
                 : hasMonopolyWarning

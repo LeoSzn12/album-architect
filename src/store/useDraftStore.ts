@@ -216,7 +216,7 @@ export const useDraftStore = create<DraftStoreState>()(
         const draftedSongIds = draftedTracks.map((d) => d.song.id);
         const draftedArtists = draftedTracks.map((d) => d.song.artist);
 
-        const options = getOptionsForSlot(slotId, gameMode === 'draft' ? 5 : 4, era, seed, {
+        const options = getOptionsForSlot(slotId, 5, era, seed, {
           rerollIndex: seed ? rerollIndex : rerollIndex + soloDraftNonce * 10,
           draftedSongIds,
           draftedArtists,
@@ -804,7 +804,7 @@ export const useDraftStore = create<DraftStoreState>()(
           draftedTracks: restoredTracks,
           currentRoundIndex: nextIndex,
           currentOptions: nextIndex < nextSlots.length
-            ? getOptionsForSlot(nextSlots[nextIndex].id, session.mode === 'draft' ? 5 : 4, restoredEraSequence[nextIndex] ?? 'all', restoredSeed)
+            ? getOptionsForSlot(nextSlots[nextIndex].id, 5, restoredEraSequence[nextIndex] ?? 'all', restoredSeed)
             : [],
           monopolyReport: computeMonopolyReport(restoredTracks),
           energyMetrics: computeEnergyMetrics(restoredTracks),
@@ -851,7 +851,7 @@ export const useDraftStore = create<DraftStoreState>()(
           const slotIdx  = Math.min(roundIdx, slots.length - 1);
           const slot     = slots[slotIdx];
           const era      = persisted.eraSequence[slotIdx] ?? 'all';
-          persisted.currentOptions  = getOptionsForSlot(slot.id, mode === 'draft' ? 5 : 4, era, seed);
+          persisted.currentOptions  = getOptionsForSlot(slot.id, 5, era, seed);
           // Reset subScores to new shape if present (old shape had pacing/synergy)
           if (persisted.evaluationResult && 'pacing' in (persisted.evaluationResult.subScores ?? {})) {
             persisted.evaluationResult = null;

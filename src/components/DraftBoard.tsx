@@ -486,15 +486,15 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       ) : (
         <div className="w-full pb-32 sm:pb-24">
-          {/* Candidates Container: Mobile horizontal snap carousel, desktop 5-column grid */}
+          {/* Candidates Container: 5-column responsive grid with perfect equal width and height */}
           <div
             aria-label={`${enrichedOptions.length} candidate tracks`}
-            className="flex sm:grid sm:grid-cols-2 md:grid-cols-5 overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 pb-3 sm:pb-0 no-scrollbar items-stretch"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-stretch w-full"
           >
             {enrichedOptions.map((song, idx) => (
               <div
                 key={song.id}
-                className="w-[84vw] max-w-[315px] flex-shrink-0 snap-center sm:w-auto flex flex-col"
+                className="w-full flex flex-col h-full"
               >
                 <DraftCard
                   song={song}
@@ -505,19 +505,6 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
                 />
               </div>
             ))}
-          </div>
-
-          {/* Mobile Swipe Pagination Indicator */}
-          <div className="flex sm:hidden justify-center items-center gap-2 mt-2 py-1">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Swipe candidates</span>
-            <div className="flex items-center gap-1.5">
-              {enrichedOptions.map((_, i) => (
-                <span
-                  key={i}
-                  className="w-1.5 h-1.5 rounded-full bg-purple-500/60"
-                />
-              ))}
-            </div>
           </div>
         </div>
       )}
