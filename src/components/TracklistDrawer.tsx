@@ -50,7 +50,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
       <div
         ref={modalRef}
         {...modalProps}
-        className="w-full max-w-md bg-gray-950 border-l border-gray-800 h-full flex flex-col justify-between shadow-2xl p-6 overflow-y-auto"
+        className="w-full max-w-md bg-gray-950 border-l border-gray-800 h-full flex flex-col justify-between shadow-2xl p-5 sm:p-6 pb-safe overflow-y-auto"
       >
         <div>
           <div className="flex justify-between items-center pb-4 mb-4 border-b border-gray-800">
@@ -65,7 +65,8 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white transition cursor-pointer"
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white transition cursor-pointer"
+              aria-label="Close tracklist drawer"
             >
               <X className="w-5 h-5" />
             </button>

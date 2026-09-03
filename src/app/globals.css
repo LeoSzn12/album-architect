@@ -105,6 +105,25 @@
   background: #a855f7;
 }
 
+/* Mobile Safe Area & Touch Utilities */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+}
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.touch-pan-x {
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Crowd Stage & Live Feedback Animations */
 @keyframes crowdBounce {
   0%, 100% {

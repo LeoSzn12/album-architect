@@ -78,7 +78,27 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   const [wildcardModalOpen, setWildcardModalOpen] = useState(false);
   const [unlockedWildcard, setUnlockedWildcard] = useState<Song | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [mobileCardIndex, setMobileCardIndex] = useState(0);
+  const [mobileViewMode, setMobileViewMode] = useState<'carousel' | 'list'>('carousel');
+  const [activeMobileCardIndex, setActiveMobileCardIndex] = useState(0);
+  const carouselRef = React.useRef<HTMLDivElement>(null);
+
+  const handleCarouselScroll = () => {
+    if (!carouselRef.current) return;
+    const scrollLeft = carouselRef.current.scrollLeft;
+    const cardWidth = carouselRef.current.clientWidth * 0.86;
+    const newIdx = Math.round(scrollLeft / (cardWidth + 14));
+    setActiveMobileCardIndex(Math.min(Math.max(0, newIdx), currentOptions.length - 1));
+  };
+
+  const scrollToCandidate = (index: number) => {
+    playHoverSound(audioEnabled);
+    setActiveMobileCardIndex(index);
+    if (!carouselRef.current) return;
+    const targetChild = carouselRef.current.children[index] as HTMLElement | undefined;
+    if (targetChild) {
+      targetChild.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  };
 
   const isCompleted = currentRoundIndex >= slots.length;
   const currentSlot = slots[currentRoundIndex];
@@ -96,6 +116,10 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     setCompareSelection([]);
     setIsCompareOpen(false);
     setHoveredCandidate(null);
+    setActiveMobileCardIndex(0);
+    if (carouselRef.current) {
+      carouselRef.current.scrollLeft = 0;
+    }
   }, [currentRoundIndex]);
 
   // Keyboard Shortcuts:
@@ -535,30 +559,99 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       ) : (
         <div className="w-full pb-32 sm:pb-24">
-          {/* Active Slot Context Strip — Anchors category right above the 5 choices */}
-          <div className="flex items-center justify-between px-3 py-1.5 mb-2.5 rounded-xl bg-purple-950/30 border border-purple-900/40 text-xs font-bold text-gray-300 backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-              <span className="text-[11px] uppercase tracking-wider text-purple-300 font-extrabold">Drafting For:</span>
-              <span className="text-white font-black text-xs sm:text-sm tracking-tight">{currentSlot.name}</span>
-              <span className="text-gray-400 font-medium text-[11px] hidden sm:inline">({trackLabel} {currentSlot.roundNumber} of {slots.length})</span>
+          {/* Active Slot Context Strip — Sticky anchor above candidates */}
+          <div className="flex items-center justify-between px-3 py-1.5 mb-2.5 rounded-xl bg-purple-950/40 border border-purple-900/50 text-xs font-bold text-gray-300 backdrop-blur-md sticky top-14 sm:top-16 z-20 shadow-md">
+            <div className="flex items-center gap-2 truncate">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping flex-shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider text-purple-300 font-extrabold flex-shrink-0">
+                Drafting For:
+              </span>
+              <span className="text-white font-black text-xs sm:text-sm tracking-tight truncate">
+                {currentSlot.name}
+              </span>
+              <span className="text-gray-400 font-medium text-[11px] hidden sm:inline flex-shrink-0">
+                ({trackLabel} {currentSlot.roundNumber} of {slots.length})
+              </span>
             </div>
-            <div className="text-[11px] text-cyan-300/80 font-mono hidden md:flex items-center gap-2">
-              <span>Target: {currentSlot.targetEnergy.ideal}% Energy</span>
-              <span className="text-gray-600">•</span>
-              <span className="text-slate-400">5 Candidate Options</span>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="text-[11px] text-cyan-300/80 font-mono hidden md:flex items-center gap-2">
+                <span>Target: {currentSlot.targetEnergy.ideal}% Energy</span>
+                <span className="text-gray-600">•</span>
+                <span className="text-slate-400">5 Candidate Options</span>
+              </div>
+
+              {/* Mobile View Toggle: Carousel vs Vertical List */}
+              <div className="flex sm:hidden items-center bg-black/50 p-0.5 rounded-lg border border-white/[0.08]">
+                <button
+                  onClick={() => setMobileViewMode('carousel')}
+                  className={`px-2 py-0.5 rounded text-[10px] font-black transition-all cursor-pointer ${
+                    mobileViewMode === 'carousel'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Swipeable Carousel View"
+                >
+                  Deck
+                </button>
+                <button
+                  onClick={() => setMobileViewMode('list')}
+                  className={`px-2 py-0.5 rounded text-[10px] font-black transition-all cursor-pointer ${
+                    mobileViewMode === 'list'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Vertical List View"
+                >
+                  List
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Candidates Container: 5-column responsive grid with perfect equal width and height */}
+          {/* Segmented Candidate Thumb Navigator on Mobile (in carousel mode) */}
+          {mobileViewMode === 'carousel' && (
+            <div className="flex sm:hidden items-center justify-between gap-1 mb-2 px-0.5">
+              <div className="flex items-center gap-1.5 flex-1">
+                {enrichedOptions.map((song, idx) => (
+                  <button
+                    key={song.id}
+                    onClick={() => scrollToCandidate(idx)}
+                    className={`flex-1 min-h-[40px] rounded-xl text-xs font-black border transition-all flex flex-col items-center justify-center p-1 active:scale-95 cursor-pointer ${
+                      activeMobileCardIndex === idx
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-purple-400 shadow-md shadow-purple-950/60'
+                        : 'bg-slate-900/85 text-slate-400 border-white/[0.08] hover:bg-slate-800'
+                    }`}
+                  >
+                    <span className="text-[9px] uppercase font-bold opacity-80 leading-none">#{idx + 1}</span>
+                    <span className="text-[10px] font-extrabold truncate max-w-[50px] leading-tight mt-0.5">
+                      {song.artist.split(' ')[0]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Candidates Container: Mobile horizontal snap deck OR desktop 5-column responsive grid */}
           <div
+            ref={carouselRef}
+            onScroll={handleCarouselScroll}
             aria-label={`${enrichedOptions.length} candidate tracks`}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-stretch w-full"
+            className={`w-full ${
+              mobileViewMode === 'carousel'
+                ? 'flex sm:grid sm:grid-cols-2 lg:grid-cols-5 overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory gap-3.5 pb-4 scrollbar-none touch-pan-x'
+                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-stretch'
+            }`}
           >
             {enrichedOptions.map((song, idx) => (
               <div
                 key={song.id}
-                className="w-full flex flex-col h-full"
+                className={`flex flex-col h-full ${
+                  mobileViewMode === 'carousel'
+                    ? 'w-[86vw] max-w-[340px] flex-shrink-0 snap-center sm:w-full sm:max-w-none'
+                    : 'w-full'
+                }`}
               >
                 <DraftCard
                   song={song}

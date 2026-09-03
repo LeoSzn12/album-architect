@@ -310,9 +310,9 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
 
             <button
               onClick={handleCopyWordle}
-              className={`px-4 py-2 rounded-xl font-extrabold text-xs transition flex items-center gap-2 shadow-lg cursor-pointer ${
+              className={`w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg cursor-pointer active:scale-98 ${
                 copiedWordle
-                  ? 'bg-emerald-600 text-white shadow-emerald-950/60 scale-105'
+                  ? 'bg-emerald-600 text-white shadow-emerald-950/60 scale-102'
                   : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-purple-950/50'
               }`}
             >
@@ -656,13 +656,13 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
       )}
 
       {/* ── 6. Actions ── */}
-      <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-gray-800/60">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-3 border-t border-gray-800/60">
         <button
           onClick={() => {
             playHoverSound(audioEnabled);
             startNewDraft();
           }}
-          className="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs transition flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
         >
           <RotateCcw className="w-4 h-4" />
           <span>Draft Again</span>
@@ -674,7 +674,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
               playHoverSound(audioEnabled);
               onOpenFriendsModal();
             }}
-            className="px-4 py-2.5 rounded-xl bg-pink-950 hover:bg-pink-900 text-pink-200 font-extrabold text-xs transition border border-pink-700/60 flex items-center gap-2 cursor-pointer"
+            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-pink-950 hover:bg-pink-900 text-pink-200 font-extrabold text-xs transition border border-pink-700/60 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
           >
             <Swords className="w-4 h-4 text-pink-400" />
             <span>1v1 Matchup</span>
@@ -686,7 +686,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
             playHoverSound(audioEnabled);
             onOpenExport();
           }}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:opacity-95 text-white font-extrabold text-xs transition shadow-lg shadow-purple-900/40 flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] flex-1 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 hover:opacity-95 text-white font-extrabold text-xs transition shadow-lg shadow-purple-900/40 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
         >
           <Sparkles className="w-4 h-4 text-amber-300" />
           <span>Export {projectLabel} Playlist</span>

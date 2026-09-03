@@ -19,6 +19,7 @@ import { GameMode, DifficultyTier, EraFilter } from '@/types/draft';
 import { SetupPanel, type SetupPreferences } from '@/components/SetupPanel';
 import { LibraryPanel } from '@/components/LibraryPanel';
 import { ProfilePanel } from '@/components/ProfilePanel';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 
 export default function Home() {
   const {
@@ -101,7 +102,7 @@ export default function Home() {
   const showLanding = !hasStarted;
 
   return (
-    <div className="min-h-screen min-w-0 bg-[#0f1117] text-slate-100 flex flex-col justify-between selection:bg-purple-500 selection:text-white relative pb-24">
+    <div className="min-h-screen min-w-0 bg-[#0f1117] text-slate-100 flex flex-col justify-between selection:bg-purple-500 selection:text-white relative pb-32 sm:pb-28">
       {/* Background Neon Ambient Glow Orbs */}
       <div className="fixed top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed bottom-10 right-1/4 translate-x-1/2 w-[30rem] h-[30rem] bg-pink-600/10 rounded-full blur-[140px] pointer-events-none" />
@@ -211,6 +212,21 @@ export default function Home() {
 
       <RealSongPlayerModal />
       <DockedMusicPlayer />
+
+      {/* Mobile Bottom Navigation Dock */}
+      {!showLanding && (
+        <MobileBottomNav
+          onToggleTracklist={() => {
+            setActiveSurface('game');
+            setIsTracklistOpen(true);
+          }}
+          onOpenFriendsModal={() => {
+            setActiveSurface('game');
+            setIsFriendsModalOpen(true);
+          }}
+          onScrollToLeaderboard={handleScrollToLeaderboard}
+        />
+      )}
     </div>
   );
 }

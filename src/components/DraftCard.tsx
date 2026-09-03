@@ -107,7 +107,10 @@ export const DraftCard: React.FC<DraftCardProps> = ({
       onMouseLeave={() => {
         onHoverCandidate?.(null);
       }}
-      className={`group relative h-full min-h-[510px] rounded-3xl p-4 border transition-all duration-300 flex flex-col justify-between overflow-hidden backdrop-blur-2xl ${
+      onTouchStart={() => {
+        onHoverCandidate?.(song);
+      }}
+      className={`group relative h-full min-h-[500px] rounded-3xl p-3.5 sm:p-4 border transition-all duration-300 flex flex-col justify-between overflow-hidden backdrop-blur-2xl ${
         isPlaying
           ? 'bg-slate-900/95 border-pink-500 shadow-2xl shadow-pink-950/60 ring-2 ring-pink-500/50'
           : song.flowInsight?.isTopCuratorPick
@@ -405,24 +408,25 @@ export const DraftCard: React.FC<DraftCardProps> = ({
       )}
 
       {/* ZONE 6: Action Footer */}
-      <div className="pt-2 border-t border-white/[0.08] flex items-center gap-1.5 z-10 flex-shrink-0 mt-auto">
+      <div className="pt-2.5 border-t border-white/[0.08] flex items-center gap-2 z-10 flex-shrink-0 mt-auto">
         <button
           onClick={handleSnippetToggle}
-          className={`h-10 py-1.5 px-3 rounded-2xl font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer border flex-shrink-0 active:scale-95 ${
+          className={`h-11 min-h-[44px] py-2 px-3.5 rounded-2xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border flex-shrink-0 active:scale-95 ${
             isPlaying
               ? 'bg-pink-600 text-white border-pink-400 shadow-md shadow-pink-950/50'
               : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-slate-200 hover:text-white'
           }`}
           title="Sample 30-second official audio"
+          aria-label={isPlaying ? 'Pause 30-second sample' : 'Play 30-second sample'}
         >
           {isPlaying ? (
             <>
-              <Pause className="w-3.5 h-3.5 fill-current" />
+              <Pause className="w-4 h-4 fill-current" />
               <span>Pause</span>
             </>
           ) : (
             <>
-              <Play className="w-3.5 h-3.5 fill-current text-pink-400 ml-0.5" />
+              <Play className="w-4 h-4 fill-current text-pink-400 ml-0.5" />
               <span>Sample</span>
             </>
           )}
@@ -431,7 +435,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
         <button
           disabled={isOverBudget}
           onClick={handleDraftClick}
-          className={`h-10 flex-1 py-1.5 px-3 rounded-2xl font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 shadow-xl cursor-pointer active:scale-95 ${
+          className={`h-11 min-h-[44px] flex-1 py-2 px-4 rounded-2xl font-black text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 shadow-xl cursor-pointer active:scale-95 ${
             isOverBudget
               ? 'bg-gray-800/80 border border-gray-700 text-gray-500 cursor-not-allowed'
               : hasMonopolyWarning

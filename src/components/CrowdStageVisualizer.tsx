@@ -467,67 +467,78 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
       </div>
 
       {/* TACTILE DJ SOUNDBOARD STRIP */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-white/[0.08]">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">DJ Soundboard:</span>
-          <span className="text-[9px] text-slate-500 font-medium hidden sm:inline">Tap or press keys</span>
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2.5 pt-2 border-t border-white/[0.08]">
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">DJ Soundboard:</span>
+            <span className="text-[9px] text-slate-500 font-medium hidden sm:inline">Tap or press keys</span>
+          </div>
+          {activeFx && (
+            <span className="text-[10px] font-bold text-pink-400 animate-pulse sm:hidden">
+              FX Triggered!
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="grid grid-cols-4 sm:flex sm:items-center gap-1.5 w-full sm:w-auto">
           {/* Airhorn */}
           <button
             onClick={() => triggerFx('airhorn')}
             title="Fire DJ Airhorn blast (Shortcut: H)"
-            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+            aria-label="DJ Airhorn"
+            className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'airhorn'
-                ? 'bg-pink-600 text-white border-pink-400 shadow-lg shadow-pink-950/60 scale-105'
-                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-pink-300'
+                ? 'bg-pink-600 text-white border-pink-400 shadow-lg shadow-pink-950/60 scale-102'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-pink-300'
             }`}
           >
-            <Megaphone className="w-3 h-3 text-pink-400" />
-            <span>Airhorn <kbd className="text-[8.5px] text-pink-200/70 font-mono">H</kbd></span>
+            <Megaphone className="w-3.5 h-3.5 text-pink-400" />
+            <span className="text-[10px] sm:text-xs leading-none">Airhorn <kbd className="hidden sm:inline text-[8.5px] text-pink-200/70 font-mono">H</kbd></span>
           </button>
 
           {/* Scratch */}
           <button
             onClick={() => triggerFx('scratch')}
             title="Vinyl Turntable Scratch (Shortcut: S)"
-            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+            aria-label="Turntable Scratch"
+            className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'scratch'
-                ? 'bg-cyan-600 text-white border-cyan-400 shadow-lg shadow-cyan-950/60 scale-105'
-                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-cyan-300'
+                ? 'bg-cyan-600 text-white border-cyan-400 shadow-lg shadow-cyan-950/60 scale-102'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-cyan-300'
             }`}
           >
-            <Disc3 className="w-3 h-3 text-cyan-400" />
-            <span>Scratch <kbd className="text-[8.5px] text-cyan-200/70 font-mono">S</kbd></span>
+            <Disc3 className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="text-[10px] sm:text-xs leading-none">Scratch <kbd className="hidden sm:inline text-[8.5px] text-cyan-200/70 font-mono">S</kbd></span>
           </button>
 
           {/* Rewind */}
           <button
             onClick={() => triggerFx('rewind')}
             title="Tape Rewind Pull-Up (Shortcut: P)"
-            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+            aria-label="Rewind Pull-Up"
+            className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'rewind'
-                ? 'bg-amber-600 text-white border-amber-400 shadow-lg shadow-amber-950/60 scale-105'
-                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-amber-300'
+                ? 'bg-amber-600 text-white border-amber-400 shadow-lg shadow-amber-950/60 scale-102'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-amber-300'
             }`}
           >
-            <Rewind className="w-3 h-3 text-amber-400" />
-            <span>Rewind <kbd className="text-[8.5px] text-amber-200/70 font-mono">P</kbd></span>
+            <Rewind className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[10px] sm:text-xs leading-none">Rewind <kbd className="hidden sm:inline text-[8.5px] text-amber-200/70 font-mono">P</kbd></span>
           </button>
 
           {/* Crowd Cheer */}
           <button
             onClick={() => triggerFx('cheer')}
             title="Crowd Roar / Cheer (Shortcut: A)"
-            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+            aria-label="Crowd Roar"
+            className={`min-h-[44px] px-2.5 py-2 rounded-xl text-xs font-black border flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer active:scale-95 ${
               activeFx === 'cheer'
-                ? 'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-950/60 scale-105'
-                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-purple-300'
+                ? 'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-950/60 scale-102'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.08] text-purple-300'
             }`}
           >
-            <HandMetal className="w-3 h-3 text-purple-400" />
-            <span>Crowd Roar <kbd className="text-[8.5px] text-purple-200/70 font-mono">A</kbd></span>
+            <HandMetal className="w-3.5 h-3.5 text-purple-400" />
+            <span className="text-[10px] sm:text-xs leading-none">Roar <kbd className="hidden sm:inline text-[8.5px] text-purple-200/70 font-mono">A</kbd></span>
           </button>
         </div>
       </div>
