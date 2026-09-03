@@ -1,10 +1,36 @@
+'use client';
+
+import React, { useState } from 'react';
 import type { SharePayload } from '@/lib/sharePayload';
+import { Copy, Check, Share2 } from 'lucide-react';
 
 interface ShareCardProps {
   payload: SharePayload;
 }
 
 export function ShareCard({ payload }: ShareCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyWordle = () => {
+    const lines = [
+      `🎧 TrackDraft: ${payload.projectTitle} (Curated by ${payload.creator})`,
+      `Score: ${payload.score.toFixed(1)}/10 (${payload.grade}) · AUX PASS APPROVED 🔥`,
+      '',
+      'Top Picks:',
+      ...payload.topTracks.map((t, idx) => `🟩 ${idx + 1}. ${t.title} - ${t.artist}`),
+      '',
+      `⚔️ Challenge Code: ${payload.challengeCode}`,
+      'Can you beat my aux score?',
+      typeof window !== 'undefined' ? window.location.href : 'https://trackdraft.app',
+    ];
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(lines.join('\n'));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
   return (
     <article className="w-full max-w-2xl overflow-hidden rounded-3xl border border-purple-400/30 bg-slate-950/90 shadow-2xl shadow-purple-950/40">
       <div className="bg-gradient-to-br from-purple-950 via-slate-950 to-pink-950 p-6 sm:p-8">
@@ -37,9 +63,22 @@ export function ShareCard({ payload }: ShareCardProps) {
             <p className="text-xs font-black uppercase tracking-widest text-slate-500">Challenge code</p>
             <p className="font-mono text-lg font-bold tracking-widest text-cyan-300">{payload.challengeCode}</p>
           </div>
-          {payload.opponentScore !== undefined && (
-            <p className="rounded-full bg-cyan-400/10 px-3 py-1 text-sm font-bold text-cyan-200">Opponent {payload.opponentScore.toFixed(1)} / 10</p>
-          )}
+          <div className="flex items-center gap-2">
+            {payload.opponentScore !== undefined && (
+              <p className="rounded-full bg-cyan-400/10 px-3 py-1 text-sm font-bold text-cyan-200">Opponent {payload.opponentScore.toFixed(1)} / 10</p>
+            )}
+            <button
+              onClick={handleCopyWordle}
+              className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 cursor-pointer ${
+                copied
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-purple-900/60 hover:bg-purple-800 text-purple-200 border border-purple-700/50'
+              }`}
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied!' : 'Copy Share Grid'}</span>
+            </button>
+          </div>
         </div>
 
         <div>

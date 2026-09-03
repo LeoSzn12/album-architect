@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Flame,
   Volume2,
@@ -12,9 +12,19 @@ import {
   TrendingUp,
   TrendingDown,
   Disc3,
+  Megaphone,
+  Rewind,
+  HandMetal,
 } from 'lucide-react';
 import type { CrowdHypeResult, Song, DraftSlot, DraftedTrack, SynergyBadge } from '@/types/draft';
 import { computeCrowdHype } from '@/lib/synergyEngine';
+import { useDraftStore } from '@/store/useDraftStore';
+import {
+  playAirhornSound,
+  playTurntableScratchSound,
+  playTurntableRewindSound,
+  playCrowdCheerSound,
+} from '@/lib/audioEngine';
 
 interface CrowdStageVisualizerProps {
   crowdHype: CrowdHypeResult;
@@ -32,6 +42,63 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
   activeSynergies,
 }) => {
   const { score: currentScore, status, reactionQuote } = crowdHype;
+  const { audioEnabled } = useDraftStore();
+
+  const [activeFx, setActiveFx] = useState<string | null>(null);
+  const [fxMessage, setFxMessage] = useState<string | null>(null);
+
+  const triggerFx = (type: 'airhorn' | 'scratch' | 'rewind' | 'cheer') => {
+    setActiveFx(type);
+    if (type === 'airhorn') {
+      playAirhornSound(audioEnabled);
+      setFxMessage('🚨 AIRHORN BLAST! Crowd explodes! 📢🔥');
+    } else if (type === 'scratch') {
+      playTurntableScratchSound(audioEnabled);
+      setFxMessage('💽 WICKA-WICKA! Turntable cut! 🎧');
+    } else if (type === 'rewind') {
+      playTurntableRewindSound(audioEnabled);
+      setFxMessage('⏪ REWIND! Pull that back! 🔄');
+    } else if (type === 'cheer') {
+      playCrowdCheerSound(audioEnabled);
+      setFxMessage('🙌 CROWD ROARING! Maximum aux energy! ✨');
+    }
+
+    setTimeout(() => {
+      setActiveFx((prev) => (prev === type ? null : prev));
+      setFxMessage((prev) => (prev && prev.includes(type) ? null : prev));
+    }, 1500);
+  };
+
+  // Keyboard shortcut triggers for the soundboard: H (Horn), S (Scratch), P (Pull-up Rewind), A (Applause)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      if (key === 'h') {
+        e.preventDefault();
+        triggerFx('airhorn');
+      } else if (key === 's' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        triggerFx('scratch');
+      } else if (key === 'p') {
+        e.preventDefault();
+        triggerFx('rewind');
+      } else if (key === 'a' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        triggerFx('cheer');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [audioEnabled]);
 
   // Real-time hover anticipation calculation
   const hoverPrediction = useMemo(() => {
@@ -77,12 +144,12 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
 
   // Determine stage energy tier
   const effectiveScore = hoverPrediction ? hoverPrediction.projectedScore : currentScore;
-  const isHyped = effectiveScore >= 85;
+  const isHyped = effectiveScore >= 85 || activeFx === 'airhorn' || activeFx === 'cheer';
   const isGroove = effectiveScore >= 70 && effectiveScore < 85;
   const isMid = effectiveScore >= 45 && effectiveScore < 70;
   const isCold = effectiveScore < 45;
 
-  // Combo Streak (tracks with smooth BPM or high synergy)
+  // Combo Streak
   const streakCount = useMemo(() => {
     let count = 0;
     for (let i = draftedTracks.length - 1; i >= 0; i--) {
@@ -99,19 +166,19 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
   return (
     <section
       aria-label="Live Crowd and Aux Hype Stage"
-      className="relative w-full rounded-2xl border border-purple-900/40 bg-gradient-to-b from-[#0e121d]/90 via-[#0a0d14]/95 to-[#08090e] p-3 sm:p-4 backdrop-blur-xl shadow-2xl overflow-hidden transition-all duration-500"
+      className="relative w-full rounded-3xl border border-purple-900/40 bg-gradient-to-b from-[#0e121d]/95 via-[#0a0d14]/95 to-[#08090e] p-3.5 sm:p-4 backdrop-blur-2xl shadow-2xl overflow-hidden transition-all duration-500"
     >
       {/* Background Stage Lights & Lasers */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Laser 1: Cyan */}
         <div
-          className={`absolute -top-10 left-1/4 w-1.5 h-64 bg-cyan-400/40 blur-sm rounded-full transform -rotate-45 origin-top transition-opacity ${
+          className={`absolute -top-10 left-1/4 w-2 h-72 bg-cyan-400/50 blur-sm rounded-full transform -rotate-45 origin-top transition-opacity ${
             isHyped ? 'animate-stage-laser opacity-90' : isGroove ? 'opacity-40' : 'opacity-10'
           }`}
         />
         {/* Laser 2: Magenta / Pink */}
         <div
-          className={`absolute -top-10 right-1/4 w-1.5 h-64 bg-pink-500/40 blur-sm rounded-full transform rotate-45 origin-top transition-opacity ${
+          className={`absolute -top-10 right-1/4 w-2 h-72 bg-pink-500/50 blur-sm rounded-full transform rotate-45 origin-top transition-opacity ${
             isHyped ? 'animate-stage-laser opacity-90 delay-300' : isGroove ? 'opacity-40' : 'opacity-10'
           }`}
         />
@@ -120,7 +187,7 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
         <div
           className={`absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full blur-3xl transition-all duration-700 ${
             isHyped
-              ? 'bg-gradient-to-r from-pink-600/25 via-purple-600/30 to-cyan-500/25'
+              ? 'bg-gradient-to-r from-pink-600/30 via-purple-600/35 to-cyan-500/30'
               : isGroove
               ? 'bg-gradient-to-r from-purple-800/20 to-cyan-600/20'
               : isMid
@@ -135,9 +202,9 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
         {/* Left: Venue & Status Indicator */}
         <div className="flex items-center gap-2">
           <div
-            className={`p-1.5 rounded-xl border transition-colors ${
+            className={`p-2 rounded-xl border transition-colors ${
               isHyped
-                ? 'bg-pink-950/80 border-pink-500/60 text-pink-300 shadow-md shadow-pink-950/50'
+                ? 'bg-pink-950/80 border-pink-500/60 text-pink-300 shadow-lg shadow-pink-950/50 animate-pulse'
                 : isGroove
                 ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-300'
                 : isMid
@@ -146,7 +213,7 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             }`}
           >
             {isHyped ? (
-              <Flame className="w-4 h-4 animate-pulse" />
+              <Flame className="w-4 h-4" />
             ) : isGroove ? (
               <Volume2 className="w-4 h-4" />
             ) : isMid ? (
@@ -217,18 +284,17 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
       </div>
 
       {/* MIDDLE DECK: Animated Crowd Stage & Reactive Silhouettes */}
-      <div className="relative z-10 w-full h-20 sm:h-24 bg-black/40 rounded-xl border border-white/[0.06] overflow-hidden flex items-end justify-center px-4">
-        {/* Dynamic Speech Bubble: Pops above the crowd with instant feedback */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 w-max max-w-[92%] sm:max-w-md animate-bubble-pop">
-          <div className="relative px-3 py-1.5 rounded-2xl bg-slate-900/95 border border-purple-500/40 text-slate-200 text-xs font-semibold shadow-2xl backdrop-blur-md flex items-center gap-2">
+      <div className="relative z-10 w-full h-20 sm:h-24 bg-black/40 rounded-2xl border border-white/[0.06] overflow-hidden flex items-end justify-center px-4">
+        {/* Dynamic Speech Bubble */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 w-max max-w-[94%] sm:max-w-md animate-bubble-pop">
+          <div className="relative px-3 py-1.5 rounded-2xl bg-slate-900/95 border border-purple-500/50 text-slate-100 text-xs font-semibold shadow-2xl backdrop-blur-md flex items-center gap-2">
             <span className="text-sm">
-              {isHyped ? '🔥' : isGroove ? '🎧' : isMid ? '📱' : '💀'}
+              {activeFx ? '⚡' : isHyped ? '🔥' : isGroove ? '🎧' : isMid ? '📱' : '💀'}
             </span>
-            <p className="truncate italic">
-              {hoverPrediction ? hoverPrediction.anticipatoryQuote : `"${reactionQuote}"`}
+            <p className="truncate italic font-medium">
+              {fxMessage || (hoverPrediction ? hoverPrediction.anticipatoryQuote : `"${reactionQuote}"`)}
             </p>
-            {/* Speech bubble pointer notch */}
-            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-b border-r border-purple-500/40 rotate-45" />
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-b border-r border-purple-500/50 rotate-45" />
           </div>
         </div>
 
@@ -238,22 +304,20 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
           <div
             className={`flex flex-col items-center origin-bottom transition-transform ${
               isHyped
-                ? 'animate-crowd-bounce-fast'
+                ? 'animate-crowd-bounce-fast text-purple-300'
                 : isGroove
-                ? 'animate-crowd-bounce'
+                ? 'animate-crowd-bounce text-purple-400/80'
                 : isMid
-                ? 'opacity-60'
-                : 'opacity-30 translate-y-2'
+                ? 'opacity-60 text-slate-500'
+                : 'opacity-30 translate-y-2 text-slate-700'
             }`}
             style={{ animationDelay: '0ms' }}
           >
-            <svg className="w-7 h-11 sm:w-9 sm:h-13 text-purple-400/80 fill-current drop-shadow-md" viewBox="0 0 40 60">
-              {/* Head with Headphones */}
+            <svg className="w-7 h-11 sm:w-9 sm:h-13 fill-current drop-shadow-md" viewBox="0 0 40 60">
               <circle cx="20" cy="14" r="9" />
               <path d="M9 13 A11 11 0 0 1 31 13" stroke="currentColor" strokeWidth="2.5" fill="none" />
               <rect x="7" y="11" width="3" height="6" rx="1.5" />
               <rect x="30" y="11" width="3" height="6" rx="1.5" />
-              {/* Torso */}
               <path d="M12 26 C12 24 28 24 28 26 L32 60 L8 60 Z" />
             </svg>
           </div>
@@ -272,7 +336,6 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             style={{ animationDelay: '120ms' }}
           >
             <svg className="w-8 h-14 sm:w-11 sm:h-16 fill-current drop-shadow-md" viewBox="0 0 44 64">
-              {/* Hands raised */}
               <path d="M8 8 L13 22 M36 8 L31 22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
               <circle cx="22" cy="18" r="8" />
               <path d="M14 28 C14 26 30 26 30 28 L35 64 L9 64 Z" />
@@ -293,7 +356,6 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             style={{ animationDelay: '240ms' }}
           >
             <svg className="w-7 h-12 sm:w-10 sm:h-15 fill-current drop-shadow-md" viewBox="0 0 40 60">
-              {/* Left hand up holding phone light */}
               <line x1="10" y1="6" x2="16" y2="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
               {isHyped && (
                 <circle cx="9" cy="5" r="3" className="fill-cyan-300 animate-ping" />
@@ -305,7 +367,7 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
 
           {/* Member 4: Center DJ Deck Console */}
           <div className="flex flex-col items-center justify-end h-full px-2 z-10">
-            <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-purple-500/40 shadow-lg">
+            <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-purple-500/50 shadow-xl">
               <Disc3 className={`w-4 h-4 text-pink-400 ${isHyped ? 'animate-spin-slow' : ''}`} />
               <div className="flex items-end gap-0.5 h-3">
                 <span className="w-1 bg-cyan-400 rounded-full animate-eq-1" />
@@ -314,7 +376,7 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
                 <span className="w-1 bg-amber-400 rounded-full animate-eq-4" />
               </div>
             </div>
-            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 mt-0.5">
+            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 mt-0.5">
               AUX BOOTH
             </span>
           </div>
@@ -333,7 +395,6 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             style={{ animationDelay: '80ms' }}
           >
             <svg className="w-7 h-12 sm:w-10 sm:h-14 fill-current drop-shadow-md" viewBox="0 0 40 60">
-              {/* Cap visor */}
               <ellipse cx="20" cy="14" rx="8" ry="7" />
               <rect x="20" y="11" width="9" height="3" rx="1" />
               <path d="M12 25 C12 23 28 23 28 25 L32 60 L8 60 Z" />
@@ -402,6 +463,72 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
             }`}
             style={{ width: `${currentScore}%` }}
           />
+        </div>
+      </div>
+
+      {/* TACTILE DJ SOUNDBOARD STRIP */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-white/[0.08]">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">DJ Soundboard:</span>
+          <span className="text-[9px] text-slate-500 font-medium hidden sm:inline">Tap or press keys</span>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Airhorn */}
+          <button
+            onClick={() => triggerFx('airhorn')}
+            title="Fire DJ Airhorn blast (Shortcut: H)"
+            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+              activeFx === 'airhorn'
+                ? 'bg-pink-600 text-white border-pink-400 shadow-lg shadow-pink-950/60 scale-105'
+                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-pink-300'
+            }`}
+          >
+            <Megaphone className="w-3 h-3 text-pink-400" />
+            <span>Airhorn <kbd className="text-[8.5px] text-pink-200/70 font-mono">H</kbd></span>
+          </button>
+
+          {/* Scratch */}
+          <button
+            onClick={() => triggerFx('scratch')}
+            title="Vinyl Turntable Scratch (Shortcut: S)"
+            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+              activeFx === 'scratch'
+                ? 'bg-cyan-600 text-white border-cyan-400 shadow-lg shadow-cyan-950/60 scale-105'
+                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-cyan-300'
+            }`}
+          >
+            <Disc3 className="w-3 h-3 text-cyan-400" />
+            <span>Scratch <kbd className="text-[8.5px] text-cyan-200/70 font-mono">S</kbd></span>
+          </button>
+
+          {/* Rewind */}
+          <button
+            onClick={() => triggerFx('rewind')}
+            title="Tape Rewind Pull-Up (Shortcut: P)"
+            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+              activeFx === 'rewind'
+                ? 'bg-amber-600 text-white border-amber-400 shadow-lg shadow-amber-950/60 scale-105'
+                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-amber-300'
+            }`}
+          >
+            <Rewind className="w-3 h-3 text-amber-400" />
+            <span>Rewind <kbd className="text-[8.5px] text-amber-200/70 font-mono">P</kbd></span>
+          </button>
+
+          {/* Crowd Cheer */}
+          <button
+            onClick={() => triggerFx('cheer')}
+            title="Crowd Roar / Cheer (Shortcut: A)"
+            className={`px-2.5 py-1 rounded-xl text-[10.5px] font-black border flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
+              activeFx === 'cheer'
+                ? 'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-950/60 scale-105'
+                : 'bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.08] text-purple-300'
+            }`}
+          >
+            <HandMetal className="w-3 h-3 text-purple-400" />
+            <span>Crowd Roar <kbd className="text-[8.5px] text-purple-200/70 font-mono">A</kbd></span>
+          </button>
         </div>
       </div>
     </section>

@@ -22,9 +22,14 @@ import {
   Crown,
   Flame,
   Award,
+  Copy,
+  Check,
+  Share2,
 } from 'lucide-react';
 import { playHoverSound, playDraftCompleteFanfare } from '@/lib/audioEngine';
 import { scoreToVerdict } from '@/lib/scoringEngine';
+import { deriveCuratorPersona } from '@/lib/curatorPersona';
+import { buildWordleShareData, formatWordleShareText } from '@/lib/wordleShare';
 
 interface AICriticPanelProps {
   onOpenExport: () => void;
@@ -60,12 +65,34 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     evaluateDraft,
     opponentEvaluationResult,
     gameMode,
+    draftSeed,
   } = useDraftStore();
 
   const [showCriticBoard, setShowCriticBoard] = useState(false);
   const [showBestPossible, setShowBestPossible] = useState(false);
   const [showTimeoutFallback, setShowTimeoutFallback] = useState(false);
+  const [copiedWordle, setCopiedWordle] = useState(false);
   const hasCelebratedRef = useRef(false);
+
+  const curatorPersona = React.useMemo(() => {
+    return deriveCuratorPersona(draftedTracks);
+  }, [draftedTracks]);
+
+  const wordleData = React.useMemo(() => {
+    if (!evaluationResult) return null;
+    return buildWordleShareData(evaluationResult, draftedTracks, gameMode, draftSeed, curatorPersona);
+  }, [evaluationResult, draftedTracks, gameMode, draftSeed, curatorPersona]);
+
+  const handleCopyWordle = () => {
+    if (!wordleData) return;
+    playHoverSound(audioEnabled);
+    const text = formatWordleShareText(wordleData);
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedWordle(true);
+      setTimeout(() => setCopiedWordle(false), 2500);
+    }
+  };
 
   // Confetti & fanfare: execute strictly ONCE per unique evaluation result
   useEffect(() => {
@@ -221,6 +248,126 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           </span>
         )}
       </div>
+
+      {/* ── Curator DNA / DJ Persona Spotlight Banner ── */}
+      <div className={`p-5 rounded-2xl bg-gradient-to-r ${curatorPersona.gradient} border ${curatorPersona.borderClass} shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4`}>
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-2xl bg-black/40 border border-white/20 shadow-inner flex items-center justify-center">
+            <Crown className="w-6 h-6 text-amber-300" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/80">
+                Curator DNA Persona
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-white/20 text-[9px] font-bold">
+                1-of-1 Sonic Profile
+              </span>
+            </div>
+            <h3 className="text-xl font-black tracking-tight text-white mt-0.5">
+              {curatorPersona.title}
+            </h3>
+            <p className="text-xs text-white/90 font-medium max-w-lg mt-0.5">
+              {curatorPersona.tagline}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-start md:items-end gap-1.5 self-stretch md:self-auto">
+          <div className="flex flex-wrap gap-1.5">
+            {curatorPersona.traits.map((trait) => (
+              <span key={trait} className="px-2.5 py-1 rounded-full bg-black/30 border border-white/20 text-[10px] font-extrabold text-white">
+                {trait}
+              </span>
+            ))}
+          </div>
+          <span className="text-[10px] font-semibold text-white/80 italic">
+            &quot;{curatorPersona.crowdReputation}&quot;
+          </span>
+        </div>
+      </div>
+
+      {/* ── Wordle-Style Share Card (1-Tap Viral Copy) ── */}
+      {wordleData && (
+        <div className="p-5 rounded-2xl bg-slate-950/90 border border-purple-500/40 shadow-xl flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-purple-950 border border-purple-700 text-purple-300">
+                <Share2 className="w-4 h-4" />
+              </span>
+              <div>
+                <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                  <span>The Wordle Share Grid</span>
+                  <span className="px-2 py-0.2 rounded-full bg-emerald-950 border border-emerald-500/50 text-[9px] font-black text-emerald-300">
+                    VIRAL READY
+                  </span>
+                </h4>
+                <p className="text-[11px] text-gray-400">
+                  1-tap copy formatted for Twitter/X, Discord, and iMessage group chats.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCopyWordle}
+              className={`px-4 py-2 rounded-xl font-extrabold text-xs transition flex items-center gap-2 shadow-lg cursor-pointer ${
+                copiedWordle
+                  ? 'bg-emerald-600 text-white shadow-emerald-950/60 scale-105'
+                  : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-purple-950/50'
+              }`}
+            >
+              {copiedWordle ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Copied to Clipboard!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>Copy Share Grid</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Live Visual Grid Preview */}
+          <div className="p-3.5 rounded-xl bg-black/50 border border-white/[0.08] flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-300">
+                {wordleData.projectName} · {overallScore.toFixed(1)}/10 ({gradeBadge})
+              </span>
+              <span className="font-extrabold text-pink-400 text-[11px] tracking-wide">
+                {wordleData.statusText}
+              </span>
+            </div>
+
+            {/* Emoji row */}
+            <div className="flex items-center gap-1 text-base select-none">
+              {wordleData.slotsBreakdown.map((s, idx) => (
+                <span key={idx} title={`${s.slotName}: ${s.songTitle} (${s.synergyScore}% synergy)`}>
+                  {s.emojiSquare}
+                </span>
+              ))}
+            </div>
+
+            {/* Micro Tracklist */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-slate-400 font-mono">
+              {wordleData.slotsBreakdown.slice(0, 4).map((s, idx) => (
+                <div key={idx} className="truncate flex items-center gap-1.5">
+                  <span>{s.emojiSquare}</span>
+                  <span className="text-slate-300 truncate">{s.songTitle}</span>
+                  <span className="text-slate-500 truncate">— {s.artist}</span>
+                </div>
+              ))}
+              {wordleData.slotsBreakdown.length > 4 && (
+                <div className="text-[10px] text-slate-500 italic flex items-center pl-1">
+                  +{wordleData.slotsBreakdown.length - 4} more tracks in grid
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Curator Badges ── */}
       {curatorBadges && curatorBadges.length > 0 && (

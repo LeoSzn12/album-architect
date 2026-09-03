@@ -326,3 +326,129 @@ export function playCrowdGaspSound(enabled = true) {
   }
 }
 
+/**
+ * Synthesizes the iconic hip-hop / dancehall DJ airhorn stutter blast.
+ */
+export function playAirhornSound(enabled = true) {
+  if (!enabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    // Classic triple blast timings: [start, duration]
+    const blasts = [
+      [now, 0.09],
+      [now + 0.12, 0.09],
+      [now + 0.25, 0.35],
+    ];
+
+    blasts.forEach(([start, dur]) => {
+      // Dual tone: Bb4 (466Hz) and Eb5 (622Hz)
+      [466.16, 622.25].forEach((freq) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, start);
+        osc.frequency.linearRampToValueAtTime(freq * 1.02, start + dur);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2400, start);
+
+        gain.gain.setValueAtTime(0.001, start);
+        gain.gain.linearRampToValueAtTime(0.1, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(start);
+        osc.stop(start + dur);
+      });
+    });
+  } catch {
+    // Ignore audio restrictions
+  }
+}
+
+/**
+ * Synthesizes a rapid DJ vinyl turntable spinback / tape rewind pull-up.
+ */
+export function playTurntableRewindSound(enabled = true) {
+  if (!enabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    // Spin up then spin down rapidly
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(1600, now + 0.12);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.45);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(900, now);
+    filter.Q.setValueAtTime(2.5, now);
+
+    gain.gain.setValueAtTime(0.01, now);
+    gain.gain.linearRampToValueAtTime(0.18, now + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.45);
+  } catch {
+    // Ignore audio restrictions
+  }
+}
+
+/**
+ * Synthesizes a rhythmic back-and-forth vinyl record scratch.
+ */
+export function playTurntableScratchSound(enabled = true) {
+  if (!enabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(260, now);
+    osc.frequency.linearRampToValueAtTime(650, now + 0.08);
+    osc.frequency.linearRampToValueAtTime(190, now + 0.18);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1100, now);
+    filter.Q.setValueAtTime(3.2, now);
+
+    gain.gain.setValueAtTime(0.01, now);
+    gain.gain.linearRampToValueAtTime(0.14, now + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.22);
+  } catch {
+    // Ignore audio restrictions
+  }
+}
+
+
