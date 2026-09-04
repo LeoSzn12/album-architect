@@ -332,11 +332,11 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   }
 
   return (
-    <div className="w-full flex flex-col gap-2.5 my-2">
-      {/* Current Draft Slot Banner — Sticky & Always In View */}
+    <div className="w-full flex flex-col gap-6 my-4">
+      {/* Current Draft Slot Banner */}
       <section
         aria-labelledby="current-slot-heading"
-        className="sticky top-16 z-30 bg-[#0e0e12]/95 border border-white/[0.08] rounded-2xl p-3.5 sm:p-4 backdrop-blur-2xl flex flex-col gap-2.5 shadow-2xl shadow-black/80 transition-all"
+        className="relative bg-[#111117]/90 border border-white/[0.08] rounded-3xl p-4 sm:p-5 backdrop-blur-2xl flex flex-col gap-3 shadow-2xl transition-all"
       >
         {/* Row 1: Badges, Progress, Energy Target & Action Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -557,8 +557,8 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       ) : (
         <div className="w-full pb-32 sm:pb-24">
-          {/* Active Slot Context Strip — Sticky anchor above candidates */}
-          <div className="flex items-center justify-between px-3.5 py-2 mb-2.5 rounded-xl bg-[#0e0e12]/95 border border-white/[0.08] text-xs font-bold text-zinc-300 backdrop-blur-2xl sticky top-14 sm:top-16 z-20 shadow-lg">
+          {/* Active Slot Context Bar */}
+          <div className="flex items-center justify-between px-4 py-2.5 mb-4 sm:mb-5 rounded-2xl bg-[#111117]/85 border border-white/[0.08] text-xs font-bold text-zinc-300 backdrop-blur-xl shadow-lg">
             <div className="flex items-center gap-2 truncate">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping flex-shrink-0" />
               <span className="text-[11px] uppercase tracking-wider text-zinc-400 font-extrabold flex-shrink-0">
@@ -638,8 +638,8 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             aria-label={`${enrichedOptions.length} candidate tracks`}
             className={`w-full ${
               mobileViewMode === 'carousel'
-                ? 'flex sm:grid sm:grid-cols-2 lg:grid-cols-5 overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory gap-3.5 pb-4 scrollbar-none touch-pan-x'
-                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-stretch'
+                ? 'flex sm:grid sm:grid-cols-2 lg:grid-cols-5 overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory gap-4 sm:gap-4.5 pb-4 scrollbar-none touch-pan-x'
+                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-4.5 items-stretch'
             }`}
           >
             {enrichedOptions.map((song, idx) => (

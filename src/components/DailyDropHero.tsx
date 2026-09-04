@@ -32,7 +32,7 @@ export const DailyDropHero: React.FC<DailyDropHeroProps> = ({ onStart }) => {
         <div className="flex flex-col gap-2 max-w-xl">
           {/* Tagline bar */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-zinc-300 text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+            <span suppressHydrationWarning className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-zinc-300 text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
               <Calendar className="w-3.5 h-3.5 text-rose-500" />
               {dailyTheme.subtitle} • {todaySeed}
             </span>

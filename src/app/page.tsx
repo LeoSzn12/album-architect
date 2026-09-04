@@ -103,10 +103,20 @@ export default function Home() {
   const showLanding = !hasStarted;
 
   return (
-    <div className="min-h-screen min-w-0 bg-[#050507] text-white flex flex-col justify-between selection:bg-white selection:text-black relative pb-32 sm:pb-28">
-      {/* Apple Music Deep Atmospheric Lighting (High-end smoked glass vignette) */}
-      <div className="fixed inset-0 bg-gradient-to-b from-white/[0.02] via-transparent to-black pointer-events-none" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[420px] bg-gradient-to-b from-rose-500/[0.04] via-white/[0.01] to-transparent blur-3xl pointer-events-none" />
+    <div className="min-h-screen min-w-0 bg-[#08080c] text-white flex flex-col justify-between selection:bg-white selection:text-black relative pb-32 sm:pb-28 overflow-x-hidden">
+      {/* Apple Music Fluid Ambient Mesh Backdrop */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Upper-left warm crimson / rose atmospheric orb */}
+        <div className="absolute -top-32 -left-20 w-[550px] h-[550px] rounded-full bg-rose-600/[0.14] blur-[120px]" />
+        {/* Upper-right electric indigo / violet atmospheric orb */}
+        <div className="absolute -top-32 -right-20 w-[600px] h-[600px] rounded-full bg-indigo-600/[0.14] blur-[140px]" />
+        {/* Center warm stage amber / gold glow */}
+        <div className="absolute top-[280px] left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-amber-500/[0.08] blur-[130px]" />
+        {/* Bottom subtle deep plum vignette */}
+        <div className="absolute bottom-0 inset-x-0 h-[400px] bg-gradient-to-t from-black via-[#08080c]/80 to-transparent" />
+        {/* Subtle radial vignette overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.18),rgba(255,255,255,0))]" />
+      </div>
 
       {/* Header — always visible */}
       <Header

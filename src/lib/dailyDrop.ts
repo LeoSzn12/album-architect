@@ -80,9 +80,9 @@ const DAILY_THEMES: Record<number, DailyThemeInfo> = {
  * Formats a given or current date into the universal Daily Drop seed string: DAILY-YYYY-MM-DD.
  */
 export function getDailySeed(date: Date = new Date()): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
   return `DAILY-${y}-${m}-${d}`;
 }
 
@@ -90,7 +90,7 @@ export function getDailySeed(date: Date = new Date()): string {
  * Returns the curated challenge theme and narrative metadata for a specific date.
  */
 export function getDailyTheme(date: Date = new Date()): DailyThemeInfo {
-  const day = date.getDay();
+  const day = date.getUTCDay();
   const theme = DAILY_THEMES[day] ?? DAILY_THEMES[1];
   return { ...theme, dayOfWeek: day };
 }

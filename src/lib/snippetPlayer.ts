@@ -1,9 +1,11 @@
 import type { Song } from '@/types/draft';
+import { playSongPreview, stopSongPreview } from './audioEngine';
 
 export interface SnippetPlayerState {
   song: Song | null;
   isPlaying: boolean;
   isLoading: boolean;
+  isSynthetic?: boolean;
   currentTime: number;
   duration: number;
   progressPercent: number;
@@ -21,7 +23,14 @@ class SnippetAudioController {
   private volume: number = 0.85;
   private isMuted: boolean = false;
   private isLoading: boolean = false;
+  private isSynthetic: boolean = false;
   private error: string | null = null;
+
+  // Synthetic preview tracking
+  private synthStopFn: (() => void) | null = null;
+  private synthTimer: ReturnType<typeof setInterval> | null = null;
+  private synthElapsed: number = 0;
+  private synthDuration: number = 8;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -41,6 +50,7 @@ class SnippetAudioController {
 
     this.audio.addEventListener('play', () => {
       this.isLoading = false;
+      this.isSynthetic = false;
       this.notify();
     });
 
@@ -53,9 +63,14 @@ class SnippetAudioController {
     });
 
     this.audio.addEventListener('error', () => {
-      this.isLoading = false;
-      this.error = 'Unable to play snippet';
-      this.notify();
+      // Audio element encountered a network or decode error
+      if (this.currentSong && !this.isSynthetic) {
+        this.fallbackToSynth(this.currentSong);
+      } else {
+        this.isLoading = false;
+        this.error = 'Unable to play snippet';
+        this.notify();
+      }
     });
 
     this.audio.addEventListener('waiting', () => {
@@ -83,6 +98,24 @@ class SnippetAudioController {
   }
 
   public getState(): SnippetPlayerState {
+    if (this.isSynthetic) {
+      const currentTime = this.synthElapsed;
+      const duration = this.synthDuration;
+      const progressPercent = Math.min(100, (currentTime / duration) * 100);
+      return {
+        song: this.currentSong,
+        isPlaying: this.synthTimer !== null,
+        isLoading: false,
+        isSynthetic: true,
+        currentTime,
+        duration,
+        progressPercent,
+        volume: this.volume,
+        isMuted: this.isMuted,
+        error: this.error,
+      };
+    }
+
     const isPlaying = !!(this.audio && !this.audio.paused && !this.audio.ended && this.audio.currentTime > 0);
     const currentTime = this.audio ? this.audio.currentTime : 0;
     const duration = this.audio && !isNaN(this.audio.duration) && this.audio.duration > 0 ? this.audio.duration : 30;
@@ -92,6 +125,7 @@ class SnippetAudioController {
       song: this.currentSong,
       isPlaying,
       isLoading: this.isLoading,
+      isSynthetic: false,
       currentTime,
       duration,
       progressPercent,
@@ -101,30 +135,90 @@ class SnippetAudioController {
     };
   }
 
+  private stopSynthetic() {
+    if (this.synthTimer) {
+      clearInterval(this.synthTimer);
+      this.synthTimer = null;
+    }
+    if (this.synthStopFn) {
+      try {
+        this.synthStopFn();
+      } catch {}
+      this.synthStopFn = null;
+    }
+    stopSongPreview();
+    this.isSynthetic = false;
+    this.synthElapsed = 0;
+  }
+
+  private fallbackToSynth(song: Song) {
+    this.stopSynthetic();
+    if (this.audio) {
+      this.audio.pause();
+    }
+    this.isSynthetic = true;
+    this.isLoading = false;
+    this.error = null;
+    this.synthElapsed = 0;
+    this.synthDuration = 8;
+
+    const stopFn = playSongPreview(song.audioSynthFreq || 440, this.synthDuration, true);
+    this.synthStopFn = stopFn;
+
+    const interval = 100;
+    this.synthTimer = setInterval(() => {
+      this.synthElapsed += interval / 1000;
+      if (this.synthElapsed >= this.synthDuration) {
+        this.stopSynthetic();
+        this.notify();
+      } else {
+        this.notify();
+      }
+    }, interval);
+
+    this.notify();
+  }
+
   public async playSong(song: Song) {
     this.initAudio();
-    if (!this.audio) return;
 
     // If currently playing the exact same song, toggle play/pause
     if (this.currentSong?.id === song.id) {
-      if (this.audio.paused) {
-        try {
-          await this.audio.play();
-        } catch {
-          // Autoplay policy fallback
+      if (this.isSynthetic) {
+        if (this.synthTimer) {
+          this.stopSynthetic();
+        } else {
+          this.fallbackToSynth(song);
         }
-      } else {
-        this.audio.pause();
+        this.notify();
+        return;
       }
-      this.notify();
-      return;
+
+      if (this.audio) {
+        if (this.audio.paused) {
+          try {
+            await this.audio.play();
+          } catch {
+            this.fallbackToSynth(song);
+          }
+        } else {
+          this.audio.pause();
+        }
+        this.notify();
+        return;
+      }
     }
 
-    // New song: reset and prepare
-    this.audio.pause();
+    // New song: reset previous audio and synth
+    this.stopSynthetic();
+    if (this.audio) {
+      this.audio.pause();
+    }
+
     this.currentSong = song;
     this.error = null;
     this.isLoading = true;
+    this.isSynthetic = false;
     this.notify();
 
     let previewUrl = song.appleMusicPreviewUrl;
@@ -149,23 +243,44 @@ class SnippetAudioController {
     }
 
     if (!previewUrl) {
-      this.isLoading = false;
-      this.error = 'No preview snippet available for this track';
-      this.notify();
+      // Fallback to rich synth preview so the user always hears sound
+      this.fallbackToSynth(song);
       return;
     }
 
-    try {
-      this.audio.src = previewUrl;
-      this.audio.currentTime = 0;
-      await this.audio.play();
-    } catch {
-      this.isLoading = false;
-      this.notify();
+    if (this.audio) {
+      try {
+        this.audio.src = previewUrl;
+        this.audio.currentTime = 0;
+        await this.audio.play();
+      } catch (err) {
+        console.warn('HTMLAudioElement play failed, falling back to dynamic search or synth:', err);
+        // Try dynamic lookup if current URL failed
+        try {
+          const res = await fetch(`/api/songs/preview?title=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
+          if (res.ok) {
+            const data = (await res.json()) as { previewUrl?: string | null };
+            if (data.previewUrl && data.previewUrl !== previewUrl) {
+              this.audio.src = data.previewUrl;
+              this.audio.currentTime = 0;
+              await this.audio.play();
+              return;
+            }
+          }
+        } catch {}
+
+        // If all network sources fail, smoothly synthesize audio preview
+        this.fallbackToSynth(song);
+      }
     }
   }
 
   public pause() {
+    if (this.isSynthetic) {
+      this.stopSynthetic();
+      this.notify();
+      return;
+    }
     if (this.audio && !this.audio.paused) {
       this.audio.pause();
       this.notify();
@@ -173,14 +288,29 @@ class SnippetAudioController {
   }
 
   public resume() {
+    if (this.isSynthetic && this.currentSong) {
+      this.fallbackToSynth(this.currentSong);
+      return;
+    }
     if (this.audio && this.audio.paused && this.currentSong) {
-      this.audio.play().catch(() => {});
+      this.audio.play().catch(() => {
+        if (this.currentSong) this.fallbackToSynth(this.currentSong);
+      });
       this.notify();
     }
   }
 
   public togglePlayPause() {
-    if (!this.audio || !this.currentSong) return;
+    if (!this.currentSong) return;
+    if (this.isSynthetic) {
+      if (this.synthTimer) {
+        this.pause();
+      } else {
+        this.resume();
+      }
+      return;
+    }
+    if (!this.audio) return;
     if (this.audio.paused) {
       this.resume();
     } else {
@@ -189,6 +319,7 @@ class SnippetAudioController {
   }
 
   public stop() {
+    this.stopSynthetic();
     if (this.audio) {
       this.audio.pause();
       this.audio.currentTime = 0;
@@ -200,6 +331,11 @@ class SnippetAudioController {
   }
 
   public seek(seconds: number) {
+    if (this.isSynthetic) {
+      this.synthElapsed = Math.max(0, Math.min(seconds, this.synthDuration));
+      this.notify();
+      return;
+    }
     if (this.audio) {
       this.audio.currentTime = Math.max(0, Math.min(seconds, this.audio.duration || 30));
       this.notify();

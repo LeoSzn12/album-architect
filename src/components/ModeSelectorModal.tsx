@@ -161,8 +161,8 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
           </div>
         </div>
 
-        {/* Game Mode Cards (4 Grid) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Game Mode Cards (3 Clean Modes: Draft, EP Builder, Album Builder) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Competitive Draft Mode Card */}
           <div
             onClick={() => handleSelectMode('draft')}
@@ -189,35 +189,6 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
             </div>
             <button className={`w-full py-2.5 rounded-full text-xs font-black transition cursor-pointer active:scale-95 ${gameMode === 'draft' ? 'bg-white text-black shadow-md' : 'bg-white/[0.06] text-zinc-300 group-hover:bg-white/[0.12] group-hover:text-white'}`}>
               Select Draft Mode
-            </button>
-          </div>
-
-          {/* $15 Aux Budget Card */}
-          <div
-            onClick={() => handleSelectMode('budget')}
-            onMouseEnter={() => playHoverSound(audioEnabled)}
-            className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between relative group ${
-              gameMode === 'budget'
-                ? 'bg-[#15151c] border-white/[0.25] ring-1 ring-white/30 shadow-xl'
-                : 'bg-[#121216]/85 border-white/[0.08] hover:border-white/[0.18] hover:bg-[#14141a]'
-            }`}
-          >
-            {gameMode === 'budget' && (
-              <span className="absolute top-3 right-3 px-2 py-0.5 bg-emerald-500 text-white rounded-full text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
-                <Check className="w-3 h-3" /> Active
-              </span>
-            )}
-            <div>
-              <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white mb-2 group-hover:scale-105 transition-transform">
-                <DollarSign className="w-4 h-4 text-emerald-400" />
-              </div>
-              <h3 className="text-base font-black text-white mb-1">$15 Aux Budget</h3>
-              <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
-                Build a 5-track project with $15. Cards cost $1 to $5. High ROI required!
-              </p>
-            </div>
-            <button className={`w-full py-2.5 rounded-full text-xs font-black transition cursor-pointer active:scale-95 ${gameMode === 'budget' ? 'bg-white text-black shadow-md' : 'bg-white/[0.06] text-zinc-300 group-hover:bg-white/[0.12] group-hover:text-white'}`}>
-              Start $15 Budget
             </button>
           </div>
 

@@ -112,26 +112,26 @@ export const DraftCard: React.FC<DraftCardProps> = ({
       }}
       className={`group relative h-full min-h-[500px] rounded-2xl p-3.5 sm:p-4 border transition-all duration-300 flex flex-col justify-between overflow-hidden backdrop-blur-2xl ${
         isPlaying
-          ? 'bg-[#16161c]/95 border-rose-500 shadow-2xl shadow-rose-950/50 ring-1 ring-rose-500/40'
+          ? 'bg-[#181824]/95 border-rose-500 shadow-2xl shadow-rose-950/60 ring-1 ring-rose-500/50'
           : song.flowInsight?.isTopCuratorPick
-          ? 'bg-[#12141a]/95 border-emerald-500/60 shadow-xl shadow-emerald-950/20 ring-1 ring-emerald-400/40 hover:border-emerald-400'
+          ? 'bg-[#121820]/95 border-emerald-500/60 shadow-xl shadow-emerald-950/30 ring-1 ring-emerald-400/40 hover:border-emerald-400'
           : hasMonopolyWarning
-          ? 'bg-[#161214]/95 border-rose-900/70 hover:border-rose-500/80 shadow-lg shadow-rose-950/20'
-          : 'bg-[#121216]/85 border-white/[0.08] hover:border-white/20 hover:bg-[#181820]/95 hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1'
+          ? 'bg-[#181216]/95 border-rose-900/70 hover:border-rose-500/80 shadow-lg shadow-rose-950/30'
+          : 'bg-[#13131c]/90 border-white/[0.1] hover:border-white/25 hover:bg-[#191926]/95 hover:shadow-2xl hover:shadow-black/70 hover:-translate-y-1'
       }`}
     >
       {/* Subtle Specular Top Sheen */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
 
       {/* Ambient Artwork Glow */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${song.gradient} ${
           isPlaying
-            ? 'opacity-20'
+            ? 'opacity-40'
             : song.flowInsight?.isTopCuratorPick
-            ? 'opacity-15'
-            : 'opacity-5 group-hover:opacity-10'
-        } transition-opacity pointer-events-none`}
+            ? 'opacity-30'
+            : 'opacity-20 group-hover:opacity-35'
+        } transition-opacity duration-300 pointer-events-none`}
       />
 
       {/* ZONE 1: Header Bar & Tags */}
@@ -146,16 +146,32 @@ export const DraftCard: React.FC<DraftCardProps> = ({
                 {candidateIndex + 1}
               </span>
             )}
-            <span
-              title={`Card price: $${songPrice}`}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-black border flex items-center gap-1 transition-all ${
-                isOverBudget
-                  ? 'bg-rose-950/80 text-rose-300 border-rose-600 animate-pulse'
-                  : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/30 shadow-sm'
-              }`}
-            >
-              {songPrice === 0 ? 'Free Pick' : `$${songPrice}`}
-            </span>
+            {gameMode === 'budget' ? (
+              <span
+                title={`Card price: $${songPrice}`}
+                className={`px-2 py-0.5 rounded-md text-[10px] font-black border flex items-center gap-1 transition-all ${
+                  isOverBudget
+                    ? 'bg-rose-950/80 text-rose-300 border-rose-600 animate-pulse'
+                    : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/30 shadow-sm'
+                }`}
+              >
+                {songPrice === 0 ? 'Free Pick' : `$${songPrice}`}
+              </span>
+            ) : (
+              <span
+                className={`px-2 py-0.5 rounded-md text-[10px] font-bold border flex items-center gap-1 tracking-wide ${
+                  song.genre.toLowerCase().includes('hip-hop')
+                    ? 'bg-indigo-950/60 text-indigo-300 border-indigo-500/30'
+                    : song.genre.toLowerCase().includes('r&b') || song.genre.toLowerCase().includes('soul')
+                    ? 'bg-rose-950/60 text-rose-300 border-rose-500/30'
+                    : song.genre.toLowerCase().includes('trap')
+                    ? 'bg-amber-950/60 text-amber-300 border-amber-500/30'
+                    : 'bg-white/[0.06] text-zinc-300 border-white/[0.1]'
+                }`}
+              >
+                {song.genre}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-1">
@@ -239,6 +255,11 @@ export const DraftCard: React.FC<DraftCardProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Glowing Aura behind cover */}
+          <div
+            className={`absolute -inset-1 rounded-2xl bg-gradient-to-br ${song.gradient} opacity-30 blur-md pointer-events-none transition-opacity group-hover/art:opacity-60`}
+          />
 
           {/* Album Cover Art */}
           <div className="relative z-10 w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-black/90 border border-white/10 bg-zinc-950 flex items-center justify-center">

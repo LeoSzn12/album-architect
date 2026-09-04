@@ -57,7 +57,7 @@ export const LeaderboardPanel: React.FC = () => {
           <Filter className="w-3.5 h-3.5 text-rose-500" />
           <span>Format:</span>
           <div className="flex min-w-0 flex-wrap gap-1 ml-1">
-            {(['all', 'draft', 'budget', 'ep', 'album'] as const).map((m) => (
+            {(['all', 'draft', 'ep', 'album'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => {
@@ -70,7 +70,7 @@ export const LeaderboardPanel: React.FC = () => {
                     : 'bg-white/[0.04] text-zinc-400 hover:text-white border border-white/[0.06]'
                 }`}
               >
-                {m === 'all' ? 'All' : m === 'draft' ? 'Draft' : m === 'budget' ? '$15 Budget' : m === 'ep' ? 'EP' : 'Album'}
+                {m === 'all' ? 'All' : m === 'draft' ? 'Draft' : m === 'ep' ? 'EP' : 'Album'}
               </button>
             ))}
           </div>
