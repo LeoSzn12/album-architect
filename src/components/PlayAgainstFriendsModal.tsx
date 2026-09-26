@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { useModalA11y } from '@/hooks/useModalA11y';
+import { buildChallengeInvite, parseChallengeInvite } from '@/lib/challengeInvite';
+import { canPersistGame } from '@/lib/cloudPersistence';
 import { generateChallengeSeed } from '@/lib/seededRandom';
 import { playDraftLockSound } from '@/lib/audioEngine';
 import {
@@ -22,15 +24,16 @@ import { VersusMatchup } from '@/types/draft';
 interface PlayAgainstFriendsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onStarted: () => void;
 }
 
 export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = ({
   isOpen,
   onClose,
+  onStarted,
 }) => {
   const {
     draftSeed,
-    setDraftSeed,
     startNewDraft,
     playerAlias,
     setPlayerAlias,
@@ -38,6 +41,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
     gameMode,
     difficulty,
     selectedEra,
+    challengeTheme,
     draftedTracks,
     versusMatchup,
     setVersusMatchup,
@@ -56,46 +60,46 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [generatedSeed, setGeneratedSeed] = useState(() => generateChallengeSeed());
-  const [durableChallengeCode, setDurableChallengeCode] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const challengeUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?seed=${generatedSeed}&mode=${gameMode}&diff=${difficulty}&era=${selectedEra}${durableChallengeCode ? `&challenge=${durableChallengeCode}` : ''}`
-    : `https://album-architect.vercel.app/?seed=${generatedSeed}&mode=${gameMode}&diff=${difficulty}&era=${selectedEra}${durableChallengeCode ? `&challenge=${durableChallengeCode}` : ''}`;
+    ? buildChallengeInvite(window.location.origin, { seed: generatedSeed, mode: gameMode, difficulty, era: selectedEra, theme: challengeTheme })
+    : '';
 
   const handleCreateAndStart = async () => {
     playDraftLockSound(audioEnabled);
-    try {
-      const response = await fetch('/api/challenges', {
+    // Start immediately; optional cloud persistence must never delay guest play.
+    startNewDraft(gameMode, selectedEra, difficulty, generatedSeed, challengeTheme);
+    onStarted();
+    onClose();
+    void canPersistGame(gameMode).then(async (allowed) => {
+      if (!allowed) return;
+      await fetch('/api/challenges', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ mode: gameMode, trackCount: slots.length, alias: playerAlias, seed: generatedSeed }),
       });
-      const body = await response.json() as { challenge?: { challenge_code?: string } };
-      if (response.ok && body.challenge?.challenge_code) setDurableChallengeCode(body.challenge.challenge_code);
-    } catch {
-      // Guest/unenrolled users keep the deterministic seed flow.
-    }
-    // Pass seed directly to startNewDraft — do NOT also call setDraftSeed,
-    // which would trigger a second startNewDraft internally. Audit H1.
-    startNewDraft(gameMode, selectedEra, difficulty, generatedSeed);
+    }).catch(() => { /* The self-contained invite works without cloud storage. */ });
+  };
+
+  const handleJoinSeed = (value: string) => {
+    const invite = parseChallengeInvite(value);
+    if (!invite) { setError('Enter a valid challenge code or invite link.'); return; }
+    setError(null);
+    playDraftLockSound(audioEnabled);
+    startNewDraft(invite.mode, invite.era, invite.difficulty, invite.seed, invite.theme);
+    onStarted();
     onClose();
   };
 
 
-  const handleJoinSeed = (seedToJoin: string) => {
-    const cleanSeed = seedToJoin.trim().toUpperCase();
-    if (!cleanSeed) return;
+  const handleCopyLink = async () => {
     playDraftLockSound(audioEnabled);
-    setDraftSeed(cleanSeed);
-    startNewDraft(gameMode, undefined, difficulty, cleanSeed);
-    onClose();
-  };
-
-  const handleCopyLink = () => {
-    playDraftLockSound(audioEnabled);
-    navigator.clipboard.writeText(challengeUrl);
+    try { await navigator.clipboard.writeText(challengeUrl); }
+    catch { setError('Clipboard unavailable. Select and copy the invite link below.'); return; }
+    setError(null);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };
@@ -115,24 +119,27 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
       topArtist: draftedTracks[0]?.song.artist || 'Artist',
     };
     try {
-      return btoa(JSON.stringify(payload));
+      const bytes = new TextEncoder().encode(JSON.stringify(payload));
+      return btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(''));
     } catch {
       return '';
     }
   };
 
-  const handleCopyMatchupCode = () => {
+  const handleCopyMatchupCode = async () => {
     const code = generateMatchupShareCode();
     if (!code) return;
     playDraftLockSound(audioEnabled);
-    navigator.clipboard.writeText(code);
+    try { await navigator.clipboard.writeText(code); }
+    catch { setError('Clipboard unavailable. Please enable clipboard access and try again.'); return; }
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2500);
   };
 
   const handleImportMatchupCode = () => {
     try {
-      const rawJson = atob(inputMatchupCode.trim());
+      const binary = atob(inputMatchupCode.trim());
+      const rawJson = new TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
       const decoded = JSON.parse(rawJson);
 
       // Validate & sanitize decoded fields (H3 / M2)
@@ -169,8 +176,8 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
           cohesion:  clampNum(rawSub.cohesion,                       0, 10, 7.5),
           impact:    clampNum(rawSub.impact     ?? rawSub.starPower, 0, 10, 7.5),
         },
-        seed: sanitizeString(decoded.seed, 'ARCH-1v1', 12),
-        gameMode: decoded.mode === 'album' ? 'album' : decoded.mode === 'draft' ? 'draft' : 'ep',
+        seed: sanitizeString(decoded.seed, 'ARCH-1v1', 40),
+        gameMode: decoded.mode === 'budget' ? 'budget' : decoded.mode === 'album' ? 'album' : decoded.mode === 'draft' ? 'draft' : 'ep',
         difficulty:
           decoded.diff === 'veteran' || decoded.diff === 'hardcore'
             ? decoded.diff
@@ -201,7 +208,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
       <div
         ref={modalRef}
         {...modalProps}
-        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col gap-6"
+        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative max-h-[90dvh] overflow-y-auto flex flex-col gap-6"
       >
         <div className="flex justify-between items-center pb-4 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
@@ -217,12 +224,14 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
           </div>
           <button
             onClick={onClose}
+            aria-label="Close friends dialog"
             className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-zinc-400 hover:text-white transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
+        {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
         {/* Executive Alias Input */}
         <div className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <label className="text-xs font-extrabold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -230,6 +239,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
           </label>
           <input
             type="text"
+            aria-label="Your alias"
             value={playerAlias}
             onChange={(e) => setPlayerAlias(e.target.value)}
             placeholder="Enter your handle..."
@@ -302,8 +312,9 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
                 </button>
               </div>
 
+              <input aria-label="Shareable invite link" readOnly value={challengeUrl} onFocus={(event) => event.target.select()} className="w-full min-w-0 rounded-lg bg-black/40 p-2 text-xs text-zinc-300" />
               <p className="text-[11px] text-zinc-400 leading-relaxed">
-                Send this link or seed to a friend. Under seed <strong>{generatedSeed}</strong>, both players receive identical candidate choices every round for a 100% fair sequencing battle!
+                Send this link to a friend to preserve your format, difficulty, and theme. Under seed <strong>{generatedSeed}</strong>, both players start with the same pool. Later choices adapt to each player’s picks.
               </p>
             </div>
 
@@ -327,27 +338,21 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
               <div className="flex gap-2">
                 <input
                   type="text"
+                  aria-label="Challenge code or invite link"
                   value={inputSeed}
                   onChange={(e) => setInputSeed(e.target.value)}
                   placeholder="e.g. ARCH-7X9K or paste full URL..."
                   className="flex-1 px-3 py-2.5 bg-black/60 border border-white/[0.1] rounded-xl text-xs font-bold text-white uppercase focus:outline-none focus:border-rose-500"
                 />
                 <button
-                  onClick={() => {
-                    let seedToUse = inputSeed.trim();
-                    if (seedToUse.includes('seed=')) {
-                      const match = seedToUse.match(/seed=([a-zA-Z0-9-]+)/);
-                      if (match?.[1]) seedToUse = match[1];
-                    }
-                    handleJoinSeed(seedToUse);
-                  }}
+                  onClick={() => handleJoinSeed(inputSeed)}
                   className="px-5 py-2.5 bg-white hover:bg-zinc-200 text-black font-black rounded-xl text-xs transition cursor-pointer active:scale-95"
                 >
                   Join Draft
                 </button>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Joining a seed sets your round candidate pools to match your friend&apos;s exact draft candidates.
+                Paste the full invite to match all settings. A bare code starts a standard Draft Battle.
               </p>
             </div>
           </div>
@@ -385,6 +390,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
               <div className="flex gap-2">
                 <input
                   type="text"
+                  aria-label="Friend result code"
                   value={inputMatchupCode}
                   onChange={(e) => setInputMatchupCode(e.target.value)}
                   placeholder="Paste base64 matchup code here..."

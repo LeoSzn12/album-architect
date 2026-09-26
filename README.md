@@ -20,7 +20,7 @@ Built with **Next.js 16**, **Tailwind CSS v4**, **Zustand**, **Web Audio API**, 
 - **Setup, Library, Profile:** Configure taste tags and provider scope, search the curated catalog, maintain local favorites/tags, and review your curator record.
 - **Share cards:** Export a compact, validated result URL at `/share` with the top three tracks, scorecard categories, grade, and challenge code.
 - **Provider bridge:** Connect Spotify or YouTube with PKCE, search/import playlists, resolve tracks, and export the current draft as a private playlist. Provider operations remain unavailable until the deployment has the required OAuth/API credentials.
-- **Supabase persistence boundary:** When Supabase Auth and Postgres variables are configured, session create/read/pick/submit routes require an authenticated user and use the RLS-first migration under `supabase/migrations/`. Without those variables, the guest demo continues using the local in-memory session boundary.
+- **Supabase persistence boundary:** When Supabase Auth and Postgres variables are configured, session create/read/pick/submit routes require an authenticated user and use the RLS-first migration under `supabase/migrations/`. Unsigned-in guests save drafts and results in their own browser, regardless of whether Supabase is configured.
 
 ## In-app audio bridge
 
@@ -42,6 +42,10 @@ Preview any candidate or drafted track through one of three sources:
 - Server-side provider adapters for Spotify Web API and YouTube Data API v3, with encrypted OAuth cookies and import/search/export routes
 - Playwright CLI smoke coverage under `tests/e2e/` and GitHub Actions CI under `.github/workflows/ci.yml`
 - lucide-react icons
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for Cloudflare deployment, production preview, and guest-mode limitations.
 
 ## Getting started
 

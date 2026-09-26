@@ -35,6 +35,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Type check
+        run: npm run typecheck
+
       - name: Unit and integration tests
         run: npm test
 
@@ -76,6 +79,9 @@ jobs:
           done
           cat /tmp/trackdraft-vinext.log
           exit 1
+
+      - name: Install browser
+        run: npx playwright install --with-deps chrome
 
       - name: Run browser smoke flow
         env:

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef } from 'react';
 
 interface UseModalA11yOptions {
   isOpen: boolean;
@@ -9,6 +9,8 @@ export function useModalA11y({ isOpen, onClose }: UseModalA11yOptions) {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
+  const closeModal = useEffectEvent(onClose);
+
   useEffect(() => {
     if (isOpen) {
       previousFocusRef.current = document.activeElement as HTMLElement;
@@ -16,7 +18,7 @@ export function useModalA11y({ isOpen, onClose }: UseModalA11yOptions) {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           e.preventDefault();
-          onClose();
+          closeModal();
         }
 
         // Basic Focus Trap (Tab & Shift+Tab)
@@ -67,7 +69,7 @@ export function useModalA11y({ isOpen, onClose }: UseModalA11yOptions) {
         }
       };
     }
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {

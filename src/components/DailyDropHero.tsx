@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Calendar, Flame, ArrowRight, Trophy, Sparkles, Zap } from 'lucide-react';
+import { Calendar, Flame, ArrowRight, Trophy } from 'lucide-react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { getDailySeed, getDailyTheme } from '@/lib/dailyDrop';
 import { playDraftLockSound } from '@/lib/audioEngine';
@@ -24,7 +24,7 @@ export const DailyDropHero: React.FC<DailyDropHeroProps> = ({ onStart }) => {
   };
 
   return (
-    <div className="w-full relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e0e12]/90 p-6 md:p-8 shadow-2xl backdrop-blur-2xl mb-8 group hover:border-white/20 transition-all">
+    <div className="w-full relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e0e12]/90 p-6 md:p-8 shadow-2xl backdrop-blur-2xl group hover:border-white/20 transition-all">
       {/* Subtle Specular Top Sheen */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
 
@@ -57,7 +57,7 @@ export const DailyDropHero: React.FC<DailyDropHeroProps> = ({ onStart }) => {
             {dailyTheme.title}
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-            {dailyTheme.description} Everyone gets identical 5-card pools. Compete globally for today&apos;s crown!
+            {dailyTheme.description} Everyone starts with the same five-card pool. Build your best sequence and beat your personal best.
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export const DailyDropHero: React.FC<DailyDropHeroProps> = ({ onStart }) => {
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
           </button>
           <span className="hidden sm:block text-[10px] text-zinc-500 text-center uppercase tracking-widest font-bold">
-            Resets at Midnight
+            Resets at midnight UTC
           </span>
         </div>
       </div>

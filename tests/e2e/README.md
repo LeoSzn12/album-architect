@@ -1,35 +1,24 @@
-# TrackDraft E2E sidecar
+# Browser checks
 
-This directory intentionally does not add a Playwright test runner or dependency. The repository currently has no `playwright` or `@playwright/test` package, so the smoke coverage is a CLI-friendly spec driven by the Playwright CLI wrapper.
-
-## Run locally
-
-Start the app in one terminal:
+The checks use the installed Playwright CLI and Chrome, without a separate test
+runner. Start the app with `npm run dev`, or run `npm run build` followed by
+`npm run preview -- --port 4173` to test the Cloudflare production bundle.
 
 ```sh
-npm run dev
+BASE_URL=http://localhost:4173 npm run test:e2e
+BASE_URL=http://localhost:4173 npm run test:e2e:gaps
 ```
 
-Then run the smoke spec in another:
+Both commands create isolated browser sessions and close them on exit. The
+wrapper treats Playwright's `### Error` output as failure, even if its process
+returns zero. Assertions wait for UI or game-state transitions rather than fixed
+sleep intervals.
 
-```sh
-BASE_URL=http://127.0.0.1:3000 tests/e2e/trackdraft-smoke.sh
-```
+- Smoke: home, leaderboard focus, setup/library/profile navigation, search,
+  modal keyboard focus, mobile overflow, missing share data, and health.
+- Gameplay: host challenge start, matching initial pools in a second browser,
+  invite refresh/resume, complete Draft/EP/Album/Budget games, saved results, and
+  no cloud writes for unsigned-in guests.
 
-Prerequisites:
-
-- `node`/`npx` must be available.
-- `@playwright/mcp` must be installed for the wrapper, or `PWCLI` may point to another compatible `playwright-cli` binary.
-- The app must already be running at `BASE_URL`.
-
-The smoke flow covers:
-
-- home/landing content;
-- setup, library search, and profile surfaces;
-- missing share-link degradation;
-- provider capability discovery;
-- disabled Spotify search returning a graceful `503`.
-- keyboard focus entering a modal, focus-trap wrapping, and Escape focus restoration;
-- a 390×844 mobile viewport with no horizontal overflow.
-
-The script uses a per-process Playwright session and closes it on exit. It does not create screenshots, traces, or other repository artifacts by default.
+These checks do not verify live provider audio, authenticated database writes,
+OAuth, or deployed behavior. They do not submit real accounts or payments.

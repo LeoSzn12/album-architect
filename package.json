@@ -14,7 +14,10 @@
     "report:catalog": "node --experimental-strip-types scripts/catalogReport.ts",
     "report:catalog-html": "node --experimental-strip-types scripts/catalogHtmlReport.ts",
     "resolve:ids": "node --experimental-strip-types scripts/resolveCatalogIds.ts",
-    "resolve:ids:dry": "node --experimental-strip-types scripts/resolveCatalogIds.ts --dry-run"
+    "resolve:ids:dry": "node --experimental-strip-types scripts/resolveCatalogIds.ts --dry-run",
+    "typecheck": "tsc --noEmit",
+    "preview": "WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler dev --config dist/server/wrangler.json",
+    "deploy": "npm run build && wrangler deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
     "@google/genai": "^2.13.0",
@@ -22,7 +25,7 @@
     "@supabase/supabase-js": "2.112.0",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.27.0",
-    "next": "16.2.12",
+    "next": "16.3.6",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "zustand": "^5.0.14"
@@ -37,7 +40,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-rsc": "0.5.26",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.3.6",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "^4",
     "typescript": "^5",
@@ -47,7 +50,7 @@
   },
   "overrides": {
     "postcss": "8.5.25",
-    "sharp": "0.35.3"
+    "sharp": "0.35.4"
   },
   "type": "module"
 }

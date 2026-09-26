@@ -111,15 +111,18 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   const currentEra = eraSequence[currentRoundIndex];
   const currentEraLabel = currentEra ? eraLabel(currentEra) : null;
 
-  // Reset comparison and hover anticipation on round change
-  useEffect(() => {
+  // Adjust selection before rendering a new round; no stale comparison frame.
+  const [selectionRound, setSelectionRound] = useState(currentRoundIndex);
+  if (selectionRound !== currentRoundIndex) {
+    setSelectionRound(currentRoundIndex);
     setCompareSelection([]);
     setIsCompareOpen(false);
     setHoveredCandidate(null);
     setActiveMobileCardIndex(0);
-    if (carouselRef.current) {
-      carouselRef.current.scrollLeft = 0;
-    }
+  }
+
+  useEffect(() => {
+    if (carouselRef.current) carouselRef.current.scrollLeft = 0;
   }, [currentRoundIndex]);
 
   // Keyboard Shortcuts:

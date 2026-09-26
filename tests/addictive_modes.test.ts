@@ -35,10 +35,9 @@ describe('1. The $15 Aux Budget Draft Mode Tests', () => {
     }
 
     // High impact/recognition megastars should be $4 or $5
-    const megastar = SONG_LIBRARY.find((s) => s.recognition >= 92 && s.impactScore >= 90);
-    if (megastar) {
-      assert.ok(getSongBudgetPrice(megastar) >= 4);
-    }
+    const megastar = SONG_LIBRARY.find((s) => s.recognition >= 92 && s.impact >= 90);
+    assert.ok(megastar, 'Catalog must include a high-impact megastar');
+    assert.ok(getSongBudgetPrice(megastar) >= 4);
   });
 
   it('calculates remaining budget and affordability accurately', () => {

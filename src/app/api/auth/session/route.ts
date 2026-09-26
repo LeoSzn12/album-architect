@@ -9,5 +9,5 @@ export async function GET() {
     configured: identity.configured,
     authenticated: Boolean(identity.user),
     user: identity.user,
-  });
+  }, { headers: { 'Cache-Control': 'private, no-store' } });
 }

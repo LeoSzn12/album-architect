@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { canPersistGame } from '@/lib/cloudPersistence';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
   GameMode,
@@ -44,6 +45,7 @@ function enqueueSessionWrite(work: () => Promise<void>) {
 }
 
 async function createGameSession(input: { mode: GameMode; trackCount: number; creatorAlias: string; seed: string | null }) {
+  if (!await canPersistGame(input.mode)) return null;
   const response = await fetch('/api/sessions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -301,7 +303,7 @@ export const useDraftStore = create<DraftStoreState>()(
         const eraSequence = generateEraSequence(slots, newSeed);
         const slot0Era    = eraSequence[0];
         // Set mode & theme before fetching the first pool
-        set({ gameMode: newMode, slots, challengeTheme: newTheme, budgetRemaining: INITIAL_BUDGET });
+        set({ gameMode: newMode, slots, challengeTheme: newTheme, budgetRemaining: INITIAL_BUDGET, draftedTracks: [] });
         const initialOptions = get().fetchOptions(slots[0].id, slot0Era, newSeed, 0);
 
         const initialHistory: CandidateRound[] = [{
@@ -692,15 +694,18 @@ export const useDraftStore = create<DraftStoreState>()(
 
         // Persist the completed scorecard when Supabase auth is available.
         // Guest mode intentionally remains local and does not block the result UI.
-        void fetch('/api/scorecards', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            mode: gameMode,
-            trackCount: draftedTracksSnapshot.length,
-            alias: playerAlias,
-            evaluation: result,
-          }),
+        void canPersistGame(gameMode).then((allowed) => {
+          if (!allowed) return;
+          return fetch('/api/scorecards', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mode: gameMode,
+              trackCount: draftedTracksSnapshot.length,
+              alias: playerAlias,
+              evaluation: result,
+            }),
+          });
         }).catch((persistError) => console.warn('Scorecard persistence unavailable:', persistError));
 
         const sessionId = get().sessionId;
@@ -779,6 +784,10 @@ export const useDraftStore = create<DraftStoreState>()(
       resumePersistedSession: async () => {
         const sessionId = get().sessionId;
         if (!sessionId) return;
+        if (!await canPersistGame(get().gameMode)) {
+          set({ sessionId: null });
+          return;
+        }
         const response = await fetch(`/api/sessions?id=${encodeURIComponent(sessionId)}`).catch(() => null);
         if (!response?.ok) return;
         const body = await response.json().catch(() => null) as { session?: { mode?: GameMode; seed?: string | null; status?: string; picks?: Array<{ position: number; slotId: string; song: Song }> } } | null;
@@ -875,9 +884,32 @@ export const useDraftStore = create<DraftStoreState>()(
 
         return persisted;
       },
+      merge: (persistedState, currentState) => {
+        const restored = { ...currentState, ...(persistedState as Partial<DraftStoreState>) };
+        const slots = restored.gameMode === 'draft' ? DRAFT_SLOTS
+          : restored.gameMode === 'ep' ? EP_SLOTS
+          : restored.gameMode === 'budget' ? BUDGET_SLOTS : ALBUM_SLOTS;
+        const index = restored.currentRoundIndex;
+        const savedRound = restored.candidateHistory.find((round) => round.roundIndex === index);
+        const savedPool = savedRound?.pools[savedRound.pools.length - 1];
+        const currentOptions = index >= slots.length ? [] : savedPool ?? getOptionsForSlot(
+          slots[index].id, 5, restored.eraSequence[index] ?? 'all', restored.draftSeed,
+          {
+            rerollIndex: restored.rerollCount,
+            draftedSongIds: restored.draftedTracks.map((track) => track.song.id),
+            draftedArtists: restored.draftedTracks.map((track) => track.song.artist),
+            recentlyShownSongIds: restored.recentlyShownSongIds,
+            recentlyShownArtists: restored.recentlyShownArtists,
+            theme: restored.challengeTheme,
+            budgetRemaining: restored.gameMode === 'budget' ? restored.budgetRemaining : undefined,
+          },
+        );
+        const activeSynergies = detectSynergies(restored.draftedTracks);
+        return { ...restored, slots, currentOptions, activeSynergies, crowdHype: computeCrowdHype(restored.draftedTracks, activeSynergies) };
+      },
       /**
-       * Persist the minimum required. currentOptions and slots are recomputed
-       * on hydration. Prevents stale shuffle snapshots across algorithm changes.
+       * Persist the minimum required. slots are reconstructed on hydration and the current candidate pool is
+       * restored from history so refreshing never changes the choices.
        */
       partialize: (state) => ({
         gameMode: state.gameMode,
