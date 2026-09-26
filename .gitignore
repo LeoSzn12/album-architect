@@ -48,3 +48,6 @@ next-env.d.ts
 
 # reports
 .reports/
+
+# Task-local package download cache
+/.cache/

@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
-import { Disc3, Zap, Trophy, Swords, ChevronRight, BookOpen } from 'lucide-react';
+import { Disc3, Zap, Trophy, Swords, ChevronRight, BookOpen, Check, DollarSign, Disc } from 'lucide-react';
 import { playDraftLockSound, playHoverSound } from '@/lib/audioEngine';
 import { DailyDropHero } from './DailyDropHero';
 
 interface LandingScreenProps {
   onStart: () => void;
+  onDailyStarted: () => void;
   onOpenFriendsModal: () => void;
   onScrollToLeaderboard: () => void;
   onOpenHowToPlay?: () => void;
@@ -20,11 +21,12 @@ interface LandingScreenProps {
  */
 export const LandingScreen: React.FC<LandingScreenProps> = ({
   onStart,
+  onDailyStarted,
   onOpenFriendsModal,
   onScrollToLeaderboard,
   onOpenHowToPlay,
 }) => {
-  const { audioEnabled, gameMode, slots } = useDraftStore();
+  const { audioEnabled, gameMode, slots, setGameMode } = useDraftStore();
   const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
   const isBuilder = gameMode !== 'draft';
   const startLabel = gameMode === 'draft' ? 'Start Draft' : `Start ${projectLabel} Builder`;
@@ -35,12 +37,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-10 px-4 py-10 sm:py-14">
-      {/* The Daily Drop Hero Banner */}
-      <div className="w-full max-w-3xl">
-        <DailyDropHero onStart={onStart} />
-      </div>
-
+    <div className="w-full flex flex-col items-center gap-8 py-6 sm:py-10">
       {/* Hero Section */}
       <section aria-labelledby="landing-title" className="flex max-w-3xl flex-col items-center gap-5 text-center">
         {/* Apple Music Style Monogram Icon */}
@@ -52,8 +49,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
         <div>
           <p className="mb-2 text-xs font-black uppercase tracking-[0.28em] text-zinc-400">A&R playground for people with opinions</p>
-          <h1 id="landing-title" className="text-5xl font-black leading-tight text-white sm:text-7xl tracking-tight">
-            TRACKDRAFT
+          <h1 id="landing-title" className="text-5xl font-black leading-[1.05] text-white sm:text-7xl tracking-tight">
+            Your taste.
+            <br /><span className="text-rose-400">Your tracklist.</span>
           </h1>
           <p className="mt-3 text-xl font-bold tracking-tight text-zinc-200">
             {isBuilder ? `${projectLabel} Builder` : 'Curate the project. Defend the sequence.'}
@@ -67,6 +65,24 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             <>Draft <span className="font-bold text-white">7 tracks</span> from a constrained pool. Make the safe pick, find the left turn, and see whether your sequence beats the AI.</>
           )}
         </p>
+
+        <fieldset className="mt-3 grid w-full grid-cols-2 gap-3 text-left sm:grid-cols-4">
+          <legend className="mb-3 w-full text-center text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">Choose your format</legend>
+          {([
+            { id: 'draft', name: 'Draft Battle', detail: '7 picks · vs AI', icon: Swords },
+            { id: 'ep', name: 'EP Builder', detail: 'A tight, focused project', icon: Disc },
+            { id: 'album', name: 'Album Builder', detail: 'Build the full story', icon: Disc3 },
+            { id: 'budget', name: '$15 Budget', detail: 'Make every dollar count', icon: DollarSign },
+          ] as const).map(({ id, name, detail, icon: Icon }) => (
+            <button key={id} type="button" aria-pressed={gameMode === id} onClick={() => setGameMode(id)}
+              className={`relative cursor-pointer rounded-2xl border p-4 transition ${gameMode === id ? 'border-rose-400/70 bg-rose-400/10 shadow-lg shadow-rose-950/20' : 'border-white/10 bg-white/[0.03] hover:border-white/30 hover:bg-white/[0.06]'}`}>
+              <Icon aria-hidden="true" className={`mb-4 h-5 w-5 ${gameMode === id ? 'text-rose-400' : 'text-zinc-400'}`} />
+              {gameMode === id && <Check aria-hidden="true" className="absolute right-3 top-3 h-4 w-4 text-rose-400" />}
+              <span className="block text-sm font-bold text-white">{name}</span>
+              <span className="mt-1 block text-xs leading-5 text-zinc-400">{detail}</span>
+            </button>
+          ))}
+        </fieldset>
 
         {/* Primary & Secondary Hero CTAs */}
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
@@ -94,6 +110,8 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
         </div>
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">No account or streaming login required</p>
       </section>
+
+      <div className="w-full max-w-3xl"><DailyDropHero onStart={onDailyStarted} /></div>
 
       {/* Rules Summary */}
       <section aria-labelledby="how-to-play" className="w-full max-w-3xl rounded-3xl border border-white/[0.08] bg-[#0e0e12]/80 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">

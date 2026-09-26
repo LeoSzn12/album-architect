@@ -109,7 +109,8 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
       {
         song: hoveredCandidate,
         slot: currentSlot,
-        draftedAt: Date.now(),
+        roundDrafted: draftedTracks.length + 1,
+        isWildcard: false,
       },
     ];
 

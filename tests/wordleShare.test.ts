@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { DRAFT_SLOTS } from '../src/data/slots.ts';
 import assert from 'node:assert/strict';
 import { buildWordleShareData, formatWordleShareText } from '../src/lib/wordleShare.ts';
 import type { DraftedTrack, EvaluationResult, Song, DraftSlot } from '../src/types/draft.ts';
@@ -8,6 +9,10 @@ function makeMockSong(overrides: Partial<Song> = {}): Song {
     id: 'test-song',
     title: 'Test Song',
     artist: 'Test Artist',
+    rawArtistString: 'Test Artist',
+    featuredArtists: [],
+    audioSynthFreq: 220,
+    slotAffinity: {},
     album: 'Test Album',
     year: 2020,
     genre: 'Hip-Hop',
@@ -19,13 +24,18 @@ function makeMockSong(overrides: Partial<Song> = {}): Song {
     impact: 85,
     recognition: 85,
     acclaim: 85,
-    archetypes: ['anthem'],
+    archetypes: ['street-anthem'],
     flowInsight: {
       bpmDelta: 2,
       energyDelta: 0,
       pacingLabel: 'Smooth Ramp',
       synergyScore: 92,
-      isMonopolyRisk: false,
+      isTopCuratorPick: true,
+      isSleeperGem: false,
+      bpmTransitionLabel: 'Smooth',
+      curatorInsight: 'Strong fit',
+      tag: 'Top pick',
+      tagColor: 'emerald',
     },
     ...overrides,
   };
@@ -33,12 +43,7 @@ function makeMockSong(overrides: Partial<Song> = {}): Song {
 
 function makeMockSlot(overrides: Partial<DraftSlot> = {}): DraftSlot {
   return {
-    id: 'slot-1',
-    name: 'Opener',
-    targetEnergy: { min: 70, max: 90, ideal: 80 },
-    allowedArchetypes: ['intro', 'anthem'],
-    description: 'Slot test',
-    categoryKey: 'slotFit',
+    ...DRAFT_SLOTS[0],
     ...overrides,
   };
 }
@@ -51,7 +56,9 @@ function makeMockEvaluation(overrides: Partial<EvaluationResult> = {}): Evaluati
     gradeBadge: 'A+',
     subScores: { slotFit: 9.5, albumFlow: 9.2, cohesion: 9.3, impact: 9.6 },
     reviews: [],
-    monopolyReport: { uniqueArtists: 3, totalTracks: 3, repeatArtists: [], penaltyApplied: 0 },
+    monopolyReport: { artistCounts: {}, penalizedArtists: [], totalPenaltyDeduction: 0, hasViolation: false },
+    energyMetrics: { curve: [], avgEnergy: 80, fatigueScore: 0, status: 'Optimal Pacing', bpmTransitions: [] },
+    highlights: [],
     bestPossibleScore: 9.7,
     draftEfficiency: 97,
     source: 'fallback',
@@ -62,8 +69,8 @@ function makeMockEvaluation(overrides: Partial<EvaluationResult> = {}): Evaluati
 describe('Wordle-Style Daily Share Card Engine', () => {
   it('builds structured Wordle share data with green squares for high-synergy tracks', () => {
     const tracks: DraftedTrack[] = [
-      { song: makeMockSong({ title: 'Song 1', artist: 'Artist 1' }), slot: makeMockSlot(), draftedAt: 1 },
-      { song: makeMockSong({ title: 'Song 2', artist: 'Artist 2' }), slot: makeMockSlot(), draftedAt: 2 },
+      { song: makeMockSong({ title: 'Song 1', artist: 'Artist 1' }), slot: makeMockSlot(), roundDrafted: 1, isWildcard: false },
+      { song: makeMockSong({ title: 'Song 2', artist: 'Artist 2' }), slot: makeMockSlot(), roundDrafted: 2, isWildcard: false },
     ];
 
     const evaluation = makeMockEvaluation();
@@ -78,8 +85,8 @@ describe('Wordle-Style Daily Share Card Engine', () => {
 
   it('formats viral copy text ready for clipboard with emojis and challenge code', () => {
     const tracks: DraftedTrack[] = [
-      { song: makeMockSong({ title: 'DNA', artist: 'Kendrick Lamar' }), slot: makeMockSlot(), draftedAt: 1 },
-      { song: makeMockSong({ title: 'SICKO MODE', artist: 'Travis Scott' }), slot: makeMockSlot(), draftedAt: 2 },
+      { song: makeMockSong({ title: 'DNA', artist: 'Kendrick Lamar' }), slot: makeMockSlot(), roundDrafted: 1, isWildcard: false },
+      { song: makeMockSong({ title: 'SICKO MODE', artist: 'Travis Scott' }), slot: makeMockSlot(), roundDrafted: 2, isWildcard: false },
     ];
 
     const evaluation = makeMockEvaluation({ overallScore: 9.2 });

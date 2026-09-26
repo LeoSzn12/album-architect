@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { DRAFT_SLOTS } from '../src/data/slots.ts';
 import assert from 'node:assert/strict';
 import { deriveCuratorPersona } from '../src/lib/curatorPersona.ts';
 import type { DraftedTrack, Song, DraftSlot } from '../src/types/draft.ts';
@@ -8,6 +9,10 @@ function makeMockSong(overrides: Partial<Song> = {}): Song {
     id: 'test-song',
     title: 'Test Title',
     artist: 'Test Artist',
+    rawArtistString: 'Test Artist',
+    featuredArtists: [],
+    audioSynthFreq: 220,
+    slotAffinity: {},
     album: 'Test Album',
     year: 2020,
     genre: 'Hip-Hop',
@@ -19,19 +24,14 @@ function makeMockSong(overrides: Partial<Song> = {}): Song {
     impact: 85,
     recognition: 85,
     acclaim: 85,
-    archetypes: ['anthem'],
+    archetypes: ['street-anthem'],
     ...overrides,
   };
 }
 
 function makeMockSlot(overrides: Partial<DraftSlot> = {}): DraftSlot {
   return {
-    id: 'slot-1',
-    name: 'Opener',
-    targetEnergy: { min: 70, max: 90, ideal: 80 },
-    allowedArchetypes: ['intro', 'anthem'],
-    description: 'Slot test',
-    categoryKey: 'slotFit',
+    ...DRAFT_SLOTS[0],
     ...overrides,
   };
 }
@@ -39,9 +39,9 @@ function makeMockSlot(overrides: Partial<DraftSlot> = {}): DraftSlot {
 describe('Curator DNA & DJ Persona Profiler', () => {
   it('detects The 808 Architect when tracks have very high energy and trap tags', () => {
     const tracks: DraftedTrack[] = [
-      { song: makeMockSong({ energy: 92, typeTag: 'Explosive Trap Anthem' }), slot: makeMockSlot(), draftedAt: 1 },
-      { song: makeMockSong({ energy: 90, typeTag: '808 Bounce Club' }), slot: makeMockSlot(), draftedAt: 2 },
-      { song: makeMockSong({ energy: 88, typeTag: 'Trap Heavyweight' }), slot: makeMockSlot(), draftedAt: 3 },
+      { song: makeMockSong({ energy: 92, typeTag: 'Explosive Trap Anthem' }), slot: makeMockSlot(), roundDrafted: 1, isWildcard: false },
+      { song: makeMockSong({ energy: 90, typeTag: '808 Bounce Club' }), slot: makeMockSlot(), roundDrafted: 2, isWildcard: false },
+      { song: makeMockSong({ energy: 88, typeTag: 'Trap Heavyweight' }), slot: makeMockSlot(), roundDrafted: 3, isWildcard: false },
     ];
 
     const persona = deriveCuratorPersona(tracks);
@@ -51,9 +51,9 @@ describe('Curator DNA & DJ Persona Profiler', () => {
 
   it('detects Certified Crate Digger when player drafts 2+ sleeper/value picks', () => {
     const tracks: DraftedTrack[] = [
-      { song: makeMockSong({ archetypes: ['value-pick'], budgetCost: 1, recognition: 65 }), slot: makeMockSlot(), draftedAt: 1 },
-      { song: makeMockSong({ archetypes: ['value-pick'], budgetCost: 1, recognition: 70 }), slot: makeMockSlot(), draftedAt: 2 },
-      { song: makeMockSong({ energy: 75 }), slot: makeMockSlot(), draftedAt: 3 },
+      { song: makeMockSong({ archetypes: ['value-pick'], budgetCost: 1, recognition: 65 }), slot: makeMockSlot(), roundDrafted: 1, isWildcard: false },
+      { song: makeMockSong({ archetypes: ['value-pick'], budgetCost: 1, recognition: 70 }), slot: makeMockSlot(), roundDrafted: 2, isWildcard: false },
+      { song: makeMockSong({ energy: 75 }), slot: makeMockSlot(), roundDrafted: 3, isWildcard: false },
     ];
 
     const persona = deriveCuratorPersona(tracks);
@@ -63,9 +63,9 @@ describe('Curator DNA & DJ Persona Profiler', () => {
 
   it('detects Golden Era Purist when player drafts vintage 90s/2000s lyrical cuts', () => {
     const tracks: DraftedTrack[] = [
-      { song: makeMockSong({ year: 1994, archetypes: ['lyrical'] }), slot: makeMockSlot(), draftedAt: 1 },
-      { song: makeMockSong({ year: 1996, archetypes: ['lyrical'] }), slot: makeMockSlot(), draftedAt: 2 },
-      { song: makeMockSong({ year: 2001, archetypes: ['storytelling'] }), slot: makeMockSlot(), draftedAt: 3 },
+      { song: makeMockSong({ year: 1994, archetypes: ['lyrical'] }), slot: makeMockSlot(), roundDrafted: 1, isWildcard: false },
+      { song: makeMockSong({ year: 1996, archetypes: ['lyrical'] }), slot: makeMockSlot(), roundDrafted: 2, isWildcard: false },
+      { song: makeMockSong({ year: 2001, archetypes: ['storytelling'] }), slot: makeMockSlot(), roundDrafted: 3, isWildcard: false },
     ];
 
     const persona = deriveCuratorPersona(tracks);
@@ -75,9 +75,9 @@ describe('Curator DNA & DJ Persona Profiler', () => {
 
   it('detects Late Night Cruise Specialist when player drafts smooth R&B / mellow cuts', () => {
     const tracks: DraftedTrack[] = [
-      { song: makeMockSong({ genre: 'R&B', energy: 55 }), slot: makeMockSlot(), draftedAt: 1 },
-      { song: makeMockSong({ genre: 'R&B', energy: 60 }), slot: makeMockSlot(), draftedAt: 2 },
-      { song: makeMockSong({ energy: 58 }), slot: makeMockSlot(), draftedAt: 3 },
+      { song: makeMockSong({ genre: 'R&B', energy: 55 }), slot: makeMockSlot(), roundDrafted: 1, isWildcard: false },
+      { song: makeMockSong({ genre: 'R&B', energy: 60 }), slot: makeMockSlot(), roundDrafted: 2, isWildcard: false },
+      { song: makeMockSong({ energy: 58 }), slot: makeMockSlot(), roundDrafted: 3, isWildcard: false },
     ];
 
     const persona = deriveCuratorPersona(tracks);

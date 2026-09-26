@@ -15,7 +15,7 @@ import { DockedMusicPlayer } from '@/components/DockedMusicPlayer';
 import { DraftHistoryPanel } from '@/components/DraftHistoryPanel';
 import { LeaderboardPanel } from '@/components/LeaderboardPanel';
 import { PlayAgainstFriendsModal } from '@/components/PlayAgainstFriendsModal';
-import { GameMode, DifficultyTier, EraFilter } from '@/types/draft';
+import { parseChallengeInvite } from '@/lib/challengeInvite';
 import { SetupPanel, type SetupPreferences } from '@/components/SetupPanel';
 import { LibraryPanel } from '@/components/LibraryPanel';
 import { ProfilePanel } from '@/components/ProfilePanel';
@@ -59,28 +59,20 @@ export default function Home() {
   // Auto-initialize challenge seed from URL search params on mount.
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const urlSeed = params.get('seed')?.trim().toUpperCase();
-    const urlMode = params.get('mode')?.trim().toLowerCase() as GameMode | undefined;
-    const urlDiff = params.get('diff')?.trim().toLowerCase() as DifficultyTier | undefined;
-    const urlEra = params.get('era')?.trim().toLowerCase() as EraFilter | undefined;
-
-    if (urlSeed) {
-      startNewDraft(
-        urlMode === 'draft' || urlMode === 'ep' || urlMode === 'album' ? urlMode : undefined,
-        urlEra === 'all' || urlEra === '2020s' || urlEra === '2010s' || urlEra === '2000s'
-          ? urlEra
-          : undefined,
-        urlDiff === 'standard' || urlDiff === 'veteran' || urlDiff === 'hardcore' ? urlDiff : undefined,
-        urlSeed
-      );
+    const invite = parseChallengeInvite(window.location.href);
+    if (invite) {
+      const saved = useDraftStore.getState();
+      const canResume = saved.draftSeed === invite.seed && saved.gameMode === invite.mode
+        && saved.difficulty === invite.difficulty && saved.selectedEra === invite.era
+        && saved.challengeTheme === invite.theme && saved.draftedTracks.length > 0;
+      if (!canResume) startNewDraft(invite.mode, invite.era, invite.difficulty, invite.seed, invite.theme);
       queueMicrotask(() => setHasStarted(true));
     }
   }, [startNewDraft]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (new URLSearchParams(window.location.search).has('seed')) return;
+    if (parseChallengeInvite(window.location.href)) return;
     void resumePersistedSession();
   }, [resumePersistedSession]);
 
@@ -88,9 +80,18 @@ export default function Home() {
     await evaluateDraft();
   };
 
+  const [leaderboardRequested, setLeaderboardRequested] = useState(0);
+
   const handleScrollToLeaderboard = () => {
-    leaderboardRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setActiveSurface('game');
+    setLeaderboardRequested((request) => request + 1);
   };
+
+  useEffect(() => {
+    if (!leaderboardRequested) return;
+    leaderboardRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+    leaderboardRef.current?.focus({ preventScroll: true });
+  }, [leaderboardRequested]);
 
   const handleStartDraft = () => {
     // startNewDraft without args uses current mode/era/difficulty
@@ -168,6 +169,7 @@ export default function Home() {
           /* ── Landing (first-time experience) ── */
           <LandingScreen
             onStart={handleStartDraft}
+            onDailyStarted={() => { setHasStarted(true); setActiveSurface('game'); }}
             onOpenFriendsModal={() => setIsFriendsModalOpen(true)}
             onScrollToLeaderboard={handleScrollToLeaderboard}
             onOpenHowToPlay={() => setActiveSurface('how-to-play')}
@@ -191,12 +193,12 @@ export default function Home() {
         )}
 
         {/* Leaderboard & History — always below (not in landing) */}
-        {!showLanding && (
+        {activeSurface === 'game' && (
           <>
-            <div ref={leaderboardRef}>
+            <div ref={leaderboardRef} tabIndex={-1} aria-label="Leaderboard" className="scroll-mt-28 rounded-3xl">
               <LeaderboardPanel />
             </div>
-            <DraftHistoryPanel />
+            {!showLanding && <DraftHistoryPanel />}
           </>
         )}
       </main>
@@ -208,7 +210,7 @@ export default function Home() {
           <span>TrackDraft • Fantasy Music Game</span>
         </div>
         <div className="text-gray-400">
-          Built with Next.js, Zustand & a seeded demo catalog
+          Trust your ears. Build something worth replaying.
         </div>
       </footer>
 
@@ -219,6 +221,7 @@ export default function Home() {
       />
 
       <PlayAgainstFriendsModal
+        onStarted={() => { setHasStarted(true); setActiveSurface('game'); }}
         isOpen={isFriendsModalOpen}
         onClose={() => setIsFriendsModalOpen(false)}
       />
