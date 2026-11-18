@@ -25,7 +25,7 @@
     "@supabase/supabase-js": "2.112.0",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.27.0",
-    "next": "16.3.6",
+    "next": "16.4.5",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "zustand": "^5.0.14"
@@ -40,7 +40,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-rsc": "0.5.26",
     "eslint": "^9",
-    "eslint-config-next": "16.3.6",
+    "eslint-config-next": "16.4.5",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "^4",
     "typescript": "^5",
@@ -50,7 +50,7 @@
   },
   "overrides": {
     "postcss": "8.5.25",
-    "sharp": "0.35.4"
+    "sharp": "0.35.5"
   },
   "type": "module"
 }
