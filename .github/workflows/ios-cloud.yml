@@ -1,0 +1,109 @@
+name: First Week iPhone build and TestFlight
+
+# The iPhone app opens the live web version, so set the repository variable
+# FIRST_WEEK_WEB_URL to the deployed https link before running a signed build.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/ios-cloud.yml'
+      - 'scripts/ios-*'
+      - 'ios/**'
+      - 'native-shell/**'
+      - 'capacitor.config.ts'
+      - 'package*.json'
+  workflow_dispatch:
+    inputs:
+      upload_to_testflight:
+        description: 'Upload the signed build to Apple for TestFlight processing (no store submission)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  device-archive-check:
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      FIRST_WEEK_WEB_URL: ${{ vars.FIRST_WEEK_WEB_URL }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: bash -n scripts/ios-cloud-sign.sh
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Compile a physical-device archive without credentials
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -archivePath build/ios-device/App.xcarchive CODE_SIGNING_ALLOWED=NO archive
+      - name: Check the app bundle
+        run: |
+          APP=build/ios-device/App.xcarchive/Products/Applications/App.app
+          plutil -lint "$APP/Info.plist" "$APP/PrivacyInfo.xcprivacy"
+          lipo -archs "$APP/App" | grep -w arm64
+          test -f "$APP/public/index.html"
+
+  signed-candidate:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'LeoSzn12/album-architect'
+    needs: device-archive-check
+    environment: ios-signing
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      FIRST_WEEK_WEB_URL: ${{ vars.FIRST_WEEK_WEB_URL }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Require the live web link
+        run: |
+          if [[ -z "$FIRST_WEEK_WEB_URL" ]]; then echo 'Set the repository variable FIRST_WEEK_WEB_URL to the live https link first.'; exit 1; fi
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Prepare signing
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY_BASE64: ${{ secrets.ASC_PRIVATE_KEY_BASE64 }}
+        run: bash scripts/ios-cloud-sign.sh install
+      - name: Archive and export the signed candidate
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          bash scripts/ios-cloud-sign.sh archive
+          bash scripts/ios-cloud-sign.sh export
+          codesign --verify --deep --strict build/ios-signed/App.xcarchive/Products/Applications/App.app
+      - name: Upload to Apple only when explicitly selected
+        if: inputs.upload_to_testflight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY_BASE64: ${{ secrets.ASC_PRIVATE_KEY_BASE64 }}
+        run: bash scripts/ios-cloud-sign.sh upload
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: first-week-ios-signed
+          path: build/ios-signed/export/App.ipa
+          retention-days: 7
+      - name: Remove runner-local signing materials
+        if: always()
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: bash scripts/ios-cloud-sign.sh cleanup

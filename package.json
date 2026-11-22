@@ -17,20 +17,25 @@
     "resolve:ids:dry": "node --experimental-strip-types scripts/resolveCatalogIds.ts --dry-run",
     "typecheck": "tsc --noEmit",
     "preview": "WRANGLER_LOG_PATH=.wrangler/wrangler.log wrangler dev --config dist/server/wrangler.json",
-    "deploy": "npm run build && wrangler deploy --config dist/server/wrangler.json"
+    "deploy": "npm run build && wrangler deploy --config dist/server/wrangler.json",
+    "ios:sync": "cap sync ios",
+    "deploy:first-week": "npm run build && wrangler deploy --config dist/server/wrangler.json --name first-week"
   },
   "dependencies": {
+    "@capacitor/core": "8.5.2",
     "@google/genai": "^2.13.0",
     "@supabase/ssr": "0.12.4",
     "@supabase/supabase-js": "2.112.0",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.27.0",
     "next": "16.4.5",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.2.0",
+    "@capacitor/ios": "8.5.2",
     "@cloudflare/vite-plugin": "1.37.1",
     "@playwright/cli": "0.1.17",
     "@tailwindcss/postcss": "^4",
@@ -41,7 +46,7 @@
     "@vitejs/plugin-rsc": "0.5.26",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
-    "react-server-dom-webpack": "19.2.6",
+    "react-server-dom-webpack": "19.2.9",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vinext": "0.0.50",
