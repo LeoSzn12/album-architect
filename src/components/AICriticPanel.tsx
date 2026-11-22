@@ -30,6 +30,7 @@ import { playHoverSound, playDraftCompleteFanfare } from '@/lib/audioEngine';
 import { scoreToVerdict } from '@/lib/scoringEngine';
 import { deriveCuratorPersona } from '@/lib/curatorPersona';
 import { buildWordleShareData, formatWordleShareText } from '@/lib/wordleShare';
+import { ReleaseWeekPanel } from './ReleaseWeekPanel';
 
 interface AICriticPanelProps {
   onOpenExport: () => void;
@@ -182,7 +183,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
   } = evaluationResult;
 
   const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
-  const reviewTitle = gameMode === 'draft' ? 'TrackDraft Match Review' : `${projectLabel} Builder Review`;
+  const reviewTitle = gameMode === 'draft' ? 'First Week Match Review' : `${projectLabel} Builder Review`;
 
   const verdict = scoreToVerdict(overallScore);
   const scoreCategoryItems = [
@@ -226,6 +227,8 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           </span>
         </div>
       </div>
+
+      <ReleaseWeekPanel />
 
       {/* ── 1. Verdict Banner ── */}
       <div className={`p-6 rounded-3xl ${verdictGradient(overallScore)} border text-center flex flex-col items-center gap-2 shadow-xl`}>

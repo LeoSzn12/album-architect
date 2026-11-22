@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
         const prompt = `
 You are an elite music A&R board consisting of 3 critics evaluating a ${
-          gameMode === 'draft' ? 'seven-round TrackDraft match' : gameMode === 'ep' ? 'seven-track EP Builder' : '12–14-track Album Builder'
+          gameMode === 'draft' ? 'seven-round First Week match' : gameMode === 'ep' ? 'seven-track EP Builder' : '12–14-track Album Builder'
         } fantasy draft.
 
 Drafted Tracklist:

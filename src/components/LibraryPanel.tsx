@@ -39,7 +39,7 @@ export const LibraryPanel: React.FC<LibraryPanelProps> = ({ songs = SONG_LIBRARY
   const [providerQuery, setProviderQuery] = useState('');
   const [providerSongs, setProviderSongs] = useState<Song[]>([]);
   const [playlistReference, setPlaylistReference] = useState('');
-  const [exportName, setExportName] = useState('TrackDraft playlist');
+  const [exportName, setExportName] = useState('First Week playlist');
   const [providerState, setProviderState] = useState<{ status: 'idle' | 'loading' | 'success' | 'error'; message: string }>({ status: 'idle', message: '' });
   const genres = useMemo(() => ['all', ...Array.from(new Set(songs.map((song) => song.genre))).sort()], [songs]);
   const provider = sourceScope === 'all' ? undefined : providers.find((item) => item.id === sourceScope);

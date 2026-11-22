@@ -354,7 +354,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
               <div className="flex items-center gap-2">
                 <Disc3 className="w-5 h-5 text-rose-500 animate-spin-slow" />
-                <h3 className="text-lg font-bold text-white tracking-tight">TrackDraft Menu</h3>
+                <h3 className="text-lg font-bold text-white tracking-tight">First Week Menu</h3>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}

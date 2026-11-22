@@ -3,7 +3,7 @@
 import React from 'react';
 import { GameMode, DifficultyTier, ChallengeTheme } from '@/types/draft';
 import { useDraftStore } from '@/store/useDraftStore';
-import { Zap, Disc, Check, X, ShieldAlert, Sparkles, Flame, EyeOff, Award, Swords, DollarSign, Crown, Heart, Clock } from 'lucide-react';
+import { Zap, Disc, Check, X, ShieldAlert, Sparkles, Flame, EyeOff, Award, Swords, DollarSign, Crown, Heart, Clock, Music2 } from 'lucide-react';
 import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
 import { useModalA11y } from '@/hooks/useModalA11y';
 
@@ -79,6 +79,10 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
     { id: 'year-2016', label: 'Class of 2016', icon: <Award className="w-3.5 h-3.5 text-rose-400" /> },
     { id: 'genre-hiphop', label: 'Hip-Hop Only', icon: <Disc className="w-3.5 h-3.5 text-zinc-300" /> },
     { id: 'genre-rnb', label: 'R&B / Soul', icon: <Heart className="w-3.5 h-3.5 text-rose-400" /> },
+    { id: 'genre-country', label: 'Country', icon: <Music2 className="w-3.5 h-3.5 text-amber-400" /> },
+    { id: 'genre-edm', label: 'EDM', icon: <Zap className="w-3.5 h-3.5 text-cyan-400" /> },
+    { id: 'genre-bollywood', label: 'Bollywood', icon: <Sparkles className="w-3.5 h-3.5 text-pink-400" /> },
+    { id: 'year-2025', label: 'Best of 2025', icon: <Award className="w-3.5 h-3.5 text-emerald-400" /> },
   ];
 
   return (

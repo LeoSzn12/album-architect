@@ -32,7 +32,7 @@ export function buildWordleShareData(
 ): WordleShareData {
   const projectLabel =
     gameMode === 'draft'
-      ? 'TrackDraft'
+      ? 'First Week'
       : gameMode === 'ep'
       ? 'EP Builder'
       : gameMode === 'budget'

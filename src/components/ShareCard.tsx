@@ -13,7 +13,7 @@ export function ShareCard({ payload }: ShareCardProps) {
 
   const handleCopyWordle = () => {
     const lines = [
-      `🎧 TrackDraft: ${payload.projectTitle} (Curated by ${payload.creator})`,
+      `🎧 First Week: ${payload.projectTitle} (Curated by ${payload.creator})`,
       `Score: ${payload.score.toFixed(1)}/10 (${payload.grade}) · AUX PASS APPROVED 🔥`,
       '',
       'Top Picks:',
@@ -36,7 +36,7 @@ export function ShareCard({ payload }: ShareCardProps) {
       <div className="bg-[#121216]/90 border-b border-white/[0.08] p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-rose-400">TrackDraft Result</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-rose-400">First Week Result</p>
             <h1 className="mt-1.5 text-3xl font-black tracking-tight text-white sm:text-4xl">{payload.projectTitle}</h1>
             <p className="mt-1 text-sm text-zinc-400">Curated by {payload.creator}</p>
           </div>

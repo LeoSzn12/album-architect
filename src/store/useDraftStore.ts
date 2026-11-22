@@ -35,6 +35,9 @@ import {
 } from '@/lib/budgetEngine';
 import { getDailySeed, getDailyTheme, calculateDailyStreak } from '@/lib/dailyDrop';
 import { detectSynergies, computeCrowdHype } from '@/lib/synergyEngine';
+import { dealRival, isRivalFirstRound, isRivalId, rivalPick, RIVALS, type RivalId } from '@/lib/firstWeek/rivals';
+import { dealRuleCards, isRuleCardId, pickMysteryRound, type RuleCardId } from '@/lib/firstWeek/ruleCards';
+import { relabelSlotsForCategory } from '@/lib/firstWeek/categories';
 
 let sessionRequestCounter = 0;
 let sessionWriteQueue = Promise.resolve();
@@ -73,8 +76,28 @@ async function saveGameSessionPick(sessionId: string, track: DraftedTrack) {
  *   v3 → v4: added explicit Draft opponent state and transparent scorecard fields.
  *   v4 → v5: added session persistence boundary.
  *   v5 → v6: added challengeTheme, budgetRemaining, dailyStreak, activeSynergies, crowdHype.
+ *   v6 → v7: First Week: rival, rule cards, mystery round, rival pre-pick, release seed.
  */
-const PERSIST_VERSION = 6;
+const PERSIST_VERSION = 7;
+
+/**
+ * In Draft mode the rival takes one song before the player on every second
+ * round. Returns the pool the player sees and the song the rival took.
+ */
+function applyRivalFirst(
+  gameMode: GameMode,
+  rivalId: RivalId,
+  roundIndex: number,
+  slot: DraftSlot | undefined,
+  options: Song[],
+  rivalTracks: DraftedTrack[],
+): { options: Song[]; prePick: Song | null } {
+  if (gameMode !== 'draft' || !slot || !isRivalFirstRound(roundIndex) || options.length < 2) {
+    return { options, prePick: null };
+  }
+  const prePick = rivalPick(rivalId, options, slot, rivalTracks);
+  return prePick ? { options: options.filter((song) => song.id !== prePick.id), prePick } : { options, prePick: null };
+}
 
 interface DraftStoreState {
   gameMode: GameMode;
@@ -115,6 +138,11 @@ interface DraftStoreState {
   lastDailyCompletedDate: string | null;
   activeSynergies: SynergyBadge[];
   crowdHype: CrowdHypeResult;
+  rivalId: RivalId;
+  ruleCardIds: RuleCardId[];
+  mysteryRoundIndex: number | null;
+  rivalPrePick: Song | null;
+  releaseSeed: string;
 
   // Actions
   setGameMode: (mode: GameMode) => void;
@@ -212,10 +240,16 @@ export const useDraftStore = create<DraftStoreState>()(
         status: 'AWAITING FIRST DROP 🚀',
         reactionQuote: 'Passengers waiting to see who gets the aux cord...',
       },
+      rivalId: 'hitmaker',
+      ruleCardIds: [],
+      mysteryRoundIndex: null,
+      rivalPrePick: null,
+      releaseSeed: 'FIRST-WEEK',
 
       fetchOptions: (slotId: SlotId, era: EraFilter, seed: string | null, rerollIndex: number = 0) => {
         const { draftedTracks, recentlyShownSongIds, recentlyShownArtists, soloDraftNonce, challengeTheme, budgetRemaining, gameMode } = get();
-        const draftedSongIds = draftedTracks.map((d) => d.song.id);
+        // Songs on either album are taken; only the player's artists count toward their own repeats.
+        const draftedSongIds = [...draftedTracks, ...get().opponentDraftedTracks].map((d) => d.song.id);
         const draftedArtists = draftedTracks.map((d) => d.song.artist);
 
         const options = getOptionsForSlot(slotId, 5, era, seed, {
@@ -290,7 +324,10 @@ export const useDraftStore = create<DraftStoreState>()(
         const newDiff = diff ?? get().difficulty;
         const newSeed = seed !== undefined ? seed : get().draftSeed;
         const newTheme = theme ?? (newSeed && newSeed.startsWith('DAILY-') ? getDailyTheme().theme : get().challengeTheme);
-        const slots   = newMode === 'draft' ? DRAFT_SLOTS : newMode === 'ep' ? EP_SLOTS : newMode === 'budget' ? BUDGET_SLOTS : ALBUM_SLOTS;
+        const slots   = relabelSlotsForCategory(
+          newMode === 'draft' ? DRAFT_SLOTS : newMode === 'ep' ? EP_SLOTS : newMode === 'budget' ? BUDGET_SLOTS : ALBUM_SLOTS,
+          newTheme,
+        );
 
         let tokens = newMode === 'album' ? 3 : 2;
         if (newDiff === 'veteran' || newDiff === 'hardcore') tokens = 1;
@@ -302,6 +339,10 @@ export const useDraftStore = create<DraftStoreState>()(
 
         const eraSequence = generateEraSequence(slots, newSeed);
         const slot0Era    = eraSequence[0];
+        const releaseSeed = newSeed ?? `SOLO-${nextNonce}-${Date.now().toString(36)}`;
+        const rivalId     = dealRival(releaseSeed);
+        const ruleCardIds = dealRuleCards(releaseSeed);
+        const mysteryRoundIndex = pickMysteryRound(releaseSeed, ruleCardIds, slots.length);
         // Set mode & theme before fetching the first pool
         set({ gameMode: newMode, slots, challengeTheme: newTheme, budgetRemaining: INITIAL_BUDGET, draftedTracks: [] });
         const initialOptions = get().fetchOptions(slots[0].id, slot0Era, newSeed, 0);
@@ -345,6 +386,11 @@ export const useDraftStore = create<DraftStoreState>()(
           opponentDraftedTracks: [],
           lastOpponentReveal: null,
           sessionId: null,
+          rivalId,
+          ruleCardIds,
+          mysteryRoundIndex,
+          rivalPrePick: null,
+          releaseSeed,
         });
 
         void createGameSession({
@@ -368,10 +414,14 @@ export const useDraftStore = create<DraftStoreState>()(
         if (currentRoundIndex >= slots.length) return;
 
         const currentSlot   = slots[currentRoundIndex];
+        const { rivalId, rivalPrePick } = get();
         const opponentSong = gameMode === 'draft'
-          ? [...get().currentOptions]
-              .filter((candidate) => candidate.id !== song.id)
-              .sort((a, b) => (b.slotAffinity[currentSlot.id] ?? 0) - (a.slotAffinity[currentSlot.id] ?? 0) || b.impact - a.impact)[0]
+          ? rivalPrePick ?? rivalPick(
+              rivalId,
+              get().currentOptions.filter((candidate) => candidate.id !== song.id),
+              currentSlot,
+              get().opponentDraftedTracks,
+            )
           : null;
         const newDraftedTrack: DraftedTrack = {
           slot: currentSlot,
@@ -388,19 +438,22 @@ export const useDraftStore = create<DraftStoreState>()(
         const activeSynergies  = detectSynergies(updatedDrafted);
         const crowdHype        = computeCrowdHype(updatedDrafted, activeSynergies);
 
-        // Update budget and synergies in store before next fetchOptions
-        set({ budgetRemaining: updatedBudget, activeSynergies, crowdHype });
-
         let nextOptions: Song[] = [];
         let updatedHistory      = candidateHistory;
         const opponentTracks = opponentSong
           ? [...get().opponentDraftedTracks, { slot: currentSlot, song: opponentSong, roundDrafted: currentRoundIndex + 1, isWildcard: false }]
           : get().opponentDraftedTracks;
 
+        // Update picks, budget and synergies before the next fetchOptions, so taken songs aren't offered again
+        set({ budgetRemaining: updatedBudget, activeSynergies, crowdHype, draftedTracks: updatedDrafted, opponentDraftedTracks: opponentTracks });
+
+        let nextPrePick: Song | null = null;
         if (nextRoundIndex < slots.length) {
           const nextSlot  = slots[nextRoundIndex];
           const nextEra   = eraSequence[nextRoundIndex] ?? 'all';
-          nextOptions     = get().fetchOptions(nextSlot.id, nextEra, draftSeed, 0);
+          const rivalFirst = applyRivalFirst(gameMode, get().rivalId, nextRoundIndex, nextSlot, get().fetchOptions(nextSlot.id, nextEra, draftSeed, 0), opponentTracks);
+          nextOptions     = rivalFirst.options;
+          nextPrePick     = rivalFirst.prePick;
 
           // Record the initial pool for the next round
           updatedHistory = [
@@ -425,8 +478,9 @@ export const useDraftStore = create<DraftStoreState>()(
           energyMetrics,
           candidateHistory: updatedHistory,
           opponentDraftedTracks: opponentTracks,
-          lastOpponentReveal: opponentSong
-            ? { slot: currentSlot, song: opponentSong, reason: 'Selected from the same pool for slot fit, project balance, and future variety.', roundIndex: currentRoundIndex }
+          rivalPrePick: nextPrePick,
+          lastOpponentReveal: opponentSong && !rivalPrePick
+            ? { slot: currentSlot, song: opponentSong, reason: RIVALS[rivalId]?.pickReason(opponentSong) ?? 'Your rival picked from the same pool.', roundIndex: currentRoundIndex }
             : null,
         });
 
@@ -446,14 +500,26 @@ export const useDraftStore = create<DraftStoreState>()(
         const activeSynergies = detectSynergies(updatedDrafted);
         const crowdHype       = computeCrowdHype(updatedDrafted, activeSynergies);
 
-        set({ budgetRemaining: restoredBudget, activeSynergies, crowdHype });
-        const restoredOptions = get().fetchOptions(prevSlot.id, prevEra, draftSeed, 0);
+        const opponentTracks = get().opponentDraftedTracks;
+        const restoredOpponentTracks = opponentTracks.slice(0, prevRoundIndex);
+        set({ budgetRemaining: restoredBudget, activeSynergies, crowdHype, draftedTracks: updatedDrafted, opponentDraftedTracks: restoredOpponentTracks });
+
+        // Bring back the exact pool the player saw. The rival's pick that round is returned to them as the pre-pick.
+        const savedRound = candidateHistory.find((round) => round.roundIndex === prevRoundIndex);
+        const savedPool = savedRound?.pools[savedRound.pools.length - 1];
+        const restoredRound = savedPool && savedPool.length > 0
+          ? {
+              options: savedPool,
+              prePick: gameMode === 'draft' && isRivalFirstRound(prevRoundIndex) ? opponentTracks[prevRoundIndex]?.song ?? null : null,
+            }
+          : applyRivalFirst(gameMode, get().rivalId, prevRoundIndex, prevSlot, get().fetchOptions(prevSlot.id, prevEra, draftSeed, 0), restoredOpponentTracks);
+        const restoredOptions = restoredRound.options;
 
         const monopolyReport  = computeMonopolyReport(updatedDrafted);
         const energyMetrics   = computeEnergyMetrics(updatedDrafted);
 
-        // Remove the last round's history entry on undo
-        const trimmedHistory  = candidateHistory.slice(0, prevRoundIndex + 1);
+        // Remove the later rounds' history entries on undo
+        const trimmedHistory  = candidateHistory.filter((round) => round.roundIndex <= prevRoundIndex);
 
         set({
           currentRoundIndex: prevRoundIndex,
@@ -467,7 +533,8 @@ export const useDraftStore = create<DraftStoreState>()(
           evaluationResult: null,
           opponentEvaluationResult: null,
           candidateHistory: trimmedHistory,
-          opponentDraftedTracks: get().opponentDraftedTracks.slice(0, -1),
+          opponentDraftedTracks: restoredOpponentTracks,
+          rivalPrePick: restoredRound.prePick,
           lastOpponentReveal: null,
         });
 
@@ -484,7 +551,9 @@ export const useDraftStore = create<DraftStoreState>()(
         const currentSlot = slots[currentRoundIndex];
         const currentEra  = eraSequence[currentRoundIndex] ?? 'all';
 
-        const freshOptions = get().fetchOptions(currentSlot.id, currentEra, draftSeed, rerollCount + 1);
+        const prePick = get().rivalPrePick;
+        const freshOptions = get().fetchOptions(currentSlot.id, currentEra, draftSeed, rerollCount + 1)
+          .filter((song) => song.id !== prePick?.id);
 
         // Append the rerolled pool to the current round's history
         const updatedHistory = candidateHistory.map((round, idx) =>
@@ -882,13 +951,24 @@ export const useDraftStore = create<DraftStoreState>()(
           persisted.lastDailyCompletedDate = null;
         }
 
+        if (version < 7) {
+          persisted.rivalId = 'hitmaker';
+          persisted.ruleCardIds = [];
+          persisted.mysteryRoundIndex = null;
+          persisted.rivalPrePick = null;
+          persisted.releaseSeed = persisted.draftSeed ?? 'FIRST-WEEK';
+        }
+
         return persisted;
       },
       merge: (persistedState, currentState) => {
         const restored = { ...currentState, ...(persistedState as Partial<DraftStoreState>) };
-        const slots = restored.gameMode === 'draft' ? DRAFT_SLOTS
+        if (!isRivalId(restored.rivalId)) restored.rivalId = 'hitmaker';
+        restored.ruleCardIds = Array.isArray(restored.ruleCardIds) ? restored.ruleCardIds.filter(isRuleCardId) : [];
+        if (typeof restored.mysteryRoundIndex !== 'number') restored.mysteryRoundIndex = null;
+        const slots = relabelSlotsForCategory(restored.gameMode === 'draft' ? DRAFT_SLOTS
           : restored.gameMode === 'ep' ? EP_SLOTS
-          : restored.gameMode === 'budget' ? BUDGET_SLOTS : ALBUM_SLOTS;
+          : restored.gameMode === 'budget' ? BUDGET_SLOTS : ALBUM_SLOTS, restored.challengeTheme);
         const index = restored.currentRoundIndex;
         const savedRound = restored.candidateHistory.find((round) => round.roundIndex === index);
         const savedPool = savedRound?.pools[savedRound.pools.length - 1];
@@ -942,6 +1022,11 @@ export const useDraftStore = create<DraftStoreState>()(
         budgetRemaining: state.budgetRemaining,
         dailyStreak: state.dailyStreak,
         lastDailyCompletedDate: state.lastDailyCompletedDate,
+        rivalId: state.rivalId,
+        ruleCardIds: state.ruleCardIds,
+        mysteryRoundIndex: state.mysteryRoundIndex,
+        rivalPrePick: state.rivalPrePick,
+        releaseSeed: state.releaseSeed,
       }),
     }
   )

@@ -1,6 +1,7 @@
 import type { Song, CandidateContext, CandidateDebugInfo, SlotId } from '../types/draft.ts';
 import { SONG_LIBRARY, filterByEra, filterByChallengeTheme } from '../data/songs.ts';
 import { getSongBudgetPrice } from './budgetEngine.ts';
+import { categoryPool } from './firstWeek/categories.ts';
 
 function createPrng(seedStr: string) {
   let h = 2166136261 >>> 0;
@@ -166,34 +167,39 @@ function enforceCinematicOutroRequirements(selected: Song[], pool: Song[], conte
 export function generateCandidatePool(context: CandidateContext, count: number = 5): Song[] {
   const { slotId, era, seed, rerollIndex, draftedSongIds, draftedArtists } = context;
 
-  // 1. Initial era & theme filtering
-  let pool = filterByEra(SONG_LIBRARY, era);
-  if (context.theme && context.theme !== 'standard') {
+  // 1. Initial era & theme filtering. Genre and year categories draft from
+  // their own song list and ignore the per-slot era.
+  const categorySongs = categoryPool(context.theme, SONG_LIBRARY);
+  const library = categorySongs ?? SONG_LIBRARY;
+  let pool = categorySongs ?? filterByEra(SONG_LIBRARY, era);
+  if (!categorySongs && context.theme && context.theme !== 'standard') {
     pool = filterByChallengeTheme(pool, context.theme);
   }
 
   // Fallback to full library if era pool is completely empty
   if (pool.length === 0) {
-    pool = context.theme ? filterByChallengeTheme(SONG_LIBRARY, context.theme) : SONG_LIBRARY;
+    pool = context.theme && !categorySongs ? filterByChallengeTheme(SONG_LIBRARY, context.theme) : library;
   }
   if (pool.length === 0) {
-    pool = SONG_LIBRARY;
+    pool = library;
   }
 
   // 2. Strict eligibility hierarchy
   const { tier1, tier2, tier3, tier4 } = getEligiblePool(slotId, pool);
 
+  // Songs already drafted this playthrough are left out first; the pool widens
+  // (weaker slot fits, then the whole library) before a taken song is shown again.
+  const undrafted = (songs: Song[]) => songs.filter((s) => !draftedSongIds.includes(s.id));
   let eligible = [...tier1, ...tier2, ...tier3];
-  if (eligible.length < count) {
+  if (undrafted(eligible).length < count) {
     eligible = [...eligible, ...tier4];
   }
-  if (eligible.length < count) {
+  if (undrafted(eligible).length < count) {
     // Global fallback to ensure minimum count
-    eligible = SONG_LIBRARY.filter((s) => getSlotAffinity(s, slotId) >= 40);
+    eligible = library.filter((s) => getSlotAffinity(s, slotId) >= 40);
   }
 
-  // Exclude songs already drafted in current playthrough
-  const undraftedEligible = eligible.filter((s) => !draftedSongIds.includes(s.id));
+  const undraftedEligible = undrafted(eligible);
   const candidatePool = undraftedEligible.length >= count ? undraftedEligible : eligible;
 
   // 3. PRNG setup
@@ -305,14 +311,14 @@ export function generateCandidatePool(context: CandidateContext, count: number =
 
       // Fallback across the broader catalog if the current slot/theme pool lacks affordable options
       if (!affordableOption) {
-        affordableOption = SONG_LIBRARY.find(
+        affordableOption = library.find(
           (s) => getSongBudgetPrice(s) <= context.budgetRemaining! && !finalPool.some((f) => f.id === s.id)
         );
       }
 
       // If budget is completely exhausted, provide an emergency rookie waiver pick ($0 cost)
       if (!affordableOption && context.budgetRemaining <= 0) {
-        const sleeper = SONG_LIBRARY.find((s) => !finalPool.some((f) => f.id === s.id));
+        const sleeper = library.find((s) => !finalPool.some((f) => f.id === s.id));
         if (sleeper) {
           affordableOption = { ...sleeper, budgetCost: 0 };
         }

@@ -41,6 +41,8 @@ export const DockedMusicPlayer: React.FC = () => {
     draftedTracks,
     currentOptions,
     audioEnabled,
+    mysteryRoundIndex,
+    currentRoundIndex,
   } = useDraftStore();
 
   const {
@@ -73,6 +75,8 @@ export const DockedMusicPlayer: React.FC = () => {
   }, [activeSong?.id, audioSourcePreference, setAudioSourcePreference]);
 
   if (!activeSong || isPlayerModalOpen) return null;
+  // Snippet Round: the docked player would give away the title, so the card's own controls are used.
+  if (mysteryRoundIndex === currentRoundIndex && currentOptions.some((option) => option.id === activeSong.id)) return null;
 
   const ytEmbedUrl      = getYouTubeEmbedUrl(activeSong);
   const spotifyEmbedUrl = getSpotifyEmbedUrl(activeSong);

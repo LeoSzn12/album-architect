@@ -238,7 +238,7 @@ export class SpotifyRemoteProvider extends RemoteProvider {
 
   async exportPlaylist(name: string, songs: Song[]): Promise<ProviderResult<ProviderPlaylistExport>> {
     if (!this.accessToken) return this.unavailable('Spotify playlist export needs an authenticated access token.');
-    const create = await this.json<{ id?: string; external_urls?: { spotify?: string } }>('https://api.spotify.com/v1/me/playlists', { method: 'POST', body: JSON.stringify({ name: name.trim().slice(0, 100) || 'TrackDraft playlist', public: false, collaborative: false }) });
+    const create = await this.json<{ id?: string; external_urls?: { spotify?: string } }>('https://api.spotify.com/v1/me/playlists', { method: 'POST', body: JSON.stringify({ name: name.trim().slice(0, 100) || 'First Week playlist', public: false, collaborative: false }) });
     if (!create.ok) return create;
     if (!create.data.id) return unsupported('unavailable', 'Spotify did not return a playlist ID.');
     const uris = songs.flatMap((song) => song.spotifyId ? [`spotify:track:${song.spotifyId}`] : []).slice(0, 100);
@@ -310,7 +310,7 @@ export class YouTubeRemoteProvider extends RemoteProvider {
 
   async exportPlaylist(name: string, songs: Song[]): Promise<ProviderResult<ProviderPlaylistExport>> {
     if (!this.accessToken) return this.unavailable('YouTube playlist export needs an authenticated OAuth token.');
-    const create = await this.json<{ id?: string }>(this.endpoint('playlists', { part: 'snippet,status' }), { method: 'POST', body: JSON.stringify({ snippet: { title: name.trim().slice(0, 150) || 'TrackDraft playlist', description: 'Created by TrackDraft' }, status: { privacyStatus: 'private' } }) });
+    const create = await this.json<{ id?: string }>(this.endpoint('playlists', { part: 'snippet,status' }), { method: 'POST', body: JSON.stringify({ snippet: { title: name.trim().slice(0, 150) || 'First Week playlist', description: 'Created by First Week' }, status: { privacyStatus: 'private' } }) });
     if (!create.ok) return create;
     if (!create.data.id) return unsupported('unavailable', 'YouTube did not return a playlist ID.');
     for (const song of songs.slice(0, 100)) {

@@ -44,7 +44,7 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ displayName: initial
   const signIn = (provider: 'google' | 'github') => { window.location.assign(`/api/auth/supabase/link?provider=${provider}`); };
   const signOut = async () => { setAuthBusy(true); try { await fetch('/api/auth/supabase/signout', { method: 'POST' }); setAuthState({ configured: true, authenticated: false, user: null }); } finally { setAuthBusy(false); } };
   const deleteAccount = async () => {
-    if (!window.confirm('Delete your account and all saved TrackDraft data? This cannot be undone.')) return;
+    if (!window.confirm('Delete your account and all saved First Week data? This cannot be undone.')) return;
     setDeleteBusy(true);
     setDeleteError(null);
     try {

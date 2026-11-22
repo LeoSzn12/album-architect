@@ -65,7 +65,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
           <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-300">
-            TrackDraft Official Rulebook
+            First Week Official Rulebook
           </span>
         </div>
 
@@ -94,7 +94,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  How to Play TrackDraft
+                  How to Play First Week
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.1] text-zinc-300 text-[10px] font-black uppercase tracking-wider">
                   V2.0 Guide
@@ -397,7 +397,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
               <h2 className="text-lg font-black text-white">Live Crowd Reaction & Hype Meter</h2>
             </div>
             <p className="text-xs text-zinc-400 mb-6 max-w-2xl leading-relaxed">
-              TrackDraft is an interactive stage. The crowd visualizer at the top of your draft board listens and reacts in real-time as you hover and draft songs.
+              First Week is an interactive stage. The crowd visualizer at the top of your draft board listens and reacts in real-time as you hover and draft songs.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -479,7 +479,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
                 <h3 className="text-lg font-black text-white">Classic Draft Mode</h3>
                 <p className="text-xs text-zinc-400 font-bold mt-1">7 Archetype Rounds</p>
                 <p className="text-xs text-zinc-300 mt-3 leading-relaxed">
-                  The quintessential TrackDraft challenge. Progress sequentially through 7 classic slots: Intro, Lead Single, Peak Banger, Left Turn, Emotional Core, Safe Bet, and Grand Outro.
+                  The quintessential First Week challenge. Progress sequentially through 7 classic slots: Intro, Lead Single, Peak Banger, Left Turn, Emotional Core, Safe Bet, and Grand Outro.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-white/[0.06] text-[11px] text-zinc-400">
@@ -532,7 +532,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
               <h2 className="text-lg font-black text-white">1v1 Play Against Friends (Challenge Seeds)</h2>
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed max-w-3xl mb-4">
-              TrackDraft uses a deterministic seed engine. When you challenge a friend or enter a shared seed code (e.g. <code className="px-1.5 py-0.5 rounded bg-white/[0.08] text-white font-mono">NEON-9021</code>), both players receive the <strong className="text-white">exact same 5 song candidates in the exact same order for every round</strong>.
+              First Week uses a deterministic seed engine. When you challenge a friend or enter a shared seed code (e.g. <code className="px-1.5 py-0.5 rounded bg-white/[0.08] text-white font-mono">NEON-9021</code>), both players receive the <strong className="text-white">exact same 5 song candidates in the exact same order for every round</strong>.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">

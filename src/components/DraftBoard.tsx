@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { useSnippetAudio } from '@/hooks/useSnippetAudio';
 import { DraftCard } from './DraftCard';
+import { getCategoryLabel } from '@/lib/firstWeek/categories';
 import { CompareModal } from './CompareModal';
 import {
   RefreshCw,
@@ -39,6 +40,8 @@ import {
 import { CrowdStageVisualizer } from './CrowdStageVisualizer';
 import { AuxHypeMeter } from './AuxHypeMeter';
 import { SynergyDisplay } from './SynergyDisplay';
+import { FirstWeekHud } from './FirstWeekHud';
+import { RIVALS } from '@/lib/firstWeek/rivals';
 import type { Song } from '@/types/draft';
 
 interface DraftBoardProps {
@@ -61,6 +64,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     eraSequence,
     gameMode,
     lastOpponentReveal,
+    rivalId,
     challengeTheme,
     budgetRemaining,
     monopolyReport,
@@ -376,17 +380,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             {challengeTheme && challengeTheme !== 'standard' && (
               <span className="px-2.5 py-0.5 rounded-full bg-amber-950/60 text-amber-300 text-[11px] font-bold uppercase tracking-wider border border-amber-500/30 flex items-center gap-1 shadow-sm">
                 <Crown className="w-3 h-3 text-amber-400" />
-                {challengeTheme === 'year-2016'
-                  ? 'Class of 2016'
-                  : challengeTheme === 'era-90s'
-                  ? '90s Golden Era'
-                  : challengeTheme === 'era-2000s'
-                  ? '2000s Bling Era'
-                  : challengeTheme === 'genre-hiphop'
-                  ? 'Hip-Hop Only'
-                  : challengeTheme === 'genre-rnb'
-                  ? 'R&B / Soul'
-                  : challengeTheme}
+                {getCategoryLabel(challengeTheme) ?? challengeTheme}
               </span>
             )}
 
@@ -454,6 +448,8 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           </div>
         </div>
       </section>
+
+      <FirstWeekHud />
 
       {/* Live Aux Crowd Arena & Synergies Feedback Deck */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 items-stretch">
@@ -528,7 +524,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] uppercase tracking-widest font-black text-rose-400">AI pick revealed</span>
+              <span className="text-[10px] uppercase tracking-widest font-black text-rose-400">{RIVALS[rivalId]?.name ?? 'Your rival'} picked</span>
               <span className="text-[10px] text-zinc-500">Round {lastOpponentReveal.roundIndex + 1}</span>
             </div>
             <p className="text-sm font-extrabold text-white truncate">
@@ -540,7 +536,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         </div>
       )}
 
-      {/* Five-card recommendation pool in TrackDraft mode */}
+      {/* Five-card recommendation pool in First Week mode */}
       {enrichedOptions.length === 0 ? (
         <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
           <AlertCircle className="w-8 h-8 text-amber-400 animate-pulse" />

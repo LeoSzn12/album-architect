@@ -49,7 +49,13 @@ export const DraftCard: React.FC<DraftCardProps> = ({
     openRealSongPlayer,
     gameMode,
     budgetRemaining,
+    mysteryRoundIndex,
+    currentRoundIndex,
   } = useDraftStore();
+  // Snippet Round: titles, artists and covers stay hidden until the pick.
+  const isMystery = mysteryRoundIndex !== null && mysteryRoundIndex === currentRoundIndex;
+  const mysteryName = `Mystery track ${candidateIndex !== undefined ? candidateIndex + 1 : ''}`.trim();
+  const displayTitle = isMystery ? mysteryName : song.title;
 
   const {
     isSongPlaying,
@@ -69,8 +75,8 @@ export const DraftCard: React.FC<DraftCardProps> = ({
 
   // Solo Monopoly calculations
   const currentSoloCount = monopolyReport.artistCounts[song.artist]?.solo || 0;
-  const isNewMonopolyRisk = currentSoloCount === 1;
-  const isExtendingMonopoly = currentSoloCount >= 2;
+  const isNewMonopolyRisk = !isMystery && currentSoloCount === 1;
+  const isExtendingMonopoly = !isMystery && currentSoloCount >= 2;
   const hasMonopolyWarning = isNewMonopolyRisk || isExtendingMonopoly;
 
   const handleSnippetToggle = (e: React.MouseEvent) => {
@@ -99,7 +105,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
 
   return (
     <article
-      aria-label={`Candidate ${candidateIndex !== undefined ? candidateIndex + 1 : ''}: ${song.title} by ${song.artist}`}
+      aria-label={isMystery ? mysteryName : `Candidate ${candidateIndex !== undefined ? candidateIndex + 1 : ''}: ${song.title} by ${song.artist}`}
       onMouseEnter={() => {
         playHoverSound(audioEnabled);
         onHoverCandidate?.(song);
@@ -176,7 +182,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
 
           <div className="flex items-center gap-1">
             {/* Quick Compare Button */}
-            {onCompareToggle && (
+            {onCompareToggle && !isMystery && (
               <button
                 onClick={handleCompare}
                 title={isComparing ? 'Remove from A/B Compare' : 'Add to A/B Compare'}
@@ -191,13 +197,13 @@ export const DraftCard: React.FC<DraftCardProps> = ({
             )}
 
             {/* Modal Deep-dive Player */}
-            <button
+            {!isMystery && <button
               onClick={handleOpenModal}
               title="Open full player & official video"
               className="p-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] text-zinc-400 hover:text-white hover:border-white/20 transition-colors cursor-pointer h-7 w-7 flex items-center justify-center"
             >
               <Maximize2 className="w-3.5 h-3.5" />
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -263,7 +269,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
 
           {/* Album Cover Art */}
           <div className="relative z-10 w-full h-full rounded-xl overflow-hidden shadow-2xl shadow-black/90 border border-white/10 bg-zinc-950 flex items-center justify-center">
-            {song.artwork ? (
+            {song.artwork && !isMystery ? (
               <img
                 src={song.artwork}
                 alt={`${song.title} artwork`}
@@ -280,19 +286,19 @@ export const DraftCard: React.FC<DraftCardProps> = ({
             {/* Artwork Fallback */}
             <div
               className={`w-full h-full bg-gradient-to-br ${song.gradient} flex flex-col items-center justify-center text-center p-2 ${
-                song.artwork ? 'hidden' : 'flex'
+                song.artwork && !isMystery ? 'hidden' : 'flex'
               }`}
             >
               <Disc className="w-8 h-8 text-white/60 mb-0.5" />
               <span className="text-[9px] font-black text-white/90 truncate max-w-full px-1">
-                {song.title}
+                {isMystery ? '?' : song.title}
               </span>
             </div>
 
             {/* Play/Pause Overlay */}
             <button
               onClick={handleSnippetToggle}
-              aria-label={isPlaying ? `Pause snippet for ${song.title}` : `Play snippet for ${song.title}`}
+              aria-label={isPlaying ? `Pause snippet for ${displayTitle}` : `Play snippet for ${displayTitle}`}
               className="absolute inset-0 bg-black/30 hover:bg-black/15 flex items-center justify-center transition-colors cursor-pointer active:scale-95"
             >
               {isLoading && isActive ? (
@@ -322,18 +328,18 @@ export const DraftCard: React.FC<DraftCardProps> = ({
       {/* ZONE 3: Editorial Typography */}
       <div className="my-1 flex flex-col items-center justify-center text-center px-1 z-10 flex-shrink-0">
         <h3 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-zinc-200 transition-colors line-clamp-1 w-full text-center tracking-tight">
-          {song.title}
+          {displayTitle}
         </h3>
         <p className="text-[11px] font-medium text-zinc-300 truncate w-full text-center mt-0.5 flex items-center justify-center gap-1">
-          <span>{song.artist}</span>
-          {song.featuredArtists.length > 0 && (
+          <span>{isMystery ? 'Play the snippet to guess' : song.artist}</span>
+          {!isMystery && song.featuredArtists.length > 0 && (
             <span className="text-[9.5px] text-zinc-400 font-normal">
               (ft. {song.featuredArtists.join(', ')})
             </span>
           )}
         </p>
         <p className="text-[10px] text-zinc-400 truncate w-full text-center mt-0.5">
-          {song.album} {song.year ? `(${song.year})` : ''} • {song.genre}
+          {isMystery ? song.genre : <>{song.album} {song.year ? `(${song.year})` : ''} • {song.genre}</>}
         </p>
       </div>
 

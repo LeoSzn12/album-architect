@@ -42,7 +42,7 @@ export default function SharePage() {
     <main className="min-h-screen bg-[#050507] px-4 py-10 text-white sm:py-16 selection:bg-rose-500/30 selection:text-white">
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center">
         <div className="mb-6 self-start">
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-rose-500">TrackDraft</p>
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-rose-500">First Week</p>
           <p className="mt-1 text-sm text-zinc-400">Shared result</p>
         </div>
         {payload ? <ShareCard payload={payload} /> : (

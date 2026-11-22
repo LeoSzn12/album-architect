@@ -21,6 +21,7 @@ import { LibraryPanel } from '@/components/LibraryPanel';
 import { ProfilePanel } from '@/components/ProfilePanel';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { HowToPlayPanel } from '@/components/HowToPlayPanel';
+import type { ChallengeTheme } from '@/types/draft';
 
 export default function Home() {
   const {
@@ -93,9 +94,10 @@ export default function Home() {
     leaderboardRef.current?.focus({ preventScroll: true });
   }, [leaderboardRequested]);
 
-  const handleStartDraft = () => {
-    // startNewDraft without args uses current mode/era/difficulty
-    startNewDraft();
+  const handleStartDraft = (theme?: ChallengeTheme) => {
+    // A category start is a fresh solo draft; otherwise keep the current settings.
+    if (theme) startNewDraft(undefined, undefined, undefined, null, theme);
+    else startNewDraft();
     setHasStarted(true);
     setActiveSurface('game');
   };
@@ -207,7 +209,7 @@ export default function Home() {
       <footer className="w-full max-w-6xl mx-auto text-center text-xs text-gray-500 py-6 border-t border-gray-800/80 mt-12 relative z-10 flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>TrackDraft • Fantasy Music Game</span>
+          <span>First Week • Draft it. Drop it. Outsell your friends.</span>
         </div>
         <div className="text-gray-400">
           Trust your ears. Build something worth replaying.

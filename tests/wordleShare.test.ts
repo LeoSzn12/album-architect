@@ -93,7 +93,7 @@ describe('Wordle-Style Daily Share Card Engine', () => {
     const data = buildWordleShareData(evaluation, tracks, 'draft', 'SEED_123');
     const text = formatWordleShareText(data);
 
-    assert.match(text, /🎧 TrackDraft · 9.2\/10/);
+    assert.match(text, /🎧 First Week · 9.2\/10/);
     assert.match(text, /AUX PASS APPROVED/);
     assert.match(text, /🟩 1\. DNA - Kendrick Lamar/);
     assert.match(text, /⚔️ 1v1 Code: SEED_123/);

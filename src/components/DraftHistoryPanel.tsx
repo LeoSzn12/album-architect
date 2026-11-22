@@ -71,7 +71,7 @@ export const DraftHistoryPanel: React.FC = () => {
               <div>
                 <div className="flex justify-between items-start mb-2.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-white/[0.06] text-zinc-300 border border-white/[0.08] rounded-full">
-                    {draft.gameMode === 'draft' ? 'TrackDraft Match' : draft.gameMode === 'ep' ? `EP Builder · ${draft.trackCount} tracks` : `Album Builder · ${draft.trackCount} tracks`} • {draft.difficulty.toUpperCase()}
+                    {draft.gameMode === 'draft' ? 'First Week Match' : draft.gameMode === 'ep' ? `EP Builder · ${draft.trackCount} tracks` : `Album Builder · ${draft.trackCount} tracks`} • {draft.difficulty.toUpperCase()}
                   </span>
                   <span className="text-[10px] text-zinc-500 font-medium">{draft.completedAt}</span>
                 </div>

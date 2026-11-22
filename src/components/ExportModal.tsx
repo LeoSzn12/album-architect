@@ -24,14 +24,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     onClose,
   });
 
-  const titleText = gameMode === 'draft' ? 'TrackDraft Seven-Round Build' : gameMode === 'ep' ? 'TrackDraft EP Builder' : 'TrackDraft Album Builder';
+  const titleText = gameMode === 'draft' ? 'First Week Seven-Round Build' : gameMode === 'ep' ? 'First Week EP Builder' : 'First Week Album Builder';
 
   const sharePayload = useMemo<SharePayload>(() => {
     const tracks = draftedTracks.slice(0, 3).map((track) => ({
       title: track.song.title,
       artist: track.song.rawArtistString || track.song.artist,
     }));
-    while (tracks.length < 3) tracks.push({ title: 'Unfilled slot', artist: 'TrackDraft' });
+    while (tracks.length < 3) tracks.push({ title: 'Unfilled slot', artist: 'First Week' });
 
     const categories = evaluationResult?.categoryScores
       ? Object.entries(evaluationResult.categoryScores).map(([key, category]) => ({
@@ -138,7 +138,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-rose-500" /> Real-World Playlist Export
             </span>
-            <h2 className="text-2xl font-black text-white">Export Your TrackDraft</h2>
+            <h2 className="text-2xl font-black text-white">Export Your First Week</h2>
           </div>
           <button
             onClick={onClose}

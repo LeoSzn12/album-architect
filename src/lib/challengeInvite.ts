@@ -9,7 +9,7 @@ export interface ChallengeInvite {
   theme: ChallengeTheme;
 }
 
-const themes: ChallengeTheme[] = ['standard', 'era-90s', 'era-2000s', 'era-2010s', 'era-2020s', 'year-2016', 'genre-hiphop', 'genre-rnb'];
+const themes: ChallengeTheme[] = ['standard', 'era-90s', 'era-2000s', 'era-2010s', 'era-2020s', 'year-2016', 'genre-hiphop', 'genre-rnb', 'genre-country', 'genre-edm', 'genre-bollywood', 'year-2025'];
 
 export function parseChallengeInvite(value: string): ChallengeInvite | null {
   const trimmed = value.trim();

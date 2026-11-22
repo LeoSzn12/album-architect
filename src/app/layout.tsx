@@ -17,11 +17,11 @@ const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 export const metadata: Metadata = {
   ...(configuredSiteUrl ? { metadataBase: new URL(configuredSiteUrl) } : {}),
   title: {
-    default: "TrackDraft — Fantasy Music Curation & A&R Game",
-    template: "%s · TrackDraft",
+    default: "First Week — Draft an album. Drop it. See how it sells.",
+    template: "%s · First Week",
   },
   description:
-    "Draft seven-song projects, EPs, and albums across positional slots, then get a transparent A&R scorecard and critique.",
+    "Draft an album from real songs, drop it, and see your first-week sales. Beat your rival, climb the all-time ladder and challenge friends.",
   keywords: [
     "music draft",
     "A&R game",
@@ -31,19 +31,19 @@ export const metadata: Metadata = {
     "hip-hop draft",
     "music game",
   ],
-  applicationName: "TrackDraft",
-  authors: [{ name: "TrackDraft" }],
+  applicationName: "First Week",
+  authors: [{ name: "First Week" }],
   openGraph: {
     type: "website",
     url: "/",
-    title: "TrackDraft — Fantasy Music Curation & A&R Game",
-    description: "Draft your dream project, balance energy pacing, and receive an explainable A&R scorecard.",
-    siteName: "TrackDraft",
+    title: "First Week — Draft an album. Drop it. See how it sells.",
+    description: "Draft an album, drop it, and see how many you sell in week one. Can your friends outsell you?",
+    siteName: "First Week",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TrackDraft — Fantasy Music Curation & A&R Game",
-    description: "Draft your dream project, balance energy pacing, and receive an explainable A&R scorecard.",
+    title: "First Week — Draft an album. Drop it. See how it sells.",
+    description: "Draft an album, drop it, and see how many you sell in week one. Can your friends outsell you?",
   },
   icons: {
     icon: "/icon.svg",

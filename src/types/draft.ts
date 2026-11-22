@@ -8,7 +8,11 @@ export type ChallengeTheme =
   | 'era-2020s'
   | 'year-2016'
   | 'genre-hiphop'
-  | 'genre-rnb';
+  | 'genre-rnb'
+  | 'genre-country'
+  | 'genre-edm'
+  | 'genre-bollywood'
+  | 'year-2025';
 
 export type SlotId =
   | 'cinematic-intro'
