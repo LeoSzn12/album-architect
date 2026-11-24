@@ -348,7 +348,9 @@ export const useDraftStore = create<DraftStoreState>()(
         const ruleCardIds = dealRuleCards(releaseSeed);
         const mysteryRoundIndex = pickMysteryRound(releaseSeed, ruleCardIds, slots.length);
         // Set mode & theme before fetching the first pool
-        set({ gameMode: newMode, slots, challengeTheme: newTheme, budgetRemaining: INITIAL_BUDGET, draftedTracks: [] });
+        // Clear both albums first: last draft's rival picks must not shrink this pool,
+        // or a shared seed would show a friend different songs.
+        set({ gameMode: newMode, slots, challengeTheme: newTheme, budgetRemaining: INITIAL_BUDGET, draftedTracks: [], opponentDraftedTracks: [] });
         const initialOptions = get().fetchOptions(slots[0].id, slot0Era, newSeed, 0);
 
         const initialHistory: CandidateRound[] = [{

@@ -314,7 +314,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
           {gameMode === 'draft' ? 'Tracklist Locked In' : `${projectLabel} Tracklist Locked In`}
         </h2>
         <p className="text-sm text-zinc-400 max-w-lg mb-6 leading-relaxed">
-          {slots.length} tracks selected for your {gameMode === 'draft' ? 'draft' : projectLabel.toLowerCase()}. Reorder the sequence from the tracklist drawer, then submit when the build is ready for its final review.
+          {slots.length} tracks selected for your {gameMode === 'draft' ? 'draft' : projectLabel.toLowerCase()}. Change the song order in Tracks if you like, then release it to see how it sells.
         </p>
 
         {gameMode !== 'draft' && (
