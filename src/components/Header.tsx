@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <h1 className="text-base font-extrabold tracking-tight text-white">
-                TRACKDRAFT
+                FIRST WEEK
               </h1>
             </div>
           </div>
@@ -139,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-xl font-extrabold tracking-tight text-white">
-                  TRACKDRAFT
+                  FIRST WEEK
                 </h1>
                 {/* Round Progress Badge */}
                 <span className="px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-bold text-zinc-200 flex items-center gap-1.5 shadow-sm">
