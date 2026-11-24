@@ -38,6 +38,7 @@ import { detectSynergies, computeCrowdHype } from '@/lib/synergyEngine';
 import { dealRival, isRivalFirstRound, isRivalId, rivalPick, RIVALS, type RivalId } from '@/lib/firstWeek/rivals';
 import { dealRuleCards, isRuleCardId, pickMysteryRound, type RuleCardId } from '@/lib/firstWeek/ruleCards';
 import { relabelSlotsForCategory } from '@/lib/firstWeek/categories';
+import { isSoloSeed, makeSoloSeed } from '@/lib/soloSeed';
 
 let sessionRequestCounter = 0;
 let sessionWriteQueue = Promise.resolve();
@@ -322,7 +323,10 @@ export const useDraftStore = create<DraftStoreState>()(
         const newMode = mode ?? get().gameMode;
         const newEra  = era  ?? get().selectedEra;
         const newDiff = diff ?? get().difficulty;
-        const newSeed = seed !== undefined ? seed : get().draftSeed;
+        const previousSeed = get().draftSeed;
+        const requestedSeed = seed !== undefined ? seed : (isSoloSeed(previousSeed) ? null : previousSeed);
+        const isSolo = requestedSeed === null;
+        const newSeed = requestedSeed ?? makeSoloSeed();
         const newTheme = theme ?? (newSeed && newSeed.startsWith('DAILY-') ? getDailyTheme().theme : get().challengeTheme);
         const slots   = relabelSlotsForCategory(
           newMode === 'draft' ? DRAFT_SLOTS : newMode === 'ep' ? EP_SLOTS : newMode === 'budget' ? BUDGET_SLOTS : ALBUM_SLOTS,
@@ -332,14 +336,14 @@ export const useDraftStore = create<DraftStoreState>()(
         let tokens = newMode === 'album' ? 3 : 2;
         if (newDiff === 'veteran' || newDiff === 'hardcore') tokens = 1;
 
-        const nextNonce = newSeed === null ? get().soloDraftNonce + 1 : get().soloDraftNonce;
-        if (newSeed === null) {
+        const nextNonce = isSolo ? get().soloDraftNonce + 1 : get().soloDraftNonce;
+        if (isSolo) {
           set({ soloDraftNonce: nextNonce });
         }
 
         const eraSequence = generateEraSequence(slots, newSeed);
         const slot0Era    = eraSequence[0];
-        const releaseSeed = newSeed ?? `SOLO-${nextNonce}-${Date.now().toString(36)}`;
+        const releaseSeed = newSeed;
         const rivalId     = dealRival(releaseSeed);
         const ruleCardIds = dealRuleCards(releaseSeed);
         const mysteryRoundIndex = pickMysteryRound(releaseSeed, ruleCardIds, slots.length);

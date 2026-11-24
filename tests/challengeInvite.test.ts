@@ -29,3 +29,12 @@ test('beat-my-week-one links carry the units to beat and keep the site path', as
   for (const bad of ['', '0', '-5', '12abc', '99999999999', '1e6']) assert.equal(parseUnitsToBeat(bad), undefined);
   assert.equal(parseChallengeInvite('?seed=ARCH-ABCD&beat=lots')?.toBeat, undefined);
 });
+
+test('solo seeds are valid invite seeds and are recognised as solo', async () => {
+  const { isSoloSeed, makeSoloSeed } = await import('../src/lib/soloSeed.ts');
+  const seed = makeSoloSeed();
+  assert.match(seed, /^SOLO-[A-Z0-9]{8}$/);
+  assert.ok(isSoloSeed(seed));
+  assert.ok(!isSoloSeed('ARCH-ABCD') && !isSoloSeed(null));
+  assert.equal(parseChallengeInvite(`?seed=${seed}&beat=1200`)?.seed, seed);
+});

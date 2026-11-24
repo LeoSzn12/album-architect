@@ -103,9 +103,10 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
   const handleCopyWordle = () => {
     if (!wordleData) return;
     playHoverSound(audioEnabled);
+    const link = weekOneLink();
     const text = formatWordleShareText({
       ...wordleData,
-      ...(weekOne ? { weekOneLabel: formatUnits(weekOne.finalUnits), shareUrl: weekOneLink() } : {}),
+      ...(weekOne && link ? { weekOneLabel: formatUnits(weekOne.finalUnits), shareUrl: link } : {}),
     });
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text);

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 import { ConfirmModal } from './ConfirmModal';
+import { isSoloSeed } from '@/lib/soloSeed';
 
 export type ActiveSurfaceType = 'game' | 'how-to-play' | 'setup' | 'library' | 'profile';
 
@@ -64,6 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const versusSeed = draftSeed && !isSoloSeed(draftSeed) ? draftSeed : null;
   const isCompleted = currentRoundIndex >= slots.length;
   const activeSlot = slots[currentRoundIndex];
   const formatLabel =
@@ -269,14 +271,14 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               onMouseEnter={() => playHoverSound(audioEnabled)}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm ${
-                draftSeed
+                versusSeed
                   ? 'bg-rose-500 text-white border-rose-400 shadow-md shadow-rose-950/50 animate-pulse'
                   : 'bg-white/[0.06] hover:bg-white/[0.1] border-white/[0.08] text-zinc-200'
               }`}
               title="Play 1v1 Against Friends with matched seeds"
             >
               <Swords className="w-3.5 h-3.5 text-rose-400" />
-              <span>{draftSeed ? `1v1: ${draftSeed}` : '1v1'}</span>
+              <span>{versusSeed ? `1v1: ${versusSeed}` : '1v1'}</span>
             </button>
 
             {/* Live Tracklist Counter */}
@@ -495,7 +497,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Swords className="w-4 h-4 text-rose-400" />
                   <span className="text-xs font-bold text-white">1v1 Battle</span>
-                  <span className="text-[10px] text-zinc-400">{draftSeed ? `Seed: ${draftSeed}` : 'Challenge Friends'}</span>
+                  <span className="text-[10px] text-zinc-400">{versusSeed ? `Seed: ${versusSeed}` : 'Challenge Friends'}</span>
                 </button>
               </div>
             </div>

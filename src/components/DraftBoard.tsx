@@ -43,6 +43,7 @@ import { SynergyDisplay } from './SynergyDisplay';
 import { FirstWeekHud } from './FirstWeekHud';
 import { RIVALS } from '@/lib/firstWeek/rivals';
 import type { Song } from '@/types/draft';
+import { isSoloSeed } from '@/lib/soloSeed';
 
 interface DraftBoardProps {
   onEvaluateTrigger: () => void;
@@ -384,7 +385,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
               </span>
             )}
 
-            {draftSeed && (
+            {draftSeed && !isSoloSeed(draftSeed) && (
               <span className="px-2 py-0.5 rounded-md bg-white/[0.04] text-zinc-300 text-[10px] font-mono font-bold tracking-wider border border-white/[0.08] flex items-center gap-1">
                 <Swords className="w-2.5 h-2.5 text-zinc-400" /> 1v1: {draftSeed}
               </span>

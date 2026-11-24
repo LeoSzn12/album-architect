@@ -63,12 +63,12 @@ export function useFirstWeekRelease() {
   return { release, rival, trend };
 }
 
-/** The "beat my week one" link for the current draft. */
-export function useWeekOneChallengeLink(units: number | null | undefined): () => string {
+/** The "beat my week one" link for the current draft, or null when the draft can't be replayed. */
+export function useWeekOneChallengeLink(units: number | null | undefined): () => string | null {
   const { gameMode, draftSeed, difficulty, selectedEra, challengeTheme } = useDraftStore();
   return () => {
     const base = siteBaseUrl();
-    if (!draftSeed) return base;
+    if (!draftSeed || !units) return null;
     return buildChallengeInvite(base, { seed: draftSeed, mode: gameMode, difficulty, era: selectedEra, theme: challengeTheme, ...(units ? { toBeat: units } : {}) });
   };
 }
@@ -103,7 +103,7 @@ export const ReleaseWeekPanel: React.FC<{ summary?: ReleaseSummary }> = ({ summa
   const isDaily = draftSeed?.startsWith('DAILY-') ?? false;
   const label = isDaily ? "Today's Drop" : categoryLabel;
 
-  const shareText = () => formatFirstWeekShare({ release, rival, label, url: typeof window === 'undefined' ? null : challengeLink() });
+  const shareText = () => formatFirstWeekShare({ release, rival, label, url: typeof window === 'undefined' ? null : (challengeLink() ?? siteBaseUrl()) });
 
   const handleCopy = async () => {
     try {

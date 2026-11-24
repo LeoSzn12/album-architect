@@ -5,6 +5,7 @@ import { useDraftStore } from '@/store/useDraftStore';
 import { Trophy, Crown, Filter, Trash2, Swords, ChevronDown, ChevronUp } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 import { GameMode, DifficultyTier } from '@/types/draft';
+import { isSoloSeed } from '@/lib/soloSeed';
 
 export const LeaderboardPanel: React.FC<{ defaultOpen?: boolean }> = ({ defaultOpen = false }) => {
   const { leaderboard, clearLeaderboard, audioEnabled } = useDraftStore();
@@ -177,7 +178,7 @@ export const LeaderboardPanel: React.FC<{ defaultOpen?: boolean }> = ({ defaultO
                           {entry.theme}
                         </span>
                       )}
-                      {entry.draftSeed && !entry.isDailyDrop && (
+                      {entry.draftSeed && !entry.isDailyDrop && !isSoloSeed(entry.draftSeed) && (
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/50 text-zinc-300 border border-white/[0.08] flex items-center gap-1">
                           <Swords className="w-3 h-3 text-rose-500" /> {entry.draftSeed}
                         </span>
