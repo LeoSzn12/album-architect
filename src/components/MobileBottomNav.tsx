@@ -43,9 +43,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       onScrollToCrowd();
       return;
     }
-    const crowdEl = document.querySelector('[aria-label="Live Crowd and Aux Hype Stage"]');
-    if (crowdEl) {
-      crowdEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const statsEl = document.getElementById('crowd-stats') as HTMLDetailsElement | null;
+    if (statsEl) {
+      statsEl.open = true;
+      statsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -64,8 +65,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           title="Return to Draft Board"
         >
           <Disc3 className={`w-5 h-5 ${activeSurface === 'game' ? 'text-rose-500 animate-spin-slow' : 'text-zinc-400'}`} />
-          <span className="text-[10px] uppercase tracking-wider mt-0.5">
-            Board
+          <span className="text-[11px] mt-0.5">
+            Draft
           </span>
         </button>
 
@@ -81,7 +82,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               {crowdHype.score}%
             </span>
           </div>
-          <span className="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">
+          <span className="text-[11px] font-bold mt-0.5">
             Crowd
           </span>
         </button>
@@ -103,7 +104,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </span>
             )}
           </div>
-          <span className="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">
+          <span className="text-[11px] font-bold mt-0.5">
             Tracks
           </span>
         </button>
@@ -118,8 +119,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           title="Challenge a Friend"
         >
           <Swords className="w-5 h-5 text-zinc-400" />
-          <span className="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">
-            1v1
+          <span className="text-[11px] font-bold mt-0.5">
+            Friend
           </span>
         </button>
 
@@ -133,8 +134,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           title="View Leaderboard"
         >
           <Trophy className="w-5 h-5 text-amber-400" />
-          <span className="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">
-            Ranks
+          <span className="text-[11px] font-bold mt-0.5">
+            Scores
           </span>
         </button>
       </div>

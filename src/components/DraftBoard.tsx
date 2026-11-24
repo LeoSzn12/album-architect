@@ -13,17 +13,15 @@ import {
   Undo2,
   AlertCircle,
   Swords,
-  EyeOff,
   Headphones,
   ArrowRightLeft,
   Flame,
-  Volume2,
   Dice5,
   X,
   Plus,
   DollarSign,
   Crown,
-  Disc3,
+  ChevronDown,
 } from 'lucide-react';
 import {
   playHoverSound,
@@ -41,6 +39,7 @@ import { CrowdStageVisualizer } from './CrowdStageVisualizer';
 import { AuxHypeMeter } from './AuxHypeMeter';
 import { SynergyDisplay } from './SynergyDisplay';
 import { FirstWeekHud } from './FirstWeekHud';
+import { DraftTelemetryBar } from './DraftTelemetryBar';
 import { RIVALS } from '@/lib/firstWeek/rivals';
 import type { Song } from '@/types/draft';
 import { isSoloSeed } from '@/lib/soloSeed';
@@ -83,34 +82,10 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   const [wildcardModalOpen, setWildcardModalOpen] = useState(false);
   const [unlockedWildcard, setUnlockedWildcard] = useState<Song | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [mobileViewMode, setMobileViewMode] = useState<'carousel' | 'list'>('carousel');
-  const [activeMobileCardIndex, setActiveMobileCardIndex] = useState(0);
-  const carouselRef = React.useRef<HTMLDivElement>(null);
-
-  const handleCarouselScroll = () => {
-    if (!carouselRef.current) return;
-    const scrollLeft = carouselRef.current.scrollLeft;
-    const cardWidth = carouselRef.current.clientWidth * 0.86;
-    const newIdx = Math.round(scrollLeft / (cardWidth + 14));
-    setActiveMobileCardIndex(Math.min(Math.max(0, newIdx), currentOptions.length - 1));
-  };
-
-  const scrollToCandidate = (index: number) => {
-    playHoverSound(audioEnabled);
-    setActiveMobileCardIndex(index);
-    if (!carouselRef.current) return;
-    const targetChild = carouselRef.current.children[index] as HTMLElement | undefined;
-    if (targetChild) {
-      targetChild.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-  };
-
   const isCompleted = currentRoundIndex >= slots.length;
   const currentSlot = slots[currentRoundIndex];
   const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
   const trackLabel = gameMode === 'draft' ? 'Round' : `${projectLabel} Track`;
-  const completionLabel = gameMode === 'draft' ? 'Draft Complete' : `${projectLabel} Ready for Review`;
-  const reviewActionLabel = gameMode === 'draft' ? 'Get Your Score' : `Review ${projectLabel}`;
 
   // Auto-assigned era for this round
   const currentEra = eraSequence[currentRoundIndex];
@@ -123,12 +98,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     setCompareSelection([]);
     setIsCompareOpen(false);
     setHoveredCandidate(null);
-    setActiveMobileCardIndex(0);
   }
-
-  useEffect(() => {
-    if (carouselRef.current) carouselRef.current.scrollLeft = 0;
-  }, [currentRoundIndex]);
 
   // Keyboard Shortcuts:
   // 1-5: Audition Candidate 1 to 5
@@ -259,16 +229,6 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
     });
   };
 
-  // Dynamic Vibe calculation for the live draft session
-  const currentVibe = useMemo(() => {
-    if (draftedTracks.length === 0) return 'Session Opening 🚀';
-    const lastTrack = draftedTracks[draftedTracks.length - 1];
-    if (lastTrack.song.energy >= 88) return 'High Voltage Energy ⚡';
-    if (lastTrack.song.energy <= 65) return 'Late-Night Introspection 🌙';
-    if (lastTrack.song.genre === 'R&B') return 'Smooth R&B Groove ✨';
-    return 'Pacing Building Nicely 🎶';
-  }, [draftedTracks]);
-
   // Dynamic A&R Flow Intelligence enrichment for candidates in this round
   const enrichedOptions = useMemo(() => {
     if (!currentSlot || currentOptions.length === 0) return currentOptions;
@@ -303,26 +263,18 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   if (isCompleted) {
     return (
       <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] rounded-3xl p-8 sm:p-12 flex flex-col items-center justify-center text-center shadow-2xl backdrop-blur-2xl relative overflow-hidden my-6">
-        <div className="w-20 h-20 rounded-2xl bg-white/[0.06] border border-white/[0.12] p-1 shadow-2xl mb-4 animate-bounce flex items-center justify-center">
-          <Trophy className="w-10 h-10 text-amber-400" />
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.06] border border-white/[0.12] shadow-2xl mb-4 flex items-center justify-center">
+          <Trophy className="w-8 h-8 text-amber-400" aria-hidden="true" />
         </div>
-
-        <span className="text-xs font-extrabold uppercase tracking-widest text-zinc-400 mb-1">
-          {completionLabel}
+        <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-1">
+          All {slots.length} songs picked
         </span>
         <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 tracking-tight">
-          {gameMode === 'draft' ? 'Tracklist Locked In' : `${projectLabel} Tracklist Locked In`}
+          Your {gameMode === 'draft' ? 'album' : projectLabel.toLowerCase()} is ready
         </h2>
-        <p className="text-sm text-zinc-400 max-w-lg mb-6 leading-relaxed">
-          {slots.length} tracks selected for your {gameMode === 'draft' ? 'draft' : projectLabel.toLowerCase()}. Change the song order in Tracks if you like, then release it to see how it sells.
+        <p className="text-sm text-zinc-400 max-w-md mb-6 leading-relaxed">
+          Want a different order? Open Tracks first. Otherwise, release it and see how week one goes.
         </p>
-
-        {gameMode !== 'draft' && (
-          <span className="mb-5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300">
-            Build saved locally · ready to review
-          </span>
-        )}
-
         <button
           onClick={() => {
             stop();
@@ -330,340 +282,209 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             onEvaluateTrigger();
           }}
           onMouseEnter={() => playHoverSound(audioEnabled)}
-          className="min-h-14 px-8 py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-full shadow-2xl text-base tracking-wide transition active:scale-95 cursor-pointer flex items-center gap-2"
+          className="min-h-14 px-8 py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-full shadow-2xl text-base transition active:scale-95 cursor-pointer flex items-center gap-2"
         >
-          <Sparkles className="w-5 h-5 text-amber-500 fill-amber-500" />
-          <span>{reviewActionLabel}</span>
+          <Sparkles className="w-5 h-5 text-amber-500 fill-amber-500" aria-hidden="true" />
+          <span>Release it</span>
         </button>
       </div>
     );
   }
 
+  const pickedCount = draftedTracks.length;
+
   return (
-    <div className="w-full flex flex-col gap-6 my-4">
-      {/* Current Draft Slot Banner */}
+    <div className="w-full flex flex-col gap-4 my-4">
+      {/* Round header: where you are, what to pick, and the two round tools */}
       <section
         aria-labelledby="current-slot-heading"
-        className="relative bg-[#111117]/90 border border-white/[0.08] rounded-3xl p-4 sm:p-5 backdrop-blur-2xl flex flex-col gap-3 shadow-2xl transition-all"
+        className="relative bg-[#111117]/90 border border-white/[0.08] rounded-3xl p-4 sm:p-5 backdrop-blur-2xl flex flex-col gap-3 shadow-2xl"
       >
-        {/* Row 1: Badges, Progress, Energy Target & Action Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="px-2.5 py-0.5 rounded-full bg-white/[0.06] text-white text-[11px] font-black uppercase tracking-wider border border-white/[0.08] shadow-sm flex items-center gap-1.5">
-              <Disc3 className="w-3 h-3 text-rose-500" />
-              <span>{trackLabel} {currentSlot.roundNumber} of {slots.length}</span>
-            </span>
+        <div className="flex gap-1" aria-hidden="true">
+          {slots.map((slot, i) => (
+            <span
+              key={slot.id}
+              className={`h-1.5 flex-1 rounded-full ${
+                i < pickedCount ? 'bg-rose-500' : i === currentRoundIndex ? 'bg-white' : 'bg-white/10'
+              }`}
+            />
+          ))}
+        </div>
 
-            {/* Mini progress track */}
-            <div className="w-14 h-1.5 bg-zinc-800 rounded-full overflow-hidden hidden sm:block">
-              <div
-                className="h-full bg-rose-500 rounded-full transition-all"
-                style={{ width: `${Math.round((draftedTracks.length / slots.length) * 100)}%` }}
-              />
-            </div>
-
-            {/* Auto-era badge */}
-            {currentEraLabel && (
-              <span className="px-2.5 py-0.5 rounded-full bg-white/[0.04] text-zinc-300 text-[11px] font-bold uppercase tracking-wider border border-white/[0.08]">
-                {currentEraLabel}
-              </span>
-            )}
-
-            {/* Budget Mode Counter */}
-            {gameMode === 'budget' && (
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 text-[11px] font-black uppercase tracking-wider border border-emerald-500/30 flex items-center gap-1 shadow-sm">
-                <DollarSign className="w-3 h-3 text-emerald-400" />
-                Budget: ${budgetRemaining}
-              </span>
-            )}
-
-            {/* Challenge Gauntlet Badge */}
-            {challengeTheme && challengeTheme !== 'standard' && (
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-950/60 text-amber-300 text-[11px] font-bold uppercase tracking-wider border border-amber-500/30 flex items-center gap-1 shadow-sm">
-                <Crown className="w-3 h-3 text-amber-400" />
-                {getCategoryLabel(challengeTheme) ?? challengeTheme}
-              </span>
-            )}
-
-            {draftSeed && !isSoloSeed(draftSeed) && (
-              <span className="px-2 py-0.5 rounded-md bg-white/[0.04] text-zinc-300 text-[10px] font-mono font-bold tracking-wider border border-white/[0.08] flex items-center gap-1">
-                <Swords className="w-2.5 h-2.5 text-zinc-400" /> 1v1: {draftSeed}
-              </span>
-            )}
-
-            {difficulty === 'hardcore' ? (
-              <span className="text-[11px] text-rose-400 font-bold flex items-center gap-1">
-                <EyeOff className="w-3 h-3" /> Target: Classified
-              </span>
-            ) : (
-              <span className="text-[11px] text-zinc-400 font-medium">
-                Target: <strong className="text-white font-bold">{currentSlot.targetEnergy.ideal}%</strong>
-              </span>
-            )}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-zinc-400">
+              {trackLabel} {currentSlot.roundNumber} of {slots.length}
+              {currentEraLabel ? ` · ${currentEraLabel}` : ''}
+              {difficulty === 'hardcore' ? ' · Energy target hidden' : ` · Aim for ${currentSlot.targetEnergy.ideal}% energy`}
+            </p>
+            <h2 id="current-slot-heading" className="mt-1 text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Pick your {currentSlot.name.toLowerCase()}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-400 max-w-2xl leading-snug">{currentSlot.description}</p>
           </div>
 
-          {/* Action Controls: Undo Pick + Reroll Token */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {draftedTracks.length > 0 && (
+            {pickedCount > 0 && (
               <button
                 onClick={handleUndo}
                 onMouseEnter={() => playHoverSound(audioEnabled)}
-                className="px-2.5 py-1 rounded-xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white font-bold text-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
-                title="Undo last draft pick (Cmd+Z / Ctrl+Z)"
+                className="min-h-[44px] px-3.5 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.1] text-zinc-200 font-bold text-sm flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+                title="Undo your last pick (Cmd+Z / Ctrl+Z)"
               >
-                <Undo2 className="w-3 h-3 text-zinc-400" />
+                <Undo2 className="w-4 h-4" aria-hidden="true" />
                 <span>Undo</span>
               </button>
             )}
-
             <button
               onClick={handleReroll}
               disabled={rerollTokens <= 0}
               onMouseEnter={() => playHoverSound(audioEnabled)}
-              className={`px-3 py-1 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition cursor-pointer active:scale-95 ${
+              className={`min-h-[44px] px-3.5 rounded-xl border font-bold text-sm flex items-center gap-1.5 transition active:scale-95 ${
                 rerollTokens > 0
-                  ? 'bg-white/[0.08] hover:bg-white/[0.14] border-white/[0.12] text-white shadow-sm'
-                  : 'bg-black/30 border-white/[0.04] text-zinc-600 cursor-not-allowed opacity-50'
+                  ? 'bg-white/[0.08] hover:bg-white/[0.14] border-white/[0.12] text-white cursor-pointer'
+                  : 'bg-black/30 border-white/[0.04] text-zinc-600 cursor-not-allowed'
               }`}
-              title="Refresh the candidate pool for this round"
-              aria-label={`Reroll candidate pool — ${rerollTokens} remaining`}
+              title="Swap these five songs for new ones"
+              aria-label={`New songs. ${rerollTokens} left`}
             >
-              <RefreshCw className={`w-3 h-3 ${rerollTokens > 0 ? 'text-zinc-300' : ''}`} />
-              <span>Reroll ({rerollTokens})</span>
+              <RefreshCw className="w-4 h-4" aria-hidden="true" />
+              <span>New songs ({rerollTokens})</span>
             </button>
           </div>
         </div>
 
-        {/* Row 2: Prominent Category Title & Description */}
-        <div className="flex items-baseline justify-between gap-3 border-t border-white/[0.06] pt-2">
-          <div className="min-w-0">
-            <h2 id="current-slot-heading" className="text-lg sm:text-xl font-black text-white tracking-tight flex items-baseline gap-2 flex-wrap">
-              <span>{gameMode === 'draft' ? 'Pick your' : `Select a track for your ${projectLabel.toLowerCase()}:`}</span>
-              <span className="text-white font-black">
-                {currentSlot.name}
+        {(gameMode === 'budget' || (challengeTheme && challengeTheme !== 'standard') || (draftSeed && !isSoloSeed(draftSeed))) && (
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
+            {gameMode === 'budget' && (
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <DollarSign className="w-3 h-3" aria-hidden="true" /> ${budgetRemaining} left
               </span>
-            </h2>
-            <p className="text-[11px] sm:text-xs text-zinc-400 mt-0.5 max-w-2xl leading-snug">
-              {currentSlot.description}
-            </p>
+            )}
+            {challengeTheme && challengeTheme !== 'standard' && (
+              <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                <Crown className="w-3 h-3" aria-hidden="true" /> {getCategoryLabel(challengeTheme) ?? challengeTheme}
+              </span>
+            )}
+            {draftSeed && !isSoloSeed(draftSeed) && (
+              <span className="px-2.5 py-1 rounded-full bg-white/[0.04] text-zinc-300 border border-white/[0.08] flex items-center gap-1 font-mono">
+                <Swords className="w-3 h-3" aria-hidden="true" /> {draftSeed}
+              </span>
+            )}
           </div>
-        </div>
+        )}
       </section>
 
-      <FirstWeekHud />
-
-      {/* Live Aux Crowd Arena & Synergies Feedback Deck */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 items-stretch">
-        <div className="lg:col-span-2">
-          <CrowdStageVisualizer
-            crowdHype={crowdHype}
-            hoveredCandidate={hoveredCandidate}
-            draftedTracks={draftedTracks}
-            currentSlot={currentSlot}
-            activeSynergies={activeSynergies}
-          />
-        </div>
-        <div className="lg:col-span-1 flex flex-col gap-2">
-          <SynergyDisplay synergies={activeSynergies} />
-          <AuxHypeMeter crowdHype={crowdHype} />
-        </div>
-      </div>
-
-      {/* Interactive Audition & Shortcut Deck Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-3 py-1.5 text-xs">
-        <div className="flex items-center gap-2.5 text-zinc-300">
-          <Headphones className="w-4 h-4 text-rose-500" />
-          <span className="font-extrabold uppercase tracking-wider text-[11px] text-white">Audition Deck:</span>
-          <span className="hidden sm:inline text-zinc-400 font-medium">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-zinc-200 font-mono text-[10px]">1-5</kbd> to sample • <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-zinc-200 font-mono text-[10px]">Space</kbd> pause • <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-zinc-200 font-mono text-[10px]">C</kbd> compare
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Compare Trigger Button */}
-          {currentOptions.length >= 2 && (
-            <button
-              onClick={() => {
-                if (compareSelection.length < 2) {
-                  setCompareSelection([currentOptions[0], currentOptions[1]]);
-                }
-                setIsCompareOpen(true);
-              }}
-              className="py-1 px-2.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-zinc-200 hover:text-white text-[11px] font-extrabold flex items-center gap-1.5 cursor-pointer transition active:scale-95"
-              title="Compare two candidates side-by-side"
-            >
-              <ArrowRightLeft className="w-3 h-3" />
-              <span>
-                {compareSelection.length === 2 ? 'Face-Off Selected' : 'A/B Face-Off'}
-              </span>
-            </button>
-          )}
-
-          {/* Surprise Wildcard Shuffle Button */}
-          <button
-            onClick={handleSurpriseShuffle}
-            disabled={isSpinning}
-            title="Spin for a surprise high-synergy wildcard gem from the catalog"
-            className="py-1 px-2.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/30 text-amber-300 text-[11px] font-extrabold flex items-center gap-1.5 cursor-pointer transition active:scale-95"
-          >
-            <Dice5 className={`w-3.5 h-3.5 text-amber-400 ${isSpinning ? 'animate-spin' : ''}`} />
-            <span>{isSpinning ? 'Rolling...' : 'Surprise Wildcard'}</span>
-          </button>
-
-          {/* Live Vibe Pill */}
-          <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-zinc-300 text-[11px] font-bold">
-            {currentVibe}
-          </span>
-        </div>
-      </div>
-
-      {/* Draft mode reveals the AI choice only after the human locks a pick. */}
+      {/* The rival's last pick, shown after you lock yours */}
       {gameMode === 'draft' && lastOpponentReveal && (
-        <div className="rounded-2xl border border-white/[0.08] bg-[#121216]/90 p-4 flex flex-col sm:flex-row sm:items-center gap-3 animate-fade-in backdrop-blur-2xl">
-          <div className="w-10 h-10 rounded-xl bg-white/[0.08] border border-white/[0.1] flex items-center justify-center flex-shrink-0">
-            <Swords className="w-5 h-5 text-white" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] uppercase tracking-widest font-black text-rose-400">{RIVALS[rivalId]?.name ?? 'Your rival'} picked</span>
-              <span className="text-[10px] text-zinc-500">Round {lastOpponentReveal.roundIndex + 1}</span>
-            </div>
-            <p className="text-sm font-extrabold text-white truncate">
-              {lastOpponentReveal.song.title} <span className="text-zinc-400 font-normal">— {lastOpponentReveal.song.rawArtistString}</span>
-            </p>
-            <p className="text-xs text-zinc-300">{lastOpponentReveal.reason}</p>
-          </div>
-          <span className="text-xs font-black text-zinc-300 whitespace-nowrap">{lastOpponentReveal.song.energy}% energy</span>
+        <div className="rounded-2xl border border-white/[0.08] bg-[#121216]/90 px-4 py-3 flex items-center gap-3 animate-fade-in">
+          <Swords className="w-4 h-4 text-rose-400 flex-shrink-0" aria-hidden="true" />
+          <p className="min-w-0 text-sm text-zinc-300">
+            <span className="font-black text-white">{RIVALS[rivalId]?.name ?? 'Your rival'}</span> took{' '}
+            <span className="font-bold text-white">{lastOpponentReveal.song.title}</span>
+            <span className="text-zinc-500"> by {lastOpponentReveal.song.rawArtistString}</span>
+          </p>
         </div>
       )}
 
-      {/* Five-card recommendation pool in First Week mode */}
+      <FirstWeekHud />
+
       {enrichedOptions.length === 0 ? (
         <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
-          <AlertCircle className="w-8 h-8 text-amber-400 animate-pulse" />
-          <h3 className="text-base font-extrabold text-white">
-            No {projectLabel} candidates available
-          </h3>
-          <p className="text-xs text-zinc-400 max-w-sm">
-            The catalog doesn&apos;t have enough {currentEraLabel ?? 'matching'} songs for {currentSlot.name}. {rerollTokens > 0 ? 'Use a reroll token to try another pool.' : 'No rerolls remain, so this slot is waiting for a new session.'}
+          <AlertCircle className="w-8 h-8 text-amber-400" aria-hidden="true" />
+          <h3 className="text-base font-extrabold text-white">No songs fit this spot</h3>
+          <p className="text-sm text-zinc-400 max-w-sm">
+            There aren&apos;t enough {currentEraLabel ?? 'matching'} songs for {currentSlot.name}. {rerollTokens > 0 ? 'Try a new set of songs.' : 'You are out of new-song swaps, so start a new draft.'}
           </p>
           <button
             onClick={handleReroll}
             disabled={rerollTokens <= 0}
-            className="px-5 py-2.5 rounded-full bg-white hover:bg-zinc-200 disabled:opacity-50 text-black font-extrabold text-xs transition active:scale-95 cursor-pointer mt-2"
+            className="min-h-[44px] px-5 rounded-full bg-white hover:bg-zinc-200 disabled:opacity-50 text-black font-extrabold text-sm transition active:scale-95 cursor-pointer mt-2"
           >
-            {rerollTokens > 0 ? `Try another pool (${rerollTokens})` : 'No rerolls available'}
+            {rerollTokens > 0 ? `New songs (${rerollTokens})` : 'No swaps left'}
           </button>
         </div>
       ) : (
-        <div className="w-full pb-32 sm:pb-24">
-          {/* Active Slot Context Bar */}
-          <div className="flex items-center justify-between px-4 py-2.5 mb-4 sm:mb-5 rounded-2xl bg-[#111117]/85 border border-white/[0.08] text-xs font-bold text-zinc-300 backdrop-blur-xl shadow-lg">
-            <div className="flex items-center gap-2 truncate">
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping flex-shrink-0" />
-              <span className="text-[11px] uppercase tracking-wider text-zinc-400 font-extrabold flex-shrink-0">
-                Drafting For:
-              </span>
-              <span className="text-white font-black text-xs sm:text-sm tracking-tight truncate">
-                {currentSlot.name}
-              </span>
-              <span className="text-zinc-500 font-medium text-[11px] hidden sm:inline flex-shrink-0">
-                ({trackLabel} {currentSlot.roundNumber} of {slots.length})
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="text-[11px] text-zinc-400 font-mono hidden md:flex items-center gap-2">
-                <span>Target: <strong className="text-white">{currentSlot.targetEnergy.ideal}%</strong> Energy</span>
-                <span className="text-zinc-600">•</span>
-                <span>5 Candidate Options</span>
-              </div>
-
-              {/* Mobile View Toggle: Carousel vs Vertical List */}
-              <div className="flex sm:hidden items-center bg-black/60 p-0.5 rounded-lg border border-white/[0.08]">
-                <button
-                  onClick={() => setMobileViewMode('carousel')}
-                  className={`px-2 py-0.5 rounded text-[10px] font-black transition-all cursor-pointer ${
-                    mobileViewMode === 'carousel'
-                      ? 'bg-white text-black shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  title="Swipeable Carousel View"
-                >
-                  Deck
-                </button>
-                <button
-                  onClick={() => setMobileViewMode('list')}
-                  className={`px-2 py-0.5 rounded text-[10px] font-black transition-all cursor-pointer ${
-                    mobileViewMode === 'list'
-                      ? 'bg-white text-black shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  title="Vertical List View"
-                >
-                  List
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Segmented Candidate Thumb Navigator on Mobile (in carousel mode) */}
-          {mobileViewMode === 'carousel' && (
-            <div className="flex sm:hidden items-center justify-between gap-1 mb-2 px-0.5">
-              <div className="flex items-center gap-1.5 flex-1">
-                {enrichedOptions.map((song, idx) => (
-                  <button
-                    key={song.id}
-                    onClick={() => scrollToCandidate(idx)}
-                    className={`flex-1 min-h-[40px] rounded-xl text-xs font-black border transition-all flex flex-col items-center justify-center p-1 active:scale-95 cursor-pointer ${
-                      activeMobileCardIndex === idx
-                        ? 'bg-white text-black border-white shadow-md'
-                        : 'bg-[#121216]/85 text-zinc-400 border-white/[0.08] hover:bg-zinc-900'
-                    }`}
-                  >
-                    <span className="text-[9px] uppercase font-bold opacity-80 leading-none">#{idx + 1}</span>
-                    <span className="text-[10px] font-extrabold truncate max-w-[50px] leading-tight mt-0.5">
-                      {song.artist.split(' ')[0]}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Candidates Container: Mobile horizontal snap deck OR desktop 5-column responsive grid */}
-          <div
-            ref={carouselRef}
-            onScroll={handleCarouselScroll}
-            aria-label={`${enrichedOptions.length} candidate tracks`}
-            className={`w-full ${
-              mobileViewMode === 'carousel'
-                ? 'flex sm:grid sm:grid-cols-2 lg:grid-cols-5 overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory gap-4 sm:gap-4.5 pb-4 scrollbar-none touch-pan-x'
-                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-4.5 items-stretch'
-            }`}
-          >
+        <section aria-label={`${enrichedOptions.length} songs to choose from`} className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-stretch">
             {enrichedOptions.map((song, idx) => (
-              <div
+              <DraftCard
                 key={song.id}
-                className={`flex flex-col h-full ${
-                  mobileViewMode === 'carousel'
-                    ? 'w-[86vw] max-w-[340px] flex-shrink-0 snap-center sm:w-full sm:max-w-none'
-                    : 'w-full'
-                }`}
-              >
-                <DraftCard
-                  song={song}
-                  candidateIndex={idx}
-                  onDraft={handleDraftSong}
-                  onCompareToggle={handleCompareToggle}
-                  isComparing={compareSelection.some((s) => s.id === song.id)}
-                  onHoverCandidate={setHoveredCandidate}
-                />
-              </div>
+                song={song}
+                candidateIndex={idx}
+                onDraft={handleDraftSong}
+                onCompareToggle={handleCompareToggle}
+                isComparing={compareSelection.some((s) => s.id === song.id)}
+                onHoverCandidate={setHoveredCandidate}
+              />
             ))}
           </div>
-        </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {currentOptions.length >= 2 && (
+                <button
+                  onClick={() => {
+                    if (compareSelection.length < 2) {
+                      setCompareSelection([currentOptions[0], currentOptions[1]]);
+                    }
+                    setIsCompareOpen(true);
+                  }}
+                  className="min-h-[44px] px-3.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-200 text-sm font-bold flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                  title="Compare two songs side by side"
+                >
+                  <ArrowRightLeft className="w-4 h-4" aria-hidden="true" />
+                  <span>{compareSelection.length === 2 ? 'Compare picked two' : 'Compare two'}</span>
+                </button>
+              )}
+              <button
+                onClick={handleSurpriseShuffle}
+                disabled={isSpinning}
+                title="Get one surprise song that fits this spot"
+                className="min-h-[44px] px-3.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-200 text-sm font-bold flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+              >
+                <Dice5 className={`w-4 h-4 ${isSpinning ? 'animate-spin' : ''}`} aria-hidden="true" />
+                <span>{isSpinning ? 'Rolling...' : 'Surprise song'}</span>
+              </button>
+            </div>
+            <p className="hidden lg:block text-xs text-zinc-500">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-zinc-300 font-mono">1-5</kbd> listen ·{' '}
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-zinc-300 font-mono">Space</kbd> pause ·{' '}
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-zinc-300 font-mono">C</kbd> compare
+            </p>
+          </div>
+        </section>
       )}
+
+      {/* Everything else lives one tap away */}
+      <details id="crowd-stats" className="group rounded-2xl border border-white/[0.08] bg-[#0e0e12]/80 backdrop-blur-xl">
+        <summary className="min-h-[48px] list-none cursor-pointer px-4 py-3 flex items-center justify-between gap-3 text-sm font-bold text-zinc-200 [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-rose-400" aria-hidden="true" />
+            Crowd and album stats
+            <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs text-zinc-300">Hype {crowdHype.score}%</span>
+          </span>
+          <ChevronDown className="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <div className="px-3 pb-3 flex flex-col gap-3">
+          <DraftTelemetryBar />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 items-stretch">
+            <div className="lg:col-span-2">
+              <CrowdStageVisualizer
+                crowdHype={crowdHype}
+                hoveredCandidate={hoveredCandidate}
+                draftedTracks={draftedTracks}
+                currentSlot={currentSlot}
+                activeSynergies={activeSynergies}
+              />
+            </div>
+            <div className="lg:col-span-1 flex flex-col gap-2">
+              <SynergyDisplay synergies={activeSynergies} />
+              <AuxHypeMeter crowdHype={crowdHype} />
+            </div>
+          </div>
+        </div>
+      </details>
 
       {/* Surprise Wildcard Spin Modal */}
       {wildcardModalOpen && unlockedWildcard && (
@@ -685,7 +506,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-white text-xs font-extrabold uppercase tracking-widest mb-3">
               <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-              <span>Surprise Wildcard Unlocked</span>
+              <span>Surprise song</span>
             </div>
 
             {/* Artwork & Details */}
@@ -714,7 +535,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             </p>
 
             <div className="my-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-zinc-300 italic">
-              &ldquo;An unexpected high-affinity vault gem selected specifically to surprise and elevate your current tracklist.&rdquo;
+              A song you might not have thought of that fits this spot well.
             </div>
 
             <div className="flex items-center gap-3 mt-4">
@@ -723,7 +544,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
                 className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-95"
               >
                 <Headphones className="w-4 h-4 text-rose-500" />
-                <span>{isSongPlaying(unlockedWildcard.id) ? 'Pause Sample' : 'Audition (30s)'}</span>
+                <span>{isSongPlaying(unlockedWildcard.id) ? 'Pause' : 'Listen'}</span>
               </button>
 
               <button
@@ -733,10 +554,10 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
                   setWildcardModalOpen(false);
                   setUnlockedWildcard(null);
                 }}
-                className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl cursor-pointer transition active:scale-95"
+                className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-xl cursor-pointer transition active:scale-95"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Lock In Wildcard</span>
+                <span>Pick it</span>
               </button>
             </div>
           </div>

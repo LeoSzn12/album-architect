@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Header } from '@/components/Header';
-import { DraftTelemetryBar } from '@/components/DraftTelemetryBar';
 import { DraftBoard } from '@/components/DraftBoard';
 import { AICriticPanel } from '@/components/AICriticPanel';
 import { LandingScreen } from '@/components/LandingScreen';
@@ -132,6 +131,7 @@ export default function Home() {
 
       {/* Header — always visible */}
       <Header
+        showProgress={!showLanding}
         activeSurface={activeSurface}
         onSelectSurface={setActiveSurface}
         onOpenModeSelector={() => { setActiveSurface('game'); setIsModeSelectorOpen(true); }}
@@ -188,14 +188,11 @@ export default function Home() {
         ) : (
           /* ── Active Draft or Results ── */
           <>
-            {/* Compact Telemetry HUD with collapsible deep waveform & monopoly radar */}
             {!isCompleted && friendTarget && draftSeed === friendTarget.seed && (
               <div role="status" className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm font-bold text-amber-200">
                 A friend sold {formatUnits(friendTarget.units)} in week one with this song pool. Beat it.
               </div>
             )}
-
-            {!isCompleted && <DraftTelemetryBar />}
 
             {/* Main panel: critic results OR draft board */}
             {isCompleted && evaluationResult ? (
@@ -209,13 +206,13 @@ export default function Home() {
           </>
         )}
 
-        {/* Leaderboard & History — always below (not in landing) */}
-        {activeSurface === 'game' && (
+        {/* Scores and history: on the landing and results screens, kept out of the way mid-draft */}
+        {activeSurface === 'game' && (showLanding || isCompleted || leaderboardRequested > 0) && (
           <>
             <div ref={leaderboardRef} tabIndex={-1} aria-label="Leaderboard" className="scroll-mt-28 rounded-3xl">
               <LeaderboardPanel key={leaderboardRequested} defaultOpen={leaderboardRequested > 0} />
             </div>
-            {!showLanding && <DraftHistoryPanel />}
+            {!showLanding && isCompleted && <DraftHistoryPanel />}
           </>
         )}
       </main>

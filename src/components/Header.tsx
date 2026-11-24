@@ -15,8 +15,8 @@ import {
   Settings2,
   Menu,
   X,
-  Sparkles,
   BookOpen,
+  ListMusic,
 } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 import { ConfirmModal } from './ConfirmModal';
@@ -35,6 +35,8 @@ interface HeaderProps {
   onOpenLibrary: () => void;
   onOpenProfile: () => void;
   onOpenHowToPlay?: () => void;
+  /** Show round progress and the tracklist button (hidden on the landing screen). */
+  showProgress?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -48,10 +50,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLibrary,
   onOpenProfile,
   onOpenHowToPlay,
+  showProgress = true,
 }) => {
   const {
     gameMode,
-    difficulty,
     draftSeed,
     currentRoundIndex,
     slots,
@@ -59,7 +61,6 @@ export const Header: React.FC<HeaderProps> = ({
     toggleAudio,
     startNewDraft,
     draftedTracks,
-    sessionId,
   } = useDraftStore();
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -67,7 +68,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   const versusSeed = draftSeed && !isSoloSeed(draftSeed) ? draftSeed : null;
   const isCompleted = currentRoundIndex >= slots.length;
-  const activeSlot = slots[currentRoundIndex];
   const formatLabel =
     gameMode === 'draft'
       ? 'Draft Mode'
@@ -76,263 +76,102 @@ export const Header: React.FC<HeaderProps> = ({
       : gameMode === 'budget'
       ? '$15 Budget'
       : 'Album Builder';
-  const progressLabel = gameMode === 'draft' ? 'Round' : `${gameMode === 'ep' ? 'EP' : 'Album'} Track`;
-  const completionLabel =
-    gameMode === 'draft' ? 'Draft Complete' : `${gameMode === 'ep' ? 'EP' : 'Album'} Ready for Review`;
-  const saveLabel = sessionId ? 'Session saved · resume ready' : 'Saved locally · resume ready';
+  const progressLabel = gameMode === 'draft' ? 'Round' : 'Track';
+
+  const navButton = (label: string, surface: ActiveSurfaceType, onClick: () => void) => (
+    <button
+      type="button"
+      onClick={() => {
+        playHoverSound(audioEnabled);
+        onClick();
+      }}
+      aria-current={activeSurface === surface ? 'page' : undefined}
+      className={`min-h-[40px] px-3.5 rounded-xl text-sm font-bold transition cursor-pointer whitespace-nowrap ${
+        activeSurface === surface ? 'bg-white/[0.1] text-white' : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <>
-      <header className="w-full max-w-6xl mx-auto py-2.5 px-3.5 sm:px-5 mb-4 sm:mb-6 border border-white/[0.08] bg-[#121216]/75 backdrop-blur-2xl sticky top-2 sm:top-3 z-40 rounded-2xl sm:rounded-3xl shadow-[0_16px_40px_-10px_rgba(0,0,0,0.65)] ring-1 ring-inset ring-white/[0.05]">
-        {/* MOBILE TOP BAR (screens < lg) */}
-        <div className="flex lg:hidden items-center justify-between gap-2 h-11 sm:h-12">
-          {/* Left: Brand Logo & Title */}
-          <div className="flex items-center gap-2.5">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-white/[0.08] border border-white/10 shadow-inner">
-              <Disc3 className="w-4 h-4 text-rose-500 animate-spin-slow" />
-            </div>
-            <div>
-              <h1 className="text-base font-extrabold tracking-tight text-white">
-                FIRST WEEK
-              </h1>
-            </div>
-          </div>
-
-          {/* Center: Current Round Pill */}
-          <div className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-bold text-zinc-200 flex items-center gap-1.5 truncate max-w-[150px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-            <span className="truncate">
-              {isCompleted ? 'Complete' : `R${currentRoundIndex + 1}/${slots.length}: ${activeSlot?.name}`}
+      <header className="w-full max-w-6xl mx-auto mb-4 sm:mb-6 px-3 sm:px-4 py-2 border border-white/[0.08] bg-[#121216]/80 backdrop-blur-2xl sticky top-2 sm:top-3 z-40 rounded-2xl shadow-[0_16px_40px_-10px_rgba(0,0,0,0.65)]">
+        <div className="flex items-center justify-between gap-2 min-h-[44px]">
+          {/* Brand + progress */}
+          <button
+            type="button"
+            onClick={() => onSelectSurface?.('game')}
+            className="flex items-center gap-2.5 min-w-0 cursor-pointer"
+            aria-label="First Week home"
+          >
+            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500 to-rose-700 shadow-md shadow-rose-950/60 flex-shrink-0">
+              <Disc3 className="w-5 h-5 text-white" aria-hidden="true" />
             </span>
-          </div>
+            <span className="text-base sm:text-lg font-black tracking-tight text-white whitespace-nowrap">First Week</span>
+          </button>
 
-          {/* Right: Quick Audio + Mobile Sheet Menu Toggle */}
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={toggleAudio}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-300 active:text-white transition-colors cursor-pointer"
-              title={audioEnabled ? 'Mute Audio' : 'Enable Audio'}
-              aria-label={audioEnabled ? 'Mute Sound' : 'Unmute Sound'}
-            >
-              {audioEnabled ? <Volume2 className="w-4 h-4 text-rose-400" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
-            </button>
+          {showProgress && (
+            <span className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs font-bold text-zinc-200 whitespace-nowrap">
+              {isCompleted ? 'Album finished' : `${progressLabel} ${currentRoundIndex + 1} of ${slots.length}`}
+            </span>
+          )}
 
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                setIsMobileMenuOpen(true);
-              }}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-white active:scale-95 transition-all cursor-pointer shadow-sm"
-              title="Open Navigation Menu"
-              aria-label="Open Menu"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <nav aria-label="Primary" className="hidden lg:flex items-center gap-1 mr-1">
+              {navButton('Play', 'game', () => onSelectSurface?.('game'))}
+              {navButton('How to Play', 'how-to-play', () => (onOpenHowToPlay ? onOpenHowToPlay() : onSelectSurface?.('how-to-play')))}
+            </nav>
 
-        {/* DESKTOP TOP BAR (screens >= lg) */}
-        <div className="hidden lg:flex lg:justify-between lg:items-center gap-4">
-          {/* 1. Left: Brand & Round Status */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/10 shadow-inner">
-              <Disc3 className="w-5 h-5 text-rose-500 animate-spin-slow" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-extrabold tracking-tight text-white">
-                  FIRST WEEK
-                </h1>
-                {/* Round Progress Badge */}
-                <span className="px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-bold text-zinc-200 flex items-center gap-1.5 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-                  <span>
-                    {isCompleted ? (
-                      <span className="text-emerald-400 font-bold">{completionLabel}</span>
-                    ) : (
-                      <>
-                        {progressLabel} <span className="text-white font-bold">{currentRoundIndex + 1}</span>/{slots.length}
-                      </>
-                    )}
-                  </span>
-                </span>
-              </div>
-              <p className="text-[10px] text-zinc-400 font-medium tracking-wide">
-                {activeSlot ? `Current: ${activeSlot.name}` : 'A&R Curation Studio'}
-              </p>
-            </div>
-          </div>
-
-          {/* 2. Center: Primary Navigation Segmented Tabs (Apple Liquid Glass Pill) */}
-          <nav aria-label="Primary Navigation" className="flex items-center gap-1 p-1 bg-black/40 border border-white/[0.06] rounded-2xl backdrop-blur-xl shadow-inner">
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                if (onSelectSurface) onSelectSurface('game');
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                activeSurface === 'game'
-                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="Open active Draft Board"
-            >
-              <Disc3 className="w-3.5 h-3.5" />
-              <span>Draft Board</span>
-            </button>
+            {showProgress && (
+              <button
+                type="button"
+                onClick={() => {
+                  playHoverSound(audioEnabled);
+                  onToggleTracklist();
+                }}
+                className="hidden sm:inline-flex min-h-[40px] items-center gap-1.5 px-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-100 text-sm font-bold transition cursor-pointer"
+                title="Your tracklist"
+              >
+                <ListMusic className="w-4 h-4 text-rose-400" aria-hidden="true" />
+                <span>Tracks {draftedTracks.length}/{slots.length}</span>
+              </button>
+            )}
 
             <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                if (onOpenHowToPlay) onOpenHowToPlay();
-                else if (onSelectSurface) onSelectSurface('how-to-play');
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                activeSurface === 'how-to-play'
-                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="Open How to Play Rulebook"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>How to Play</span>
-            </button>
-
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                onOpenSetup();
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                activeSurface === 'setup'
-                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="Open Taste Preferences Setup"
-            >
-              <Settings2 className="w-3.5 h-3.5" />
-              <span>Setup</span>
-            </button>
-
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                onOpenLibrary();
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                activeSurface === 'library'
-                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="Browse Song Catalog Library"
-            >
-              <Library className="w-3.5 h-3.5" />
-              <span>Library</span>
-            </button>
-
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                onOpenProfile();
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                activeSurface === 'profile'
-                  ? 'bg-white text-black font-extrabold shadow-md shadow-black/40'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
-              }`}
-              title="View Curator Profile & Stats"
-            >
-              <UserRound className="w-3.5 h-3.5" />
-              <span>Profile</span>
-            </button>
-          </nav>
-
-          {/* 3. Right: Action Controls & Tools */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Game Mode Pill */}
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                onOpenModeSelector();
-              }}
-              onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-200 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
-              title="Change Game Mode & Era"
-            >
-              <Sliders className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{formatLabel}</span>
-            </button>
-
-            {/* 1v1 Play Against Friends Button */}
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                onOpenFriendsModal();
-              }}
-              onMouseEnter={() => playHoverSound(audioEnabled)}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm ${
-                versusSeed
-                  ? 'bg-rose-500 text-white border-rose-400 shadow-md shadow-rose-950/50 animate-pulse'
-                  : 'bg-white/[0.06] hover:bg-white/[0.1] border-white/[0.08] text-zinc-200'
-              }`}
-              title="Play 1v1 Against Friends with matched seeds"
-            >
-              <Swords className="w-3.5 h-3.5 text-rose-400" />
-              <span>{versusSeed ? `1v1: ${versusSeed}` : '1v1'}</span>
-            </button>
-
-            {/* Live Tracklist Counter */}
-            <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                onToggleTracklist();
-              }}
-              onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-200 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer relative"
-              title="Open Tracklist Drawer"
-            >
-              <Disc3 className="w-3.5 h-3.5 text-rose-400" />
-              <span>Tracks ({draftedTracks.length})</span>
-              {draftedTracks.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-black" />
-              )}
-            </button>
-
-            {/* Leaderboard Scroll Button */}
-            <button
+              type="button"
               onClick={() => {
                 playHoverSound(audioEnabled);
                 onScrollToLeaderboard();
               }}
-              onMouseEnter={() => playHoverSound(audioEnabled)}
-              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-300 hover:text-white transition cursor-pointer"
-              title="Scroll to Leaderboard"
+              className="hidden sm:flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] transition cursor-pointer"
+              title="Your top scores"
               aria-label="View Leaderboard"
             >
               <Trophy className="w-4 h-4 text-amber-400" />
             </button>
 
-            {/* Reset Draft */}
             <button
-              onClick={() => {
-                playHoverSound(audioEnabled);
-                setIsResetConfirmOpen(true);
-              }}
-              title={`Restart ${formatLabel}`}
-              aria-label="Restart Draft"
-              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-400 hover:text-white transition cursor-pointer"
+              type="button"
+              onClick={toggleAudio}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] transition cursor-pointer"
+              title={audioEnabled ? 'Mute sound effects' : 'Turn on sound effects'}
+              aria-label={audioEnabled ? 'Mute Sound' : 'Unmute Sound'}
             >
-              <RotateCcw className="w-4 h-4" />
+              {audioEnabled ? <Volume2 className="w-4 h-4 text-zinc-200" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
             </button>
 
-            {/* Sound Toggle */}
             <button
-              onClick={toggleAudio}
-              title={audioEnabled ? 'Mute Sound FX' : 'Enable Sound FX'}
-              aria-label={audioEnabled ? 'Mute Sound' : 'Enable Sound'}
-              className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-zinc-400 hover:text-white transition cursor-pointer"
+              type="button"
+              onClick={() => {
+                playHoverSound(audioEnabled);
+                setIsMobileMenuOpen(true);
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white transition cursor-pointer"
+              title="Menu"
+              aria-label="Open Menu"
             >
-              {audioEnabled ? <Volume2 className="w-4 h-4 text-rose-400" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
+              <Menu className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -343,11 +182,11 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-xl animate-fade-in lg:hidden"
+          className="fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center bg-black/80 backdrop-blur-xl animate-fade-in"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
-            className="w-full bg-[#121216]/95 border-t border-white/[0.12] rounded-t-3xl p-5 pb-safe shadow-2xl flex flex-col gap-4 max-h-[85vh] overflow-y-auto backdrop-blur-2xl"
+            className="w-full sm:max-w-md bg-[#121216]/95 border-t sm:border border-white/[0.12] rounded-t-3xl sm:rounded-3xl p-5 pb-safe shadow-2xl flex flex-col gap-4 max-h-[85vh] overflow-y-auto backdrop-blur-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Sheet Handle */}
@@ -356,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
               <div className="flex items-center gap-2">
                 <Disc3 className="w-5 h-5 text-rose-500 animate-spin-slow" />
-                <h3 className="text-lg font-bold text-white tracking-tight">First Week Menu</h3>
+                <h3 className="text-lg font-bold text-white tracking-tight">Menu</h3>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -370,7 +209,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Category 1: Navigation & Surfaces */}
             <div>
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 block mb-2 px-1">
-                Navigation & Views
+                Play
               </span>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -385,9 +224,9 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   <Disc3 className={`w-4 h-4 ${activeSurface === 'game' ? 'text-black' : 'text-rose-400'}`} />
-                  <span className="text-xs font-bold">Draft Board</span>
+                  <span className="text-xs font-bold">Play</span>
                   <span className={`text-[10px] ${activeSurface === 'game' ? 'text-black/70' : 'text-zinc-500'}`}>
-                    {isCompleted ? 'View Results' : `Round ${currentRoundIndex + 1}/${slots.length}`}
+                    {isCompleted ? 'Your results' : `Round ${currentRoundIndex + 1} of ${slots.length}`}
                   </span>
                 </button>
 
@@ -405,7 +244,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <BookOpen className={`w-4 h-4 ${activeSurface === 'how-to-play' ? 'text-black' : 'text-zinc-400'}`} />
                   <span className="text-xs font-bold">How to Play</span>
-                  <span className={`text-[10px] ${activeSurface === 'how-to-play' ? 'text-black/70' : 'text-zinc-500'}`}>Rules & Strategy</span>
+                  <span className={`text-[10px] ${activeSurface === 'how-to-play' ? 'text-black/70' : 'text-zinc-500'}`}>Rules and tips</span>
                 </button>
 
                 <button
@@ -421,7 +260,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Settings2 className={`w-4 h-4 ${activeSurface === 'setup' ? 'text-black' : 'text-zinc-400'}`} />
                   <span className="text-xs font-bold">Setup</span>
-                  <span className={`text-[10px] ${activeSurface === 'setup' ? 'text-black/70' : 'text-zinc-500'}`}>Taste Preferences</span>
+                  <span className={`text-[10px] ${activeSurface === 'setup' ? 'text-black/70' : 'text-zinc-500'}`}>Your taste</span>
                 </button>
 
                 <button
@@ -437,7 +276,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Library className={`w-4 h-4 ${activeSurface === 'library' ? 'text-black' : 'text-zinc-400'}`} />
                   <span className="text-xs font-bold">Library</span>
-                  <span className={`text-[10px] ${activeSurface === 'library' ? 'text-black/70' : 'text-zinc-500'}`}>Search Catalog</span>
+                  <span className={`text-[10px] ${activeSurface === 'library' ? 'text-black/70' : 'text-zinc-500'}`}>Browse songs</span>
                 </button>
 
                 <button
@@ -453,7 +292,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <UserRound className={`w-4 h-4 ${activeSurface === 'profile' ? 'text-black' : 'text-zinc-400'}`} />
                   <span className="text-xs font-bold">Profile</span>
-                  <span className={`text-[10px] ${activeSurface === 'profile' ? 'text-black/70' : 'text-zinc-500'}`}>Curator Stats</span>
+                  <span className={`text-[10px] ${activeSurface === 'profile' ? 'text-black/70' : 'text-zinc-500'}`}>Your stats</span>
                 </button>
 
                 <button
@@ -464,8 +303,8 @@ export const Header: React.FC<HeaderProps> = ({
                   className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-left flex flex-col gap-1 active:scale-98 cursor-pointer hover:bg-white/[0.08]"
                 >
                   <Trophy className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-white">Leaderboard</span>
-                  <span className="text-[10px] text-zinc-500">High Scores</span>
+                  <span className="text-xs font-bold text-white">Top scores</span>
+                  <span className="text-[10px] text-zinc-500">On this device</span>
                 </button>
               </div>
             </div>
@@ -473,7 +312,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Category 2: Mode & Multiplayer */}
             <div>
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 block mb-2 px-1">
-                Game Modes & Multiplayer
+                Formats and friends
               </span>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -485,7 +324,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Sliders className="w-4 h-4 text-zinc-400" />
                   <span className="text-xs font-bold text-white">{formatLabel}</span>
-                  <span className="text-[10px] text-zinc-400">Change Mode</span>
+                  <span className="text-[10px] text-zinc-400">Change format</span>
                 </button>
 
                 <button
@@ -496,8 +335,8 @@ export const Header: React.FC<HeaderProps> = ({
                   className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-left flex flex-col gap-1 active:scale-98 cursor-pointer hover:bg-white/[0.08]"
                 >
                   <Swords className="w-4 h-4 text-rose-400" />
-                  <span className="text-xs font-bold text-white">1v1 Battle</span>
-                  <span className="text-[10px] text-zinc-400">{versusSeed ? `Seed: ${versusSeed}` : 'Challenge Friends'}</span>
+                  <span className="text-xs font-bold text-white">Challenge a friend</span>
+                  <span className="text-[10px] text-zinc-400">{versusSeed ? `Code: ${versusSeed}` : 'Same songs, beat their score'}</span>
                 </button>
               </div>
             </div>
@@ -521,8 +360,8 @@ export const Header: React.FC<HeaderProps> = ({
       <ConfirmModal
         isOpen={isResetConfirmOpen}
         title={`Restart ${formatLabel}?`}
-        message="Are you sure you want to discard this session and start over? All drafted tracks and streak progress for this round will be lost."
-        confirmText="Yes, Restart"
+        message="This clears the songs you picked in this draft and starts a new one."
+        confirmText="Start over"
         cancelText="Cancel"
         onConfirm={() => {
           startNewDraft();

@@ -6,7 +6,6 @@ import confetti from 'canvas-confetti';
 import {
   Sparkles,
   Disc,
-  ArrowRight,
   AlertTriangle,
   RotateCcw,
   RefreshCw,
@@ -200,7 +199,6 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     curatorBadges,
   } = evaluationResult;
 
-  const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
 
   const verdict = scoreToVerdict(overallScore);
   const scoreCategoryItems = [
@@ -228,16 +226,16 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
       />
 
       {/* Next moves */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         <button
           onClick={() => {
             playHoverSound(audioEnabled);
             startNewDraft();
           }}
-          className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-xs transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-sm transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
           <RotateCcw className="w-4 h-4" />
-          <span>Draft Again</span>
+          <span>Play again</span>
         </button>
 
         {onOpenFriendsModal && (
@@ -246,7 +244,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
               playHoverSound(audioEnabled);
               onOpenFriendsModal();
             }}
-            className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-xs transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-sm transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
             <Swords className="w-4 h-4 text-rose-500" />
             <span>Challenge a friend</span>
@@ -258,11 +256,10 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
             playHoverSound(audioEnabled);
             onOpenExport();
           }}
-          className="min-h-[44px] flex-1 px-6 py-2.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs transition shadow-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-sm transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
-          <Sparkles className="w-4 h-4 text-rose-500" />
-          <span>Export {projectLabel} Playlist</span>
-          <ArrowRight className="w-4 h-4 text-black" />
+          <Music2 className="w-4 h-4" />
+          <span>Save as playlist</span>
         </button>
       </div>
 
