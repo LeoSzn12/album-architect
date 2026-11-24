@@ -43,11 +43,17 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       onScrollToCrowd();
       return;
     }
-    const statsEl = document.getElementById('crowd-stats') as HTMLDetailsElement | null;
-    if (statsEl) {
-      statsEl.open = true;
-      statsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // The draft board may only just be mounting after a screen switch, so wait a beat.
+    const openStats = (triesLeft: number) => {
+      const statsEl = document.getElementById('crowd-stats') as HTMLDetailsElement | null;
+      if (statsEl) {
+        statsEl.open = true;
+        statsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (triesLeft > 0) {
+        window.setTimeout(() => openStats(triesLeft - 1), 50);
+      }
+    };
+    openStats(10);
   };
 
   return (
