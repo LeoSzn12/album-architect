@@ -8,6 +8,7 @@ import { getCategoryLabel } from '@/lib/firstWeek/categories';
 import { CompareModal } from './CompareModal';
 import {
   RefreshCw,
+  CheckCircle2,
   Sparkles,
   Trophy,
   Undo2,
@@ -129,6 +130,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
       // Space: Toggle Snippet Play/Pause
       if (e.code === 'Space') {
+        if (e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement) return;
         e.preventDefault();
         const activeSong = currentOptions.find((s) => isSongPlaying(s.id)) || currentOptions[0];
         if (activeSong) {
@@ -292,6 +294,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
   }
 
   const pickedCount = draftedTracks.length;
+  const lastPick = pickedCount > 0 ? draftedTracks[pickedCount - 1] : null;
 
   return (
     <div className="w-full flex flex-col gap-4 my-4">
@@ -310,6 +313,15 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             />
           ))}
         </div>
+
+        {lastPick && (
+          <p key={lastPick.song.id} role="status" className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-3 py-2 text-sm text-emerald-100 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400" aria-hidden="true" />
+            <span className="min-w-0 truncate">
+              Added <span className="font-black text-white">{lastPick.song.title}</span> as your {lastPick.slot.name.toLowerCase()}
+            </span>
+          </p>
+        )}
 
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div className="min-w-0">

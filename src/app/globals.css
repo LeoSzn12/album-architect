@@ -144,10 +144,6 @@
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
-.touch-pan-x {
-  touch-action: pan-x;
-  -webkit-overflow-scrolling: touch;
-}
 
 /* Crowd Stage & Live Feedback Animations */
 @keyframes crowdBounce {

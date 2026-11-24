@@ -224,7 +224,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
             aria-pressed={isComparing}
             title={isComparing ? 'Remove from compare' : 'Compare with another song'}
             aria-label={isComparing ? 'Remove from compare' : 'Compare'}
-            className={`h-11 w-11 flex-shrink-0 rounded-xl border flex items-center justify-center transition cursor-pointer ${
+            className={`h-12 w-12 lg:h-11 lg:w-11 flex-shrink-0 rounded-xl border flex items-center justify-center transition cursor-pointer ${
               isComparing ? 'bg-white text-black border-white' : 'bg-white/[0.04] border-white/[0.08] text-zinc-400 hover:text-white'
             }`}
           >
@@ -246,7 +246,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
           type="button"
           disabled={isOverBudget}
           onClick={handleDraftClick}
-          className={`h-11 min-h-[44px] flex-1 rounded-xl px-3 text-sm font-black flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer ${
+          className={`h-12 lg:h-11 min-h-[44px] flex-1 rounded-xl px-3 text-base lg:text-sm font-black flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer ${
             isOverBudget
               ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
               : hasMonopolyWarning
