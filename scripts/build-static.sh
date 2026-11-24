@@ -14,5 +14,5 @@ trap restore EXIT
 mv src/app/api "$ASIDE/api"
 mv src/proxy.ts "$ASIDE/proxy.ts"
 rm -rf out
-STATIC_EXPORT=1 NEXT_PUBLIC_STATIC_SITE=1 npx next build
+STATIC_EXPORT=1 NEXT_PUBLIC_STATIC_SITE=1 NEXT_PUBLIC_BASE_PATH="${NEXT_BASE_PATH:-}" npx next build
 touch out/.nojekyll

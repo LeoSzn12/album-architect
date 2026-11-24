@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Copy, Disc3, Download, Share2, TrendingUp, Trophy } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Copy, Crown, Disc3, Download, Share2, TrendingUp, Trophy } from 'lucide-react';
 import { useDraftStore } from '@/store/useDraftStore';
 import { simulateRelease, DAY_LABELS } from '@/lib/firstWeek/releaseSim';
 import { getWeeklyTrend } from '@/lib/firstWeek/weeklyTrend';
@@ -11,12 +11,23 @@ import { formatFirstWeekShare } from '@/lib/firstWeek/shareText';
 import { renderShareImage } from '@/lib/firstWeek/shareImage';
 import { buildChallengeInvite } from '@/lib/challengeInvite';
 import { getCategoryLabel } from '@/lib/firstWeek/categories';
+import { siteBaseUrl } from '@/lib/siteUrl';
+import { readChallengeTarget } from '@/lib/firstWeek/weekOneChallenge';
+
+export interface ReleaseSummary {
+  /** Overall score, 0 to 10. */
+  score: number;
+  grade: string;
+  personaTitle: string;
+  personaTagline?: string;
+}
 
 function prefersReducedMotion() {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export const ReleaseWeekPanel: React.FC = () => {
+/** The player's simulated release week (and the rival's), shared by the results screen. */
+export function useFirstWeekRelease() {
   const {
     draftedTracks,
     evaluationResult,
@@ -27,10 +38,6 @@ export const ReleaseWeekPanel: React.FC = () => {
     mysteryRoundIndex,
     releaseSeed,
     gameMode,
-    draftSeed,
-    difficulty,
-    selectedEra,
-    challengeTheme,
   } = useDraftStore();
 
   const trend = useMemo(() => getWeeklyTrend(), []);
@@ -53,6 +60,25 @@ export const ReleaseWeekPanel: React.FC = () => {
     return { name: RIVALS[rivalId]?.name ?? 'Your rival', units: result.finalUnits };
   }, [gameMode, opponentEvaluationResult, opponentDraftedTracks, ruleCardIds, trend, releaseSeed, rivalId]);
 
+  return { release, rival, trend };
+}
+
+/** The "beat my week one" link for the current draft. */
+export function useWeekOneChallengeLink(units: number | null | undefined): () => string {
+  const { gameMode, draftSeed, difficulty, selectedEra, challengeTheme } = useDraftStore();
+  return () => {
+    const base = siteBaseUrl();
+    if (!draftSeed) return base;
+    return buildChallengeInvite(base, { seed: draftSeed, mode: gameMode, difficulty, era: selectedEra, theme: challengeTheme, ...(units ? { toBeat: units } : {}) });
+  };
+}
+
+export const ReleaseWeekPanel: React.FC<{ summary?: ReleaseSummary }> = ({ summary }) => {
+  const { draftedTracks, draftSeed, challengeTheme } = useDraftStore();
+  const { release, rival, trend } = useFirstWeekRelease();
+  const challengeLink = useWeekOneChallengeLink(release?.finalUnits);
+  const [friendTarget] = useState(() => readChallengeTarget(draftSeed));
+
   // Drop animation: reveal one day at a time.
   const [daysShown, setDaysShown] = useState(() => (prefersReducedMotion() ? 7 : 0));
   useEffect(() => {
@@ -63,6 +89,7 @@ export const ReleaseWeekPanel: React.FC = () => {
 
   const [copied, setCopied] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   if (!release) return null;
 
@@ -76,12 +103,7 @@ export const ReleaseWeekPanel: React.FC = () => {
   const isDaily = draftSeed?.startsWith('DAILY-') ?? false;
   const label = isDaily ? "Today's Drop" : categoryLabel;
 
-  const shareUrl = () => {
-    if (typeof window === 'undefined') return null;
-    if (!draftSeed) return window.location.origin;
-    return buildChallengeInvite(window.location.origin, { seed: draftSeed, mode: gameMode, difficulty, era: selectedEra, theme: challengeTheme });
-  };
-  const shareText = () => formatFirstWeekShare({ release, rival, label, url: shareUrl() });
+  const shareText = () => formatFirstWeekShare({ release, rival, label, url: typeof window === 'undefined' ? null : challengeLink() });
 
   const handleCopy = async () => {
     try {
@@ -122,8 +144,22 @@ export const ReleaseWeekPanel: React.FC = () => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
+  const chart = (
+    <div className="grid grid-cols-7 gap-2 items-end h-32" role="img" aria-label={`Units per day: ${release.dailyUnits.map((units, index) => `${DAY_LABELS[index]} ${formatUnits(units)}`).join(', ')}`}>
+      {release.dailyUnits.map((units, index) => (
+        <div key={DAY_LABELS[index]} className="flex flex-col items-center gap-1 h-full justify-end">
+          <div
+            className={`w-full rounded-t-lg transition-all duration-500 ${index === 0 ? 'bg-rose-500' : 'bg-white/50'}`}
+            style={{ height: index < daysShown ? `${Math.max(4, (units / peak) * 100)}%` : '0%' }}
+          />
+          <span className="text-[10px] font-bold text-zinc-500">{DAY_LABELS[index]}</span>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <section aria-label="First week results" className="rounded-3xl border border-white/[0.1] bg-[#121218]/95 p-5 sm:p-7 shadow-2xl flex flex-col gap-6">
+    <section aria-label="First week results" className="rounded-3xl border border-white/[0.1] bg-[#121218]/95 p-5 sm:p-7 shadow-2xl flex flex-col gap-5">
       <header className="flex flex-col gap-1 text-center items-center">
         <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.25em] text-rose-400">
           <Disc3 className={`w-4 h-4 ${done ? '' : 'animate-spin'}`} aria-hidden="true" />
@@ -145,18 +181,7 @@ export const ReleaseWeekPanel: React.FC = () => {
         )}
       </div>
 
-      {/* Daily chart */}
-      <div className="grid grid-cols-7 gap-2 items-end h-32" role="img" aria-label={`Units per day: ${release.dailyUnits.map((units, index) => `${DAY_LABELS[index]} ${formatUnits(units)}`).join(', ')}`}>
-        {release.dailyUnits.map((units, index) => (
-          <div key={DAY_LABELS[index]} className="flex flex-col items-center gap-1 h-full justify-end">
-            <div
-              className={`w-full rounded-t-lg transition-all duration-500 ${index === 0 ? 'bg-rose-500' : 'bg-white/50'}`}
-              style={{ height: index < daysShown ? `${Math.max(4, (units / peak) * 100)}%` : '0%' }}
-            />
-            <span className="text-[10px] font-bold text-zinc-500">{DAY_LABELS[index]}</span>
-          </div>
-        ))}
-      </div>
+      {!done && chart}
 
       {done && (
         <>
@@ -171,52 +196,36 @@ export const ReleaseWeekPanel: React.FC = () => {
             </div>
           )}
 
-          {/* Range */}
-          <div>
-            <div className="flex justify-between text-[11px] font-bold text-zinc-400">
-              <span>{formatUnits(release.low)}</span>
-              <span>Projected range</span>
-              <span>{formatUnits(release.high)}</span>
+          {friendTarget && (
+            <div className={`rounded-2xl border p-4 text-center ${release.finalUnits > friendTarget.units ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-amber-500/30 bg-amber-500/10'}`}>
+              <div className="text-lg font-black text-white">
+                {release.finalUnits > friendTarget.units ? 'You beat your friend\'s week one' : release.finalUnits === friendTarget.units ? 'You matched your friend exactly' : 'Your friend still leads'}
+              </div>
+              <div className="text-sm text-zinc-300">
+                You {formatUnits(release.finalUnits)} · Your friend {formatUnits(friendTarget.units)}
+              </div>
             </div>
-            <div className="relative mt-1.5 h-2 rounded-full bg-white/[0.08]">
-              <div className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-rose-500" style={{ left: `calc(${markerLeft}% - 7px)` }} />
-            </div>
-            <p className="mt-2 text-[11px] text-zinc-500">The crowd decides where you land inside the range.</p>
-          </div>
+          )}
 
-          {/* Why */}
-          <div>
-            <h3 className="text-sm font-black text-white mb-2">Why it sold</h3>
-            <ul className="flex flex-col gap-1.5">
-              {release.reasons.map((reason) => (
-                <li key={reason.label} className="flex justify-between gap-3 text-xs">
-                  <span className="text-zinc-300">{reason.label}</span>
-                  <span className={`font-black tabular-nums ${reason.units >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {reason.units >= 0 ? '+' : '−'}{formatUnits(Math.abs(reason.units))}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2 flex items-center gap-1.5 text-[11px] text-zinc-500">
-              <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
-              This week: {trend.name}. {release.trendNote}
-            </p>
-          </div>
-
-          {/* Ladder */}
-          <div>
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-zinc-300">{release.milestone.label}</span>
-              {release.nextMilestone && (
-                <span className="text-zinc-500">
-                  {formatUnits(release.nextMilestone.units - release.finalUnits)} to {release.nextMilestone.label}
-                </span>
-              )}
+          {summary && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Album score</div>
+                <div className="mt-1 text-3xl font-black text-white tabular-nums">
+                  {summary.score.toFixed(1)}<span className="text-base font-bold text-zinc-500"> / 10</span>
+                </div>
+                <div className="text-xs font-bold text-zinc-300">{summary.grade}</div>
+              </div>
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
+                <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                  <Crown className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                  Your style
+                </div>
+                <div className="mt-1 text-lg font-black text-white leading-tight">{summary.personaTitle}</div>
+                {summary.personaTagline && <div className="mt-0.5 text-xs text-zinc-400">{summary.personaTagline}</div>}
+              </div>
             </div>
-            <div className="mt-1.5 h-2 rounded-full bg-white/[0.08] overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-rose-500 to-amber-400" style={{ width: `${Math.min(100, (release.finalUnits / ladderTop) * 100)}%` }} />
-            </div>
-          </div>
+          )}
 
           {/* Share */}
           <div className="flex flex-col sm:flex-row gap-2">
@@ -238,6 +247,71 @@ export const ReleaseWeekPanel: React.FC = () => {
             </button>
           </div>
           {imageError && <p className="text-[11px] text-rose-400 text-center">Couldn&apos;t make the image on this device. Copy the text instead.</p>}
+
+          {/* Details, collapsed */}
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02]">
+            <button
+              type="button"
+              onClick={() => setShowDetails((open) => !open)}
+              aria-expanded={showDetails}
+              className="w-full min-h-[44px] px-4 py-3 flex items-center justify-between gap-3 text-left text-sm font-black text-white cursor-pointer"
+            >
+              <span>How your week went</span>
+              {showDetails ? <ChevronUp className="w-4 h-4 text-zinc-400" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 text-zinc-400" aria-hidden="true" />}
+            </button>
+            {showDetails && (
+              <div className="px-4 pb-4 flex flex-col gap-6">
+                {chart}
+
+                {/* Range */}
+                <div>
+                  <div className="flex justify-between text-[11px] font-bold text-zinc-400">
+                    <span>{formatUnits(release.low)}</span>
+                    <span>Projected range</span>
+                    <span>{formatUnits(release.high)}</span>
+                  </div>
+                  <div className="relative mt-1.5 h-2 rounded-full bg-white/[0.08]">
+                    <div className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 border-rose-500" style={{ left: `calc(${markerLeft}% - 7px)` }} />
+                  </div>
+                  <p className="mt-2 text-[11px] text-zinc-500">The crowd decides where you land inside the range.</p>
+                </div>
+
+                {/* Why */}
+                <div>
+                  <h3 className="text-sm font-black text-white mb-2">Why it sold</h3>
+                  <ul className="flex flex-col gap-1.5">
+                    {release.reasons.map((reason) => (
+                      <li key={reason.label} className="flex justify-between gap-3 text-xs">
+                        <span className="text-zinc-300">{reason.label}</span>
+                        <span className={`font-black tabular-nums ${reason.units >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {reason.units >= 0 ? '+' : '−'}{formatUnits(Math.abs(reason.units))}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 flex items-center gap-1.5 text-[11px] text-zinc-500">
+                    <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
+                    This week: {trend.name}. {release.trendNote}
+                  </p>
+                </div>
+
+                {/* Ladder */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold">
+                    <span className="text-zinc-300">{release.milestone.label}</span>
+                    {release.nextMilestone && (
+                      <span className="text-zinc-500">
+                        {formatUnits(release.nextMilestone.units - release.finalUnits)} to {release.nextMilestone.label}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1.5 h-2 rounded-full bg-white/[0.08] overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-rose-500 to-amber-400" style={{ width: `${Math.min(100, (release.finalUnits / ladderTop) * 100)}%` }} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </>
       )}
     </section>

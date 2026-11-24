@@ -101,7 +101,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
                 </span>
               </div>
               <p className="text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-                Step into the shoes of an executive A&R and master DJ. Draft songs slot-by-slot, manage crowd hype in real-time, engineer seamless BPM transitions, and prove your taste to the AI critic.
+                Step into the shoes of an executive A&R and master DJ. Draft songs slot-by-slot, manage crowd hype in real-time, engineer seamless BPM transitions, and see how your album sells in its first week.
               </p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
             { id: 'scoring', label: '2. Scoring & Synergy', icon: Gauge },
             { id: 'crowd', label: '3. Crowd & Soundboard', icon: Flame },
             { id: 'modes', label: '4. Game Modes & 1v1', icon: Swords },
-            { id: 'personas', label: '5. Curator DNA', icon: Dna },
+            { id: 'personas', label: '5. Your style', icon: Dna },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -166,7 +166,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
                 step: '04',
                 title: 'A&R Executive Review',
                 tag: 'Verdict & Share',
-                desc: 'Complete all rounds to receive your final score (0-100), Curator DNA title, and 1-tap Wordle-style emoji grid to challenge friends.',
+                desc: 'Finish every round to see your week-one sales, your album score out of 10 and your style, then send friends a link to beat your week one.',
               },
             ].map((item) => (
               <div
@@ -284,10 +284,10 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
           <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 backdrop-blur-2xl">
             <div className="flex items-center gap-2 mb-2">
               <Gauge className="w-5 h-5 text-rose-500" />
-              <h2 className="text-lg font-black text-white">The 5 AI Critic Evaluation Dimensions</h2>
+              <h2 className="text-lg font-black text-white">What your score is made of</h2>
             </div>
             <p className="text-xs text-zinc-400 mb-6">
-              When your draft finishes, the AI Critic evaluates the overall narrative using weighted algorithmic criteria totaling 100%:
+              When your draft finishes, the critics score your album out of 10 on these five things:
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -532,7 +532,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
               <h2 className="text-lg font-black text-white">1v1 Play Against Friends (Challenge Seeds)</h2>
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed max-w-3xl mb-4">
-              First Week uses a deterministic seed engine. When you challenge a friend or enter a shared seed code (e.g. <code className="px-1.5 py-0.5 rounded bg-white/[0.08] text-white font-mono">NEON-9021</code>), both players receive the <strong className="text-white">exact same 5 song candidates in the exact same order for every round</strong>.
+              When you challenge a friend or enter a shared seed code (e.g. <code className="px-1.5 py-0.5 rounded bg-white/[0.08] text-white font-mono">NEON-9021</code>), both players receive the <strong className="text-white">exact same 5 song candidates in the exact same order for every round</strong>.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -560,10 +560,10 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
           <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 backdrop-blur-2xl">
             <div className="flex items-center gap-2 mb-2">
               <Dna className="w-5 h-5 text-rose-500" />
-              <h2 className="text-lg font-black text-white">The 6 Curator DNA Archetypes</h2>
+              <h2 className="text-lg font-black text-white">The 6 styles</h2>
             </div>
             <p className="text-xs text-zinc-400 mb-6">
-              Our Curator DNA profiler analyzes your entire tracklist to uncover your signature musical identity:
+              Your whole tracklist decides which style you get:
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

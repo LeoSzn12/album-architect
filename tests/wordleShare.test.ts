@@ -99,3 +99,14 @@ describe('Wordle-Style Daily Share Card Engine', () => {
     assert.match(text, /⚔️ 1v1 Code: SEED_123/);
   });
 });
+
+it('emoji recap ends with a beat-my-week-one line when week one is known', async () => {
+  
+  const text = formatWordleShareText({
+    projectName: 'X', score: 7.2, gradeBadge: 'A', statusText: 's', slotsBreakdown: [], challengeCode: 'SEED_1',
+    weekOneLabel: '505K', shareUrl: 'https://leoszn12.github.io/album-architect/?seed=SEED_1&beat=505000',
+  } as unknown as Parameters<typeof formatWordleShareText>[0]);
+  assert.match(text, /Week one: 505K\. Beat it with the same songs:/);
+  assert.doesNotMatch(text, /1v1 Code/);
+  assert.match(text, /beat=505000$/);
+});

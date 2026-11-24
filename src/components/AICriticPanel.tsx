@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
 import confetti from 'canvas-confetti';
 import {
-  Trophy,
   Sparkles,
   Disc,
   ArrowRight,
@@ -30,7 +29,8 @@ import { playHoverSound, playDraftCompleteFanfare } from '@/lib/audioEngine';
 import { scoreToVerdict } from '@/lib/scoringEngine';
 import { deriveCuratorPersona } from '@/lib/curatorPersona';
 import { buildWordleShareData, formatWordleShareText } from '@/lib/wordleShare';
-import { ReleaseWeekPanel } from './ReleaseWeekPanel';
+import { ReleaseWeekPanel, useFirstWeekRelease, useWeekOneChallengeLink } from './ReleaseWeekPanel';
+import { formatUnits } from '@/lib/firstWeek/ladder';
 
 interface AICriticPanelProps {
   onOpenExport: () => void;
@@ -47,13 +47,26 @@ function scoreColor(score: number): string {
 }
 
 /** Color for the verdict banner */
-function verdictGradient(score: number): string {
-  if (score >= 9.2) return 'bg-[#15151e] border-white/[0.15]';
-  if (score >= 8.5) return 'bg-[#121218] border-white/[0.12]';
-  if (score >= 7.5) return 'bg-[#121216] border-white/[0.1]';
-  if (score >= 6.0) return 'bg-[#111114] border-white/[0.08]';
-  return 'bg-[#140e10] border-rose-500/30';
-}
+const ResultsSection: React.FC<{ title: string; hint?: string; children: React.ReactNode }> = ({ title, hint, children }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-white/[0.08] rounded-3xl overflow-hidden bg-[#0e0e12]/90 backdrop-blur-xl">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="w-full min-h-[44px] p-4 flex items-center justify-between gap-3 text-left bg-white/[0.03] hover:bg-white/[0.06] transition cursor-pointer"
+      >
+        <span className="text-sm font-black text-white">{title}</span>
+        <span className="flex items-center gap-2 min-w-0">
+          {hint && <span className="text-xs font-bold text-zinc-400 truncate">{hint}</span>}
+          {open ? <ChevronUp className="w-4 h-4 text-zinc-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-zinc-400 flex-shrink-0" />}
+        </span>
+      </button>
+      {open && <div className="p-4 flex flex-col gap-4">{children}</div>}
+    </div>
+  );
+};
 
 export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOpenFriendsModal }) => {
   const {
@@ -84,10 +97,16 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     return buildWordleShareData(evaluationResult, draftedTracks, gameMode, draftSeed, curatorPersona);
   }, [evaluationResult, draftedTracks, gameMode, draftSeed, curatorPersona]);
 
+  const { release: weekOne } = useFirstWeekRelease();
+  const weekOneLink = useWeekOneChallengeLink(weekOne?.finalUnits);
+
   const handleCopyWordle = () => {
     if (!wordleData) return;
     playHoverSound(audioEnabled);
-    const text = formatWordleShareText(wordleData);
+    const text = formatWordleShareText({
+      ...wordleData,
+      ...(weekOne ? { weekOneLabel: formatUnits(weekOne.finalUnits), shareUrl: weekOneLink() } : {}),
+    });
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text);
       setCopiedWordle(true);
@@ -172,18 +191,15 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     bestPossibleTracklist,
     biggestMistake,
     smartestPick,
-    source,
     categoryScores,
     executiveSummary,
     budgetReport,
-    activeTheme,
     achievedSynergies,
     crowdHype,
     curatorBadges,
   } = evaluationResult;
 
   const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
-  const reviewTitle = gameMode === 'draft' ? 'First Week Match Review' : `${projectLabel} Builder Review`;
 
   const verdict = scoreToVerdict(overallScore);
   const scoreCategoryItems = [
@@ -205,268 +221,72 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
     : [];
 
   return (
-    <div className="w-full bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-6 sm:p-8 flex flex-col gap-6 shadow-2xl my-6 backdrop-blur-2xl relative overflow-hidden animate-fade-in">
+    <div className="w-full flex flex-col gap-4 my-6 animate-fade-in">
+      <ReleaseWeekPanel
+        summary={{ score: overallScore, grade: verdict, personaTitle: curatorPersona.title, personaTagline: curatorPersona.tagline }}
+      />
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">Final review complete</span>
-          <h2 className="mt-1 text-xl font-black text-white">{reviewTitle}</h2>
-          <p className="mt-1 text-xs text-zinc-400">
-            {draftedTracks.length} tracks reviewed in final order. This scorecard is saved in your local history.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {activeTheme && activeTheme !== 'standard' && (
-            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1">
-              <Crown className="w-3 h-3 text-amber-400" />
-              {activeTheme}
-            </span>
-          )}
-          <span className="self-start rounded-full border border-white/[0.1] bg-white/[0.06] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300 sm:self-center">
-            {projectLabel} · {draftedTracks.length} tracks
-          </span>
-        </div>
-      </div>
+      {/* Next moves */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+        <button
+          onClick={() => {
+            playHoverSound(audioEnabled);
+            startNewDraft();
+          }}
+          className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-xs transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+        >
+          <RotateCcw className="w-4 h-4" />
+          <span>Draft Again</span>
+        </button>
 
-      <ReleaseWeekPanel />
-
-      {/* ── 1. Verdict Banner ── */}
-      <div className={`p-6 rounded-3xl ${verdictGradient(overallScore)} border text-center flex flex-col items-center gap-2 shadow-xl`}>
-        <Trophy className="w-8 h-8 text-amber-400" />
-        <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-          {verdict}
-        </div>
-        <div className="flex items-baseline gap-2 mt-1">
-          <span className={`text-5xl sm:text-6xl font-black ${scoreColor(overallScore)}`}>
-            {overallScore.toFixed(1)}
-          </span>
-          <span className="text-zinc-500 text-lg font-bold">/ 10</span>
-        </div>
-        <span className="px-3.5 py-1 rounded-full bg-white/[0.08] border border-white/[0.12] text-xs font-black text-zinc-200 uppercase tracking-widest">
-          {gradeBadge}
-        </span>
-        {source === 'fallback' && (
-          <span className="text-[10px] text-zinc-500 font-medium mt-1">
-            Scored by Deterministic Engine (no AI key)
-          </span>
+        {onOpenFriendsModal && (
+          <button
+            onClick={() => {
+              playHoverSound(audioEnabled);
+              onOpenFriendsModal();
+            }}
+            className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-xs transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          >
+            <Swords className="w-4 h-4 text-rose-500" />
+            <span>Challenge a friend</span>
+          </button>
         )}
+
+        <button
+          onClick={() => {
+            playHoverSound(audioEnabled);
+            onOpenExport();
+          }}
+          className="min-h-[44px] flex-1 px-6 py-2.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs transition shadow-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+        >
+          <Sparkles className="w-4 h-4 text-rose-500" />
+          <span>Export {projectLabel} Playlist</span>
+          <ArrowRight className="w-4 h-4 text-black" />
+        </button>
       </div>
 
-      {/* ── Curator DNA / DJ Persona Spotlight Banner ── */}
-      <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 backdrop-blur-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-white/[0.06] border border-white/[0.08] shadow-inner flex items-center justify-center flex-shrink-0">
-            <Crown className="w-6 h-6 text-amber-400" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">
-                Curator DNA Persona
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-white/[0.08] text-[9px] font-extrabold text-zinc-300">
-                1-of-1 Sonic Profile
-              </span>
-            </div>
-            <h3 className="text-xl font-black tracking-tight text-white mt-0.5">
-              {curatorPersona.title}
-            </h3>
-            <p className="text-xs text-zinc-300 font-medium max-w-lg mt-0.5">
-              {curatorPersona.tagline}
-            </p>
-          </div>
-        </div>
 
-        <div className="flex flex-col items-start md:items-end gap-1.5 self-stretch md:self-auto">
-          <div className="flex flex-wrap gap-1.5">
-            {curatorPersona.traits.map((trait) => (
-              <span key={trait} className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] font-extrabold text-zinc-200">
-                {trait}
-              </span>
-            ))}
-          </div>
-          <span className="text-[10px] font-semibold text-zinc-400 italic">
-            &quot;{curatorPersona.crowdReputation}&quot;
-          </span>
-        </div>
-      </div>
-
-      {/* ── Wordle-Style Share Card (1-Tap Viral Copy) ── */}
-      {wordleData && (
-        <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl flex flex-col gap-3 backdrop-blur-xl">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-rose-500">
-                <Share2 className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-sm font-black text-white flex items-center gap-2">
-                  <span>The Wordle Share Grid</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-400">
-                    VIRAL READY
-                  </span>
-                </h4>
-                <p className="text-[11px] text-zinc-400">
-                  1-tap copy formatted for Twitter/X, Discord, and iMessage group chats.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleCopyWordle}
-              className={`w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-full font-black text-xs transition flex items-center justify-center gap-2 shadow-lg cursor-pointer active:scale-95 ${
-                copiedWordle
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-white hover:bg-zinc-200 text-black'
-              }`}
-            >
-              {copiedWordle ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  <span>Copied to Clipboard!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  <span>Copy Share Grid</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Live Visual Grid Preview */}
-          <div className="p-3.5 rounded-2xl bg-black/50 border border-white/[0.06] flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-zinc-300">
-                {wordleData.projectName} · {overallScore.toFixed(1)}/10 ({gradeBadge})
-              </span>
-              <span className="font-extrabold text-rose-400 text-[11px] tracking-wide">
-                {wordleData.statusText}
-              </span>
-            </div>
-
-            {/* Emoji row */}
-            <div className="flex items-center gap-1 text-base select-none">
-              {wordleData.slotsBreakdown.map((s, idx) => (
-                <span key={idx} title={`${s.slotName}: ${s.songTitle} (${s.synergyScore}% synergy)`}>
-                  {s.emojiSquare}
-                </span>
-              ))}
-            </div>
-
-            {/* Micro Tracklist */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-zinc-400 font-mono">
-              {wordleData.slotsBreakdown.slice(0, 4).map((s, idx) => (
-                <div key={idx} className="truncate flex items-center gap-1.5">
-                  <span>{s.emojiSquare}</span>
-                  <span className="text-zinc-200 truncate">{s.songTitle}</span>
-                  <span className="text-zinc-500 truncate">— {s.artist}</span>
-                </div>
-              ))}
-              {wordleData.slotsBreakdown.length > 4 && (
-                <div className="text-[10px] text-zinc-500 italic flex items-center pl-1">
-                  +{wordleData.slotsBreakdown.length - 4} more tracks in grid
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Curator Badges ── */}
-      {curatorBadges && curatorBadges.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
-          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-            <Award className="w-3.5 h-3.5 text-rose-500" /> Curator Badges Earned:
-          </span>
-          {curatorBadges.map((badge) => (
-            <span
-              key={badge}
-              className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs font-black text-zinc-200 shadow-sm flex items-center gap-1"
-            >
-              ✨ {badge}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* ── $15 Budget Efficiency Breakdown ── */}
-      {budgetReport && (
-        <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <DollarSign className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
-                  Aux Budget Efficiency Report
-                </span>
-                <h4 className="text-base font-black text-white">
-                  {budgetReport.executiveRating}
-                </h4>
-              </div>
-            </div>
-            <p className="text-xs text-zinc-300 mt-1">
-              Spent ${budgetReport.totalSpent} of ${budgetReport.initialBudget} (${budgetReport.remainingBudget} leftover) • Efficiency Score: {budgetReport.efficiencyScore.toFixed(0)}/100
-            </p>
-          </div>
-          <div className="px-3.5 py-1.5 rounded-xl bg-black/40 border border-emerald-500/30 text-right">
-            <span className="text-[10px] uppercase font-bold text-zinc-400 block">ROI Score</span>
-            <span className="text-xl font-black text-emerald-400">{budgetReport.efficiencyScore.toFixed(0)}%</span>
-          </div>
-        </div>
-      )}
-
-      {/* ── Aux Crowd Hype & Achieved Synergies ── */}
-      {(crowdHype || (achievedSynergies && achievedSynergies.length > 0)) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {crowdHype && (
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-rose-500" /> Aux Crowd Heat: {crowdHype.score}% ({crowdHype.status})
-              </span>
-              <p className="text-xs text-zinc-300 italic">“{crowdHype.reactionQuote}”</p>
-            </div>
-          )}
-          {achievedSynergies && achievedSynergies.length > 0 && (
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-rose-500" /> Synergies Unlocked ({achievedSynergies.length})
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {achievedSynergies.map((s) => (
-                  <span key={s.id} className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.1] text-zinc-200 font-bold">
-                    {s.name} (+{s.bonusPoints})
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
+      <div className="flex flex-col gap-2">
+        <ResultsSection title="Your score, explained" hint={`${overallScore.toFixed(1)} / 10`}>
       {opponentEvaluationResult && (
         <div className="rounded-2xl border border-white/[0.1] bg-[#121216]/90 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] uppercase tracking-widest font-black text-zinc-400">Draft Mode head-to-head</span>
+            <span className="text-[10px] uppercase tracking-widest font-black text-zinc-400">You vs your rival</span>
             <h3 className="text-lg font-black text-white mt-1">
-              {overallScore > opponentEvaluationResult.overallScore ? 'You beat the AI.' : overallScore < opponentEvaluationResult.overallScore ? 'The AI wins this round.' : 'It’s a tie.'}
+              {overallScore > opponentEvaluationResult.overallScore ? 'You beat your rival.' : overallScore < opponentEvaluationResult.overallScore ? 'Your rival wins this round.' : 'It’s a tie.'}
             </h3>
-            <p className="text-xs text-zinc-400 mt-1">Same configured candidate pool • hidden pick revealed after lock</p>
+            <p className="text-xs text-zinc-400 mt-1">Album scores out of 10, drafted from the same songs.</p>
           </div>
           <div className="flex items-center gap-5 text-right">
             <div><span className="block text-[10px] text-zinc-500 uppercase font-bold">You</span><span className="text-2xl font-black text-white">{overallScore.toFixed(1)}</span></div>
             <span className="text-zinc-600 font-black">vs</span>
-            <div><span className="block text-[10px] text-zinc-500 uppercase font-bold">AI</span><span className="text-2xl font-black text-zinc-300">{opponentEvaluationResult.overallScore.toFixed(1)}</span></div>
+            <div><span className="block text-[10px] text-zinc-500 uppercase font-bold">Rival</span><span className="text-2xl font-black text-zinc-300">{opponentEvaluationResult.overallScore.toFixed(1)}</span></div>
           </div>
         </div>
       )}
 
-      {/* ── 2. Score Breakdown ── */}
+      {/* Score breakdown */}
       <div>
-        <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-3">
-          Score Breakdown
-        </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {scoreCategoryItems.map(({ label, weight, score, icon: Icon, color }) => (
             <div key={label} className="bg-white/[0.03] p-3.5 rounded-2xl border border-white/[0.08] flex flex-col gap-1.5">
@@ -488,16 +308,16 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
 
         {/* Raw score breakdown */}
         <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-zinc-400 font-medium">
-          <span>Raw: <strong className="text-zinc-200">{rawScore.toFixed(1)}</strong></span>
-          {monopolyPenalty > 0 && (
+          {monopolyPenalty > 0 ? (
             <>
+              <span>Before penalty: <strong className="text-zinc-200">{rawScore.toFixed(1)}</strong></span>
               <span>−</span>
-              <span className="text-rose-400 font-bold">
-                {monopolyPenalty} pts (Monopoly)
-              </span>
+              <span className="text-rose-400 font-bold">{monopolyPenalty} same-artist penalty</span>
               <span>=</span>
-              <span className="text-white font-bold">{overallScore.toFixed(1)}</span>
+              <span className="text-white font-bold">{overallScore.toFixed(1)} / 10</span>
             </>
+          ) : (
+            <span>Album score: <strong className="text-white">{overallScore.toFixed(1)} / 10</strong></span>
           )}
         </div>
 
@@ -505,17 +325,17 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           <div className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-3">
               <div>
-                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-300">Transparent A&R Scorecard</h3>
-                <p className="text-xs text-zinc-400 mt-1">Every category is scored 0–100 with evidence; penalties are shown separately.</p>
+                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-300">Category scores</h3>
+                <p className="text-xs text-zinc-400 mt-1">Each category out of 10, with the reason behind it.</p>
               </div>
-              <span className="text-xs font-black text-white">{evaluationResult.weightedScoreBeforePenalties ?? '—'} / 100 before penalties</span>
+              <span className="text-xs font-black text-white">{evaluationResult.weightedScoreBeforePenalties != null ? (evaluationResult.weightedScoreBeforePenalties / 10).toFixed(1) : '—'} / 10 before penalties</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {transparentCategoryItems.map(([label, item]) => (
                 <div key={label} className="rounded-xl bg-black/40 border border-white/[0.06] p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-white">{label}</span>
-                    <span className="text-sm font-black text-zinc-200">{item.score}</span>
+                    <span className="text-sm font-black text-zinc-200">{(item.score / 10).toFixed(1)}</span>
                   </div>
                   <div className="h-1 bg-white/[0.08] rounded-full overflow-hidden mt-2">
                     <div className="h-full bg-rose-500 rounded-full" style={{ width: `${item.score}%` }} />
@@ -534,19 +354,19 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
         <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-xs text-rose-200 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
           <span>
-            <strong>Monopoly penalty −{monopolyReport.totalPenaltyDeduction} pts:</strong>{' '}
+            <strong>Same-artist penalty −{monopolyReport.totalPenaltyDeduction}:</strong>{' '}
             {monopolyReport.penalizedArtists.map((p) => `${p.artist} (${p.soloCount}× solo)`).join(', ')}.
             {' '}Vary your solo artists across slots to avoid this.
           </span>
         </div>
       )}
 
+        </ResultsSection>
+
+        <ResultsSection title="Your tracklist" hint={`${draftedTracks.length} tracks`}>
       {/* ── 4. Final Tracklist ── */}
       {draftedTracks.length > 0 && (
         <div>
-          <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-3">
-            Final {projectLabel} Tracklist
-          </h3>
           <div className="flex flex-col gap-2">
             {draftedTracks.map((dt, i) => (
               <button
@@ -584,20 +404,21 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <h4 className="text-sm font-black text-white">Draft Efficiency</h4>
+                <h4 className="text-sm font-black text-white">Best possible album</h4>
               </div>
               <div className="flex items-center gap-3 text-xs">
                 <span className="text-zinc-400">
-                  Your score: <strong className="text-white">{overallScore.toFixed(1)}</strong>
+                  Your score: <strong className="text-white">{overallScore.toFixed(1)} / 10</strong>
                 </span>
                 <span className="text-zinc-600">vs</span>
                 <span className="text-zinc-400">
-                  Best possible: <strong className="text-amber-400">{bestPossibleScore.toFixed(1)}</strong>
+                  Best possible: <strong className="text-amber-400">{bestPossibleScore.toFixed(1)} / 10</strong>
                 </span>
               </div>
             </div>
             <div className={`text-3xl font-black ${draftEfficiency >= 90 ? 'text-emerald-400' : draftEfficiency >= 75 ? 'text-zinc-100' : 'text-amber-400'}`}>
               {draftEfficiency}%
+              <span className="block text-[10px] font-bold text-zinc-500 text-right">of the best</span>
             </div>
           </div>
 
@@ -636,7 +457,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
               className="text-xs text-zinc-300 hover:text-white font-bold flex items-center gap-1 cursor-pointer self-start"
             >
               {showBestPossible ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              {showBestPossible ? 'Hide' : 'Show'} Best Possible Album
+              {showBestPossible ? 'Hide' : 'Show'} the best possible album
             </button>
           )}
 
@@ -658,57 +479,211 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
         </div>
       )}
 
-      {/* ── 6. Actions ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-3 border-t border-white/[0.08]">
-        <button
-          onClick={() => {
-            playHoverSound(audioEnabled);
-            startNewDraft();
-          }}
-          className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-xs transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span>Draft Again</span>
-        </button>
+        </ResultsSection>
 
-        {onOpenFriendsModal && (
-          <button
-            onClick={() => {
-              playHoverSound(audioEnabled);
-              onOpenFriendsModal();
-            }}
-            className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 font-extrabold text-xs transition border border-white/[0.08] flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-          >
-            <Swords className="w-4 h-4 text-rose-500" />
-            <span>1v1 Matchup</span>
-          </button>
-        )}
+        <ResultsSection title="Your style" hint={curatorPersona.title}>
+      {/* Your style */}
+      <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 backdrop-blur-xl">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.06] border border-white/[0.08] shadow-inner flex items-center justify-center flex-shrink-0">
+            <Crown className="w-6 h-6 text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-xl font-black tracking-tight text-white mt-0.5">
+              {curatorPersona.title}
+            </h3>
+            <p className="text-xs text-zinc-300 font-medium max-w-lg mt-0.5">
+              {curatorPersona.tagline}
+            </p>
+          </div>
+        </div>
 
-        <button
-          onClick={() => {
-            playHoverSound(audioEnabled);
-            onOpenExport();
-          }}
-          className="min-h-[44px] flex-1 px-6 py-2.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs transition shadow-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-        >
-          <Sparkles className="w-4 h-4 text-rose-500" />
-          <span>Export {projectLabel} Playlist</span>
-          <ArrowRight className="w-4 h-4 text-black" />
-        </button>
+        <div className="flex flex-col items-start md:items-end gap-1.5 self-stretch md:self-auto">
+          <div className="flex flex-wrap gap-1.5">
+            {curatorPersona.traits.map((trait) => (
+              <span key={trait} className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[10px] font-extrabold text-zinc-200">
+                {trait}
+              </span>
+            ))}
+          </div>
+          <span className="text-[10px] font-semibold text-zinc-400 italic">
+            &quot;{curatorPersona.crowdReputation}&quot;
+          </span>
+        </div>
       </div>
 
-      {/* ── 7. A&R Critic Board (collapsed by default) ── */}
+        </ResultsSection>
+
+        {((curatorBadges && curatorBadges.length > 0) || budgetReport || crowdHype || (achievedSynergies && achievedSynergies.length > 0)) && (
+          <ResultsSection title="Badges and bonuses">
+      {/* ── Curator Badges ── */}
+      {curatorBadges && curatorBadges.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
+          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5 text-rose-500" /> Badges earned:
+          </span>
+          {curatorBadges.map((badge) => (
+            <span
+              key={badge}
+              className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs font-black text-zinc-200 shadow-sm flex items-center gap-1"
+            >
+              ✨ {badge}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ── $15 Budget Efficiency Breakdown ── */}
+      {budgetReport && (
+        <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <DollarSign className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                  Budget report
+                </span>
+                <h4 className="text-base font-black text-white">
+                  {budgetReport.executiveRating}
+                </h4>
+              </div>
+            </div>
+            <p className="text-xs text-zinc-300 mt-1">
+              Spent ${budgetReport.totalSpent} of ${budgetReport.initialBudget} (${budgetReport.remainingBudget} left over)
+            </p>
+          </div>
+          <div className="px-3.5 py-1.5 rounded-xl bg-black/40 border border-emerald-500/30 text-right">
+            <span className="text-[10px] uppercase font-bold text-zinc-400 block">Value for money</span>
+            <span className="text-xl font-black text-emerald-400">{(budgetReport.efficiencyScore / 10).toFixed(1)}<span className="text-xs text-zinc-500"> / 10</span></span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Aux Crowd Hype & Achieved Synergies ── */}
+      {(crowdHype || (achievedSynergies && achievedSynergies.length > 0)) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {crowdHype && (
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-rose-500" /> Crowd heat: {crowdHype.status}
+              </span>
+              <p className="text-xs text-zinc-300 italic">“{crowdHype.reactionQuote}”</p>
+            </div>
+          )}
+          {achievedSynergies && achievedSynergies.length > 0 && (
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-rose-500" /> Combos unlocked ({achievedSynergies.length})
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {achievedSynergies.map((s) => (
+                  <span key={s.id} className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.1] text-zinc-200 font-bold">
+                    {s.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+          </ResultsSection>
+        )}
+
+        {wordleData && (
+          <ResultsSection title="Emoji recap">
+      {/* Emoji recap */}
+      {wordleData && (
+        <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl flex flex-col gap-3 backdrop-blur-xl">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-rose-500">
+                <Share2 className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-white">Emoji recap</h4>
+                <p className="text-[11px] text-zinc-400">
+                  Copy a one-line emoji recap for X, Discord or a group chat.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCopyWordle}
+              className={`w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-full font-black text-xs transition flex items-center justify-center gap-2 shadow-lg cursor-pointer active:scale-95 ${
+                copiedWordle
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-white hover:bg-zinc-200 text-black'
+              }`}
+            >
+              {copiedWordle ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Copied</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>Copy emoji recap</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Live Visual Grid Preview */}
+          <div className="p-3.5 rounded-2xl bg-black/50 border border-white/[0.06] flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-zinc-300">
+                {wordleData.projectName} · {overallScore.toFixed(1)}/10 ({gradeBadge})
+              </span>
+              <span className="font-extrabold text-rose-400 text-[11px] tracking-wide">
+                {wordleData.statusText}
+              </span>
+            </div>
+
+            {/* Emoji row */}
+            <div className="flex items-center gap-1 text-base select-none">
+              {wordleData.slotsBreakdown.map((s, idx) => (
+                <span key={idx} title={`${s.slotName}: ${s.songTitle} (${s.synergyScore}% fit)`}>
+                  {s.emojiSquare}
+                </span>
+              ))}
+            </div>
+
+            {/* Micro Tracklist */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-zinc-400 font-mono">
+              {wordleData.slotsBreakdown.slice(0, 4).map((s, idx) => (
+                <div key={idx} className="truncate flex items-center gap-1.5">
+                  <span>{s.emojiSquare}</span>
+                  <span className="text-zinc-200 truncate">{s.songTitle}</span>
+                  <span className="text-zinc-500 truncate">— {s.artist}</span>
+                </div>
+              ))}
+              {wordleData.slotsBreakdown.length > 4 && (
+                <div className="text-[10px] text-zinc-500 italic flex items-center pl-1">
+                  +{wordleData.slotsBreakdown.length - 4} more tracks
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+          </ResultsSection>
+        )}
+
+      {/* Critic reviews (collapsed) */}
       <div className="border border-white/[0.08] rounded-3xl overflow-hidden bg-white/[0.02]">
         <button
           onClick={() => setShowCriticBoard(!showCriticBoard)}
-          className="w-full p-4 flex items-center justify-between text-left bg-white/[0.03] hover:bg-white/[0.06] transition cursor-pointer"
+          aria-expanded={showCriticBoard}
+          className="w-full min-h-[44px] p-4 flex items-center justify-between text-left bg-white/[0.03] hover:bg-white/[0.06] transition cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-rose-500" />
-            <span className="text-sm font-black text-white">A&R Critic Board Reviews</span>
-            <span className="text-xs text-zinc-500">
-              {source === 'gemini' ? 'AI-narrated' : 'Deterministic'}
-            </span>
+            <span className="text-sm font-black text-white">What the critics said</span>
           </div>
           {showCriticBoard ? (
             <ChevronUp className="w-4 h-4 text-zinc-400" />
@@ -731,7 +706,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
                     <span className="text-[10px] text-zinc-400">{rev.role}</span>
                   </div>
                   <span className={`text-sm font-black ${scoreColor(rev.score)}`}>
-                    {rev.score.toFixed(1)}
+                    {rev.score.toFixed(1)}<span className="text-[10px] text-zinc-500"> / 10</span>
                   </span>
                 </div>
 
@@ -747,6 +722,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

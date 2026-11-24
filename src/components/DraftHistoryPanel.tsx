@@ -15,9 +15,9 @@ export const DraftHistoryPanel: React.FC = () => {
     return (
       <div className="w-full rounded-3xl border border-dashed border-white/[0.08] bg-[#0e0e12]/60 p-6 text-center backdrop-blur-xl">
         <History className="mx-auto h-5 w-5 text-zinc-600" />
-        <h3 className="mt-2 text-sm font-extrabold uppercase tracking-wider text-zinc-300">No completed builds yet</h3>
+        <h3 className="mt-2 text-sm font-extrabold uppercase tracking-wider text-zinc-300">No past drafts yet</h3>
         <p className="mt-1 text-xs text-zinc-500">
-          Your completed {currentProjectLabel.toLowerCase()} reviews will appear here after submission.
+          Your finished drafts show up here. They&apos;re saved on this device only.
         </p>
       </div>
     );
@@ -31,7 +31,7 @@ export const DraftHistoryPanel: React.FC = () => {
             <History className="w-3.5 h-3.5 text-rose-500" />
           </div>
           <h3 className="text-sm font-black text-white uppercase tracking-wider">
-            Completed Build History ({pastDrafts.length})
+            Your past drafts ({pastDrafts.length})
           </h3>
         </div>
 
@@ -41,13 +41,13 @@ export const DraftHistoryPanel: React.FC = () => {
             onMouseEnter={() => playHoverSound(audioEnabled)}
             className="px-4 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-zinc-200 text-xs font-bold transition active:scale-95 cursor-pointer"
           >
-            {isOpen ? 'Collapse History' : 'View Past Projects'}
+            {isOpen ? 'Hide' : 'Show'}
           </button>
 
           {isOpen && (
             <button
               onClick={() => {
-                if (confirm('Clear all draft history entries?')) {
+                if (confirm('Clear the past drafts saved on this device?')) {
                   clearHistory();
                 }
               }}

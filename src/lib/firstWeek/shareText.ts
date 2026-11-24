@@ -35,7 +35,7 @@ export function formatFirstWeekShare({ release, rival, label, url }: ShareTextIn
   }
   const met = release.ruleResults.filter((result) => result.outcome.met && result.outcome.unitShare > 0).length;
   if (release.ruleResults.length) lines.push(`🃏 Rule cards: ${met}/${release.ruleResults.length}`);
-  lines.push('', 'Can you outsell me?');
+  lines.push('', url ? `Beat my ${formatUnits(release.finalUnits)} first week, same songs:` : 'Can you outsell me?');
   if (url) lines.push(url);
   return lines.join('\n');
 }

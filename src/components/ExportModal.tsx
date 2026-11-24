@@ -7,6 +7,7 @@ import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
 
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { encodeSharePayload, type SharePayload } from '@/lib/sharePayload';
+import { siteBaseUrl } from '@/lib/siteUrl';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -63,8 +64,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
   const shareUrl = typeof window !== 'undefined'
     ? durableShareToken
-      ? `${window.location.origin}/share?token=${durableShareToken}`
-      : `${window.location.origin}/share?data=${encodeSharePayload(sharePayload)}`
+      ? `${siteBaseUrl()}/share/?token=${durableShareToken}`
+      : `${siteBaseUrl()}/share/?data=${encodeSharePayload(sharePayload)}`
     : '';
 
   if (!isOpen) return null;

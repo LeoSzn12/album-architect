@@ -16,6 +16,8 @@ import { DraftHistoryPanel } from '@/components/DraftHistoryPanel';
 import { LeaderboardPanel } from '@/components/LeaderboardPanel';
 import { PlayAgainstFriendsModal } from '@/components/PlayAgainstFriendsModal';
 import { parseChallengeInvite } from '@/lib/challengeInvite';
+import { saveChallengeTarget, type ChallengeTarget } from '@/lib/firstWeek/weekOneChallenge';
+import { formatUnits } from '@/lib/firstWeek/ladder';
 import { SetupPanel, type SetupPreferences } from '@/components/SetupPanel';
 import { LibraryPanel } from '@/components/LibraryPanel';
 import { ProfilePanel } from '@/components/ProfilePanel';
@@ -34,6 +36,7 @@ export default function Home() {
     resumePersistedSession,
     pastDrafts,
     playerAlias,
+    draftSeed,
     setPlayerAlias,
   } = useDraftStore();
 
@@ -47,6 +50,7 @@ export default function Home() {
   const [activeSurface, setActiveSurface] = useState<'game' | 'how-to-play' | 'setup' | 'library' | 'profile'>('game');
   const [setupPreferences, setSetupPreferences] = useState<SetupPreferences>({ tasteTags: [], sourceScope: 'all' });
 
+  const [friendTarget, setFriendTarget] = useState<ChallengeTarget | null>(null);
   const leaderboardRef = useRef<HTMLDivElement>(null);
   const isCompleted = currentRoundIndex >= slots.length;
 
@@ -67,7 +71,12 @@ export default function Home() {
         && saved.difficulty === invite.difficulty && saved.selectedEra === invite.era
         && saved.challengeTheme === invite.theme && saved.draftedTracks.length > 0;
       if (!canResume) startNewDraft(invite.mode, invite.era, invite.difficulty, invite.seed, invite.theme);
-      queueMicrotask(() => setHasStarted(true));
+      const target = invite.toBeat ? { seed: invite.seed, units: invite.toBeat } : null;
+      if (target) saveChallengeTarget(target);
+      queueMicrotask(() => {
+        setHasStarted(true);
+        setFriendTarget(target);
+      });
     }
   }, [startNewDraft]);
 
@@ -180,6 +189,12 @@ export default function Home() {
           /* ── Active Draft or Results ── */
           <>
             {/* Compact Telemetry HUD with collapsible deep waveform & monopoly radar */}
+            {!isCompleted && friendTarget && draftSeed === friendTarget.seed && (
+              <div role="status" className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm font-bold text-amber-200">
+                A friend sold {formatUnits(friendTarget.units)} in week one with this song pool. Beat it.
+              </div>
+            )}
+
             {!isCompleted && <DraftTelemetryBar />}
 
             {/* Main panel: critic results OR draft board */}
@@ -198,7 +213,7 @@ export default function Home() {
         {activeSurface === 'game' && (
           <>
             <div ref={leaderboardRef} tabIndex={-1} aria-label="Leaderboard" className="scroll-mt-28 rounded-3xl">
-              <LeaderboardPanel />
+              <LeaderboardPanel key={leaderboardRequested} defaultOpen={leaderboardRequested > 0} />
             </div>
             {!showLanding && <DraftHistoryPanel />}
           </>

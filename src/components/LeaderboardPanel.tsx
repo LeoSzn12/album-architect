@@ -2,14 +2,15 @@
 
 import React, { useState } from 'react';
 import { useDraftStore } from '@/store/useDraftStore';
-import { Trophy, Crown, Filter, Trash2, Swords } from 'lucide-react';
+import { Trophy, Crown, Filter, Trash2, Swords, ChevronDown, ChevronUp } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 import { GameMode, DifficultyTier } from '@/types/draft';
 
-export const LeaderboardPanel: React.FC = () => {
+export const LeaderboardPanel: React.FC<{ defaultOpen?: boolean }> = ({ defaultOpen = false }) => {
   const { leaderboard, clearLeaderboard, audioEnabled } = useDraftStore();
   const [filterMode, setFilterMode] = useState<'all' | GameMode>('all');
   const [filterDiff, setFilterDiff] = useState<'all' | DifficultyTier>('all');
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const filteredEntries = leaderboard.filter((entry) => {
     if (filterMode !== 'all' && entry.gameMode !== filterMode) return false;
@@ -27,30 +28,43 @@ export const LeaderboardPanel: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-              Executive Leaderboard & Rankings
+              Your top scores
             </h3>
             <p className="text-xs text-zinc-400">
-              Top curated projects scored by the AI A&R Critic Board across all modes
+              Saved on this device only. Scores are out of 10.
             </p>
           </div>
         </div>
 
-        {leaderboard.length > 0 && (
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+        {isOpen && leaderboard.length > 0 && (
           <button
             onClick={() => {
-              if (confirm('Reset executive leaderboard high scores?')) {
+              if (confirm('Clear the top scores saved on this device?')) {
                 clearLeaderboard();
               }
             }}
-            title="Reset Leaderboard"
+            title="Clear top scores"
             className="px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-rose-500/20 border border-white/[0.08] hover:border-rose-500/30 text-zinc-400 hover:text-rose-400 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer self-end sm:self-auto active:scale-95"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Reset High Scores</span>
+            <span>Clear scores</span>
           </button>
         )}
+          <button
+            type="button"
+            onClick={() => setIsOpen((open) => !open)}
+            aria-expanded={isOpen}
+            className="min-h-[44px] px-4 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] text-zinc-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+          >
+            {isOpen ? 'Hide' : `Show${leaderboard.length ? ` (${leaderboard.length})` : ''}`}
+            {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+        </div>
       </div>
 
+      {isOpen && (
+        <>
       {/* Filter Category Bar */}
       <div className="flex min-w-0 flex-col items-stretch gap-3 bg-white/[0.03] p-3 rounded-2xl border border-white/[0.08] text-xs font-extrabold sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-zinc-300">
@@ -102,7 +116,7 @@ export const LeaderboardPanel: React.FC = () => {
       {/* Leaderboard Table / Cards */}
       {filteredEntries.length === 0 ? (
         <div className="text-center py-10 text-xs text-zinc-500 italic bg-black/40 rounded-2xl border border-white/[0.06]">
-          No leaderboard entries found matching the selected filters. Complete a draft to claim your spot!
+          No scores yet for these filters. Finish a draft to get on the board.
         </div>
       ) : (
         <div className="space-y-2.5">
@@ -199,6 +213,8 @@ export const LeaderboardPanel: React.FC = () => {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );

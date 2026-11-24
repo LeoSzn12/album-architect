@@ -20,6 +20,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { VersusMatchup } from '@/types/draft';
+import { siteBaseUrl } from '@/lib/siteUrl';
 
 interface PlayAgainstFriendsModalProps {
   isOpen: boolean;
@@ -65,7 +66,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
   if (!isOpen) return null;
 
   const challengeUrl = typeof window !== 'undefined'
-    ? buildChallengeInvite(window.location.origin, { seed: generatedSeed, mode: gameMode, difficulty, era: selectedEra, theme: challengeTheme })
+    ? buildChallengeInvite(siteBaseUrl(), { seed: generatedSeed, mode: gameMode, difficulty, era: selectedEra, theme: challengeTheme })
     : '';
 
   const handleCreateAndStart = async () => {

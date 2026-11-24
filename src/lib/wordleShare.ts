@@ -1,5 +1,6 @@
 import type { DraftedTrack, EvaluationResult } from '@/types/draft';
 import type { CuratorPersona } from './curatorPersona';
+import { siteBaseUrl } from './siteUrl.ts';
 
 export interface WordleShareData {
   projectName: string;
@@ -16,6 +17,8 @@ export interface WordleShareData {
     synergyScore: number;
   }[];
   challengeCode?: string | null;
+  /** Week-one units label, e.g. "505K"; when set the recap ends with a beat-my-week-one link. */
+  weekOneLabel?: string;
   shareUrl?: string;
 }
 
@@ -77,7 +80,7 @@ export function buildWordleShareData(
     streakDays,
     slotsBreakdown,
     challengeCode: draftSeed,
-    shareUrl: typeof window !== 'undefined' ? window.location.href : 'https://trackdraft.app',
+    shareUrl: siteBaseUrl() || 'https://leoszn12.github.io/album-architect',
   };
 }
 
@@ -109,10 +112,14 @@ export function formatWordleShareText(data: WordleShareData): string {
   });
 
   lines.push('');
-  if (data.challengeCode) {
-    lines.push(`⚔️ 1v1 Code: ${data.challengeCode}`);
+  if (data.weekOneLabel) {
+    lines.push(`📀 Week one: ${data.weekOneLabel}. Beat it with the same songs:`);
+  } else {
+    if (data.challengeCode) {
+      lines.push(`⚔️ 1v1 Code: ${data.challengeCode}`);
+    }
+    lines.push(`Can you beat my aux score?`);
   }
-  lines.push(`Can you beat my aux score?`);
   lines.push(`${data.shareUrl}`);
 
   return lines.join('\n');
