@@ -1,4 +1,5 @@
 import type { AudioSourcePreference, Song } from '@/types/draft';
+import { lookupPreview } from './previewLookup';
 
 // ---------------------------------------------------------------------------
 // ID Validators
@@ -121,17 +122,7 @@ export async function fetchSongPreviewSnippet(song: Song): Promise<{ previewUrl:
   if (song.appleMusicPreviewUrl) {
     return { previewUrl: song.appleMusicPreviewUrl, artworkUrl: song.artwork ?? null };
   }
-  try {
-    const res = await fetch(`/api/songs/preview?title=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
-    if (!res.ok) return { previewUrl: null, artworkUrl: null };
-    const data = (await res.json()) as { previewUrl?: string | null; artworkUrl?: string | null };
-    return {
-      previewUrl: data.previewUrl ?? null,
-      artworkUrl: data.artworkUrl ?? null,
-    };
-  } catch {
-    return { previewUrl: null, artworkUrl: null };
-  }
+  return lookupPreview(song.title, song.artist);
 }
 
 /**

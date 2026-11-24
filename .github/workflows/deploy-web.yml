@@ -4,8 +4,6 @@ name: Deploy First Week web game
 # Needs one repository secret, CLOUDFLARE_API_TOKEN, made from Cloudflare's
 # "Edit Cloudflare Workers" token template. Nothing deploys without it.
 on:
-  push:
-    branches: [claude/project-thread-wexxks]
   workflow_dispatch:
 
 permissions:

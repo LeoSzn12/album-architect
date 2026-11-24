@@ -1,5 +1,6 @@
 import type { Song } from '@/types/draft';
 import { playSongPreview, stopSongPreview } from './audioEngine';
+import { lookupPreview } from './previewLookup';
 
 export interface SnippetPlayerState {
   song: Song | null;
@@ -223,18 +224,15 @@ class SnippetAudioController {
 
     let previewUrl = song.appleMusicPreviewUrl;
 
-    // If no preview URL exists on song, fetch dynamically from /api/songs/preview
+    // If no preview URL exists on song, look one up (server route, or iTunes on the static site)
     if (!previewUrl) {
       try {
-        const res = await fetch(`/api/songs/preview?title=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
-        if (res.ok) {
-          const data = (await res.json()) as { previewUrl?: string | null; artworkUrl?: string | null };
-          if (data.previewUrl) {
-            previewUrl = data.previewUrl;
-            song.appleMusicPreviewUrl = data.previewUrl;
-            if (!song.artwork && data.artworkUrl) {
-              song.artwork = data.artworkUrl;
-            }
+        const data = await lookupPreview(song.title, song.artist);
+        if (data.previewUrl) {
+          previewUrl = data.previewUrl;
+          song.appleMusicPreviewUrl = data.previewUrl;
+          if (!song.artwork && data.artworkUrl) {
+            song.artwork = data.artworkUrl;
           }
         }
       } catch (err) {
@@ -257,15 +255,12 @@ class SnippetAudioController {
         console.warn('HTMLAudioElement play failed, falling back to dynamic search or synth:', err);
         // Try dynamic lookup if current URL failed
         try {
-          const res = await fetch(`/api/songs/preview?title=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`);
-          if (res.ok) {
-            const data = (await res.json()) as { previewUrl?: string | null };
-            if (data.previewUrl && data.previewUrl !== previewUrl) {
-              this.audio.src = data.previewUrl;
-              this.audio.currentTime = 0;
-              await this.audio.play();
-              return;
-            }
+          const data = await lookupPreview(song.title, song.artist);
+          if (data.previewUrl && data.previewUrl !== previewUrl) {
+            this.audio.src = data.previewUrl;
+            this.audio.currentTime = 0;
+            await this.audio.play();
+            return;
           }
         } catch {}
 

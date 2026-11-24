@@ -1,0 +1,48 @@
+name: Publish First Week on GitHub Pages
+
+# Free web link with no secrets: builds the static game and publishes it to
+# GitHub Pages (https://leoszn12.github.io/album-architect/).
+on:
+  push:
+    branches: [claude/project-thread-wexxks]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: first-week-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build the static game
+        env:
+          NEXT_BASE_PATH: /album-architect
+        run: bash scripts/build-static.sh
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
