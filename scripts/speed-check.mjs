@@ -1,10 +1,10 @@
 // Speed check: plays the same First Week flow on two static builds (before and
 // after) in a phone-sized Chrome with the CPU slowed 4x, and prints timings.
-// Usage: node scripts/speed-check.cjs <before out dir> <after out dir> [report.md]
-const http = require('node:http');
-const fs = require('node:fs');
-const path = require('node:path');
-const { chromium } = require('playwright');
+// Usage: node scripts/speed-check.mjs <before out dir> <after out dir> [report.md]
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { chromium } from 'playwright';
 
 const BASE = '/album-architect';
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.json': 'application/json', '.txt': 'text/plain', '.ico': 'image/x-icon' };
