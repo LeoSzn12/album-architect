@@ -15,8 +15,9 @@ function serve(dir) {
       let url = decodeURIComponent(req.url.split('?')[0]);
       if (!url.startsWith(BASE)) { res.writeHead(404); return res.end(); }
       url = url.slice(BASE.length) || '/';
-      let file = path.join(dir, url);
-      if (!file.startsWith(path.resolve(dir))) { res.writeHead(403); return res.end(); }
+      const root = path.resolve(dir);
+      let file = path.resolve(root, '.' + url);
+      if (file !== root && !file.startsWith(root + path.sep)) { res.writeHead(403); return res.end(); }
       if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
       if (!fs.existsSync(file)) { res.writeHead(404); return res.end(); }
       res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream' });
@@ -29,6 +30,8 @@ function serve(dir) {
 const median = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : null; };
 const p95 = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor(s.length * 0.95)] : null; };
 const r = (n) => (n == null ? null : Math.round(n));
+
+export { serve };
 
 async function run(browser, dir, label) {
   const server = await serve(dir);
@@ -107,10 +110,14 @@ async function run(browser, dir, label) {
   out.pickMedianMs = r(median(pickMs));
   out.pickP95Ms = r(p95(pickMs));
 
-  const tRelease = Date.now();
-  await page.getByRole('button', { name: /Release it/ }).first().click();
-  await page.getByText(/units in week one/i).first().waitFor();
-  out.releaseToResultsMs = Date.now() - tRelease;
+  try {
+    const tRelease = Date.now();
+    await page.getByRole('button', { name: /Release it/ }).first().click();
+    await page.getByText(/units in week one/i).first().waitFor();
+    out.releaseToResultsMs = Date.now() - tRelease;
+  } catch (e) {
+    out.releaseError = String(e.message).split('\n')[0];
+  }
 
   const save = await page.evaluate(() => (localStorage.getItem('album-architect-draft-v1') || '').length);
   out.savedGameKB = Math.round(save / 1024);
@@ -137,7 +144,7 @@ async function run(browser, dir, label) {
   return out;
 }
 
-(async () => {
+if (process.argv[1] && process.argv[1].endsWith('speed-check.mjs')) (async () => {
   const [beforeDir, afterDir, reportPath] = process.argv.slice(2);
   const browser = await chromium.launch();
   const rounds = 3;
