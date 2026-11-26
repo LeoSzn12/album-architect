@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Disc3, RefreshCw, AlertTriangle, Star } from 'lucide-react';
 import { eraLabel } from '@/lib/eraSequence';
@@ -11,18 +12,7 @@ import { eraLabel } from '@/lib/eraSequence';
  * monopoly status, auto-assigned era, and provisional grade bracket.
  */
 export const ProgressStrip: React.FC = () => {
-  const {
-    slots,
-    currentRoundIndex,
-    draftedTracks,
-    rerollTokens,
-    monopolyReport,
-    evaluationResult,
-    eraSequence,
-    difficulty,
-    gameMode,
-    sessionId,
-  } = useDraftStore();
+  const { slots, currentRoundIndex, draftedTracks, rerollTokens, monopolyReport, evaluationResult, eraSequence, difficulty, gameMode, sessionId } = useDraftStore(useShallow((s) => ({ slots: s.slots, currentRoundIndex: s.currentRoundIndex, draftedTracks: s.draftedTracks, rerollTokens: s.rerollTokens, monopolyReport: s.monopolyReport, evaluationResult: s.evaluationResult, eraSequence: s.eraSequence, difficulty: s.difficulty, gameMode: s.gameMode, sessionId: s.sessionId })));
 
   const isCompleted = currentRoundIndex >= slots.length;
   const tracksDrafted = draftedTracks.length;
@@ -57,7 +47,7 @@ export const ProgressStrip: React.FC = () => {
   const eraText = currentEra ? eraLabel(currentEra) : null;
 
   return (
-    <div className="w-full bg-[#0e0e12]/90 backdrop-blur-xl border border-white/[0.08] shadow-lg rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold">
+    <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] shadow-lg rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold">
       {/* Track Progress */}
       <div className="flex items-center gap-2">
         <Disc3 className="w-3.5 h-3.5 text-rose-500 flex-shrink-0 animate-spin-slow" />

@@ -6,6 +6,8 @@ import type { GameMode } from '../types/draft.ts';
  */
 export async function canPersistGame(mode: GameMode, request: typeof fetch = fetch): Promise<boolean> {
   if (mode === 'budget') return false;
+  // The GitHub Pages build has no server, so there is nothing to ask.
+  if (process.env.NEXT_PUBLIC_STATIC_SITE === '1') return false;
   try {
     const response = await request('/api/auth/session', { cache: 'no-store' });
     if (!response.ok) return false;

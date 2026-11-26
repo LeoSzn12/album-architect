@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { ShieldCheck, AlertTriangle, UserCheck, Sparkles } from 'lucide-react';
 
 export const ArtistMonopolyTracker: React.FC = () => {
-  const { monopolyReport } = useDraftStore();
+  const { monopolyReport } = useDraftStore(useShallow((s) => ({ monopolyReport: s.monopolyReport })));
 
   const { artistCounts, totalPenaltyDeduction, hasViolation } = monopolyReport;
 
@@ -18,7 +19,7 @@ export const ArtistMonopolyTracker: React.FC = () => {
       className={`w-full rounded-2xl p-4 border transition-all ${
         hasViolation
           ? 'bg-rose-950/20 border-rose-500/40 shadow-lg shadow-rose-950/20'
-          : 'bg-[#0e0e12]/85 border border-white/[0.08] backdrop-blur-2xl'
+          : 'bg-[#0e0e12]/85 border border-white/[0.08]'
       }`}
     >
       <div className="flex flex-wrap justify-between items-center gap-2 mb-3">

@@ -32,7 +32,7 @@ export function ShareCard({ payload }: ShareCardProps) {
   };
 
   return (
-    <article className="w-full max-w-2xl overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e0e12]/95 shadow-2xl backdrop-blur-2xl">
+    <article className="w-full max-w-2xl overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e0e12]/95 shadow-2xl">
       <div className="bg-[#121216]/90 border-b border-white/[0.08] p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

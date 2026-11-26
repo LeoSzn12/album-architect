@@ -4,6 +4,7 @@ import React from 'react';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { AlertTriangle, X } from 'lucide-react';
 import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 
 interface ConfirmModalProps {
@@ -27,7 +28,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { audioEnabled } = useDraftStore();
+  const { audioEnabled } = useDraftStore(useShallow((s) => ({ audioEnabled: s.audioEnabled })));
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
     isOpen,
     onClose: onCancel,
@@ -38,12 +39,12 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fade-in"
     >
       <div
         ref={modalRef}
         {...modalProps}
-        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden flex flex-col gap-4"
+        className="bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden flex flex-col gap-4"
       >
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">

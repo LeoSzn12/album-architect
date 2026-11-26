@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Activity, Flame, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export const OscilloscopeEnergyBar: React.FC = () => {
-  const { slots, currentRoundIndex, draftedTracks, energyMetrics } = useDraftStore();
+  const { slots, currentRoundIndex, draftedTracks, energyMetrics } = useDraftStore(useShallow((s) => ({ slots: s.slots, currentRoundIndex: s.currentRoundIndex, draftedTracks: s.draftedTracks, energyMetrics: s.energyMetrics })));
 
   const activeSlot = slots[currentRoundIndex];
   const isComplete = currentRoundIndex >= slots.length;
@@ -39,7 +40,7 @@ export const OscilloscopeEnergyBar: React.FC = () => {
   const statusBadge = getStatusBadge();
 
   return (
-    <div className="w-full bg-[#0e0e12]/85 border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col gap-3 shadow-xl backdrop-blur-2xl relative overflow-hidden">
+    <div className="w-full bg-[#0e0e12]/85 border border-white/[0.08] rounded-2xl p-4 sm:p-5 flex flex-col gap-3 shadow-xl relative overflow-hidden">
       <div className="flex flex-wrap justify-between items-center gap-2">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-rose-500 animate-pulse" />

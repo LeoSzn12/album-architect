@@ -372,7 +372,8 @@ export interface PastDraft {
   trackCount: number;
   topTrackTitle: string;
   topTrackArtist: string;
-  evaluationResult: EvaluationResult;
+  /** No longer saved (it made each past draft ~20KB); older saves may still have it. */
+  evaluationResult?: EvaluationResult;
   theme?: ChallengeTheme;
   budgetReport?: BudgetReport;
   crowdHypeScore?: number;

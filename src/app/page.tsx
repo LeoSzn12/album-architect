@@ -1,28 +1,34 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Header } from '@/components/Header';
 import { DraftBoard } from '@/components/DraftBoard';
-import { AICriticPanel } from '@/components/AICriticPanel';
 import { LandingScreen } from '@/components/LandingScreen';
-import { ModeSelectorModal } from '@/components/ModeSelectorModal';
-import { TracklistDrawer } from '@/components/TracklistDrawer';
-import { ExportModal } from '@/components/ExportModal';
-import { RealSongPlayerModal } from '@/components/RealSongPlayerModal';
 import { DockedMusicPlayer } from '@/components/DockedMusicPlayer';
-import { DraftHistoryPanel } from '@/components/DraftHistoryPanel';
 import { LeaderboardPanel } from '@/components/LeaderboardPanel';
-import { PlayAgainstFriendsModal } from '@/components/PlayAgainstFriendsModal';
 import { parseChallengeInvite } from '@/lib/challengeInvite';
 import { saveChallengeTarget, type ChallengeTarget } from '@/lib/firstWeek/weekOneChallenge';
 import { formatUnits } from '@/lib/firstWeek/ladder';
-import { SetupPanel, type SetupPreferences } from '@/components/SetupPanel';
-import { LibraryPanel } from '@/components/LibraryPanel';
-import { ProfilePanel } from '@/components/ProfilePanel';
+import type { SetupPreferences } from '@/components/SetupPanel';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
-import { HowToPlayPanel } from '@/components/HowToPlayPanel';
 import type { ChallengeTheme } from '@/types/draft';
+import {
+  AICriticPanel,
+  DraftHistoryPanel,
+  ExportModal,
+  HowToPlayPanel,
+  LibraryPanel,
+  ModeSelectorModal,
+  PlayAgainstFriendsModal,
+  ProfilePanel,
+  RealSongPlayerModal,
+  SetupPanel,
+  TracklistDrawer,
+  getLoadedResultsPanel,
+  preloadResultsScreen,
+} from '@/components/lazyPanels';
 
 export default function Home() {
   const {
@@ -37,7 +43,21 @@ export default function Home() {
     playerAlias,
     draftSeed,
     setPlayerAlias,
-  } = useDraftStore();
+    isPlayerModalOpen,
+  } = useDraftStore(useShallow((s) => ({
+    currentRoundIndex: s.currentRoundIndex,
+    slots: s.slots,
+    draftedTracks: s.draftedTracks,
+    evaluationResult: s.evaluationResult,
+    evaluateDraft: s.evaluateDraft,
+    startNewDraft: s.startNewDraft,
+    resumePersistedSession: s.resumePersistedSession,
+    pastDrafts: s.pastDrafts,
+    playerAlias: s.playerAlias,
+    draftSeed: s.draftSeed,
+    setPlayerAlias: s.setPlayerAlias,
+    isPlayerModalOpen: s.isPlayerModalOpen,
+  })));
 
   const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(false);
   const [isTracklistOpen, setIsTracklistOpen] = useState(false);
@@ -85,6 +105,19 @@ export default function Home() {
     void resumePersistedSession();
   }, [resumePersistedSession]);
 
+  // Fetch the results screen's code while the last picks are being made, so it
+  // shows instantly when the album is released.
+  const [loadedResults, setLoadedResults] = useState<{ Panel: NonNullable<ReturnType<typeof getLoadedResultsPanel>> } | null>(null);
+  useEffect(() => {
+    if (currentRoundIndex >= Math.max(0, slots.length - 2)) {
+      preloadResultsScreen(() => {
+        const Panel = getLoadedResultsPanel();
+        if (Panel) setLoadedResults({ Panel });
+      });
+    }
+  }, [currentRoundIndex, slots.length]);
+  const ResultsPanel = loadedResults?.Panel ?? AICriticPanel;
+
   const handleEvaluate = async () => {
     await evaluateDraft();
   };
@@ -115,19 +148,21 @@ export default function Home() {
 
   return (
     <div className="min-h-screen min-w-0 bg-[#08080c] text-white flex flex-col justify-between selection:bg-white selection:text-black relative pb-32 sm:pb-28 overflow-x-hidden">
-      {/* Apple Music Fluid Ambient Mesh Backdrop */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Upper-left warm crimson / rose atmospheric orb */}
-        <div className="absolute -top-32 -left-20 w-[550px] h-[550px] rounded-full bg-rose-600/[0.14] blur-[120px]" />
-        {/* Upper-right electric indigo / violet atmospheric orb */}
-        <div className="absolute -top-32 -right-20 w-[600px] h-[600px] rounded-full bg-indigo-600/[0.14] blur-[140px]" />
-        {/* Center warm stage amber / gold glow */}
-        <div className="absolute top-[280px] left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-amber-500/[0.08] blur-[130px]" />
-        {/* Bottom subtle deep plum vignette */}
-        <div className="absolute bottom-0 inset-x-0 h-[400px] bg-gradient-to-t from-black via-[#08080c]/80 to-transparent" />
-        {/* Subtle radial vignette overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.18),rgba(255,255,255,0))]" />
-      </div>
+      {/* Ambient backdrop. Painted gradients, not blurred shapes: same glow,
+          but phones don't have to re-blur the whole screen while scrolling. */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: [
+            'radial-gradient(ellipse 80% 80% at 50% -20%, rgba(120,119,198,0.18), rgba(255,255,255,0))',
+            'radial-gradient(circle at 195px 147px, rgba(225,29,72,0.13) 0, rgba(225,29,72,0.07) 275px, rgba(225,29,72,0) 540px)',
+            'radial-gradient(circle at calc(100% - 220px) 172px, rgba(79,70,229,0.13) 0, rgba(79,70,229,0.07) 300px, rgba(79,70,229,0) 580px)',
+            'radial-gradient(ellipse 480px 330px at 50% 480px, rgba(245,158,11,0.07), rgba(245,158,11,0))',
+            'linear-gradient(to top, #000 0, rgba(8,8,12,0.8) 200px, rgba(8,8,12,0) 400px)',
+          ].join(', '),
+        }}
+      />
 
       {/* Header — always visible */}
       <Header
@@ -196,7 +231,7 @@ export default function Home() {
 
             {/* Main panel: critic results OR draft board */}
             {isCompleted && evaluationResult ? (
-              <AICriticPanel
+              <ResultsPanel
                 onOpenExport={() => setIsExportOpen(true)}
                 onOpenFriendsModal={() => setIsFriendsModalOpen(true)}
               />
@@ -229,28 +264,28 @@ export default function Home() {
       </footer>
 
       {/* Modals & Drawers */}
-      <ModeSelectorModal
+      {isModeSelectorOpen && <ModeSelectorModal
         isOpen={isModeSelectorOpen}
         onClose={() => setIsModeSelectorOpen(false)}
-      />
+      />}
 
-      <PlayAgainstFriendsModal
+      {isFriendsModalOpen && <PlayAgainstFriendsModal
         onStarted={() => { setHasStarted(true); setActiveSurface('game'); }}
         isOpen={isFriendsModalOpen}
         onClose={() => setIsFriendsModalOpen(false)}
-      />
+      />}
 
-      <TracklistDrawer
+      {isTracklistOpen && <TracklistDrawer
         isOpen={isTracklistOpen}
         onClose={() => setIsTracklistOpen(false)}
-      />
+      />}
 
-      <ExportModal
+      {isExportOpen && <ExportModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
-      />
+      />}
 
-      <RealSongPlayerModal />
+      {isPlayerModalOpen && <RealSongPlayerModal />}
       <DockedMusicPlayer />
 
       {/* Mobile Bottom Navigation Dock */}

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronDown, ChevronUp, Copy, Crown, Disc3, Download, Share2, TrendingUp, Trophy } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { simulateRelease, DAY_LABELS } from '@/lib/firstWeek/releaseSim';
 import { getWeeklyTrend } from '@/lib/firstWeek/weeklyTrend';
@@ -28,17 +29,7 @@ function prefersReducedMotion() {
 
 /** The player's simulated release week (and the rival's), shared by the results screen. */
 export function useFirstWeekRelease() {
-  const {
-    draftedTracks,
-    evaluationResult,
-    opponentDraftedTracks,
-    opponentEvaluationResult,
-    rivalId,
-    ruleCardIds,
-    mysteryRoundIndex,
-    releaseSeed,
-    gameMode,
-  } = useDraftStore();
+  const { draftedTracks, evaluationResult, opponentDraftedTracks, opponentEvaluationResult, rivalId, ruleCardIds, mysteryRoundIndex, releaseSeed, gameMode } = useDraftStore(useShallow((s) => ({ draftedTracks: s.draftedTracks, evaluationResult: s.evaluationResult, opponentDraftedTracks: s.opponentDraftedTracks, opponentEvaluationResult: s.opponentEvaluationResult, rivalId: s.rivalId, ruleCardIds: s.ruleCardIds, mysteryRoundIndex: s.mysteryRoundIndex, releaseSeed: s.releaseSeed, gameMode: s.gameMode })));
 
   const trend = useMemo(() => getWeeklyTrend(), []);
 
@@ -65,7 +56,7 @@ export function useFirstWeekRelease() {
 
 /** The "beat my week one" link for the current draft, or null when the draft can't be replayed. */
 export function useWeekOneChallengeLink(units: number | null | undefined): () => string | null {
-  const { gameMode, draftSeed, difficulty, selectedEra, challengeTheme } = useDraftStore();
+  const { gameMode, draftSeed, difficulty, selectedEra, challengeTheme } = useDraftStore(useShallow((s) => ({ gameMode: s.gameMode, draftSeed: s.draftSeed, difficulty: s.difficulty, selectedEra: s.selectedEra, challengeTheme: s.challengeTheme })));
   return () => {
     const base = siteBaseUrl();
     if (!draftSeed || !units) return null;
@@ -74,7 +65,7 @@ export function useWeekOneChallengeLink(units: number | null | undefined): () =>
 }
 
 export const ReleaseWeekPanel: React.FC<{ summary?: ReleaseSummary }> = ({ summary }) => {
-  const { draftedTracks, draftSeed, challengeTheme } = useDraftStore();
+  const { draftedTracks, draftSeed, challengeTheme } = useDraftStore(useShallow((s) => ({ draftedTracks: s.draftedTracks, draftSeed: s.draftSeed, challengeTheme: s.challengeTheme })));
   const { release, rival, trend } = useFirstWeekRelease();
   const challengeLink = useWeekOneChallengeLink(release?.finalUnits);
   const [friendTarget] = useState(() => readChallengeTarget(draftSeed));

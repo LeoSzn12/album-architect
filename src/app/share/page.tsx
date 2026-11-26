@@ -46,7 +46,7 @@ export default function SharePage() {
           <p className="mt-1 text-sm text-zinc-400">Shared result</p>
         </div>
         {payload ? <ShareCard payload={payload} /> : (
-          <section className="w-full rounded-3xl border border-rose-500/20 bg-[#0e0e12]/95 p-8 text-center backdrop-blur-2xl">
+          <section className="w-full rounded-3xl border border-rose-500/20 bg-[#0e0e12]/95 p-8 text-center">
             <h1 className="text-2xl font-black text-white">Unable to load result</h1>
             <p className="mt-2 text-sm text-zinc-400">{error || 'Reading share data…'}</p>
           </section>

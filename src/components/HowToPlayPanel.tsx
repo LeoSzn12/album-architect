@@ -19,6 +19,7 @@ import {
   playCrowdCheerSound,
   playHoverSound,
 } from '@/lib/audioEngine';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 
 interface HowToPlayPanelProps {
@@ -29,7 +30,7 @@ type GuideTab = 'quickstart' | 'scoring' | 'crowd' | 'modes' | 'personas';
 
 export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft }) => {
   const [activeTab, setActiveTab] = useState<GuideTab>('quickstart');
-  const { audioEnabled } = useDraftStore();
+  const { audioEnabled } = useDraftStore(useShallow((s) => ({ audioEnabled: s.audioEnabled })));
 
   const handleTabChange = (tab: GuideTab) => {
     playHoverSound(audioEnabled);
@@ -39,7 +40,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-5 animate-fade-in pb-12 pt-2">
       {/* Header: back, title, tabs */}
-      <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/90 p-5 sm:p-6 shadow-2xl backdrop-blur-2xl">
+      <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/90 p-5 sm:p-6 shadow-2xl">
         <div className="flex items-center justify-between gap-3">
           <button
             onClick={() => {
@@ -118,7 +119,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
             ))}
           </ol>
 
-          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-5 sm:p-6 backdrop-blur-2xl">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-5 sm:p-6">
             <h2 className="text-lg font-black text-white mb-3">Three things that move your score</h2>
             <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
               <li className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
@@ -142,7 +143,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
       {activeTab === 'scoring' && (
         <div className="flex flex-col gap-6 animate-fade-in">
           {/* Weight Matrix */}
-          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 backdrop-blur-2xl">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-2">
               <Gauge className="w-5 h-5 text-rose-500" />
               <h2 className="text-lg font-black text-white">What your score is made of</h2>
@@ -213,7 +214,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
           </div>
 
           {/* Verdict Tiers */}
-          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 backdrop-blur-2xl">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8">
             <h2 className="text-lg font-black text-white mb-4">A&R Scorecard Verdict Tiers</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/40">
@@ -252,7 +253,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
       {activeTab === 'crowd' && (
         <div className="flex flex-col gap-6 animate-fade-in">
           {/* Live Crowd Mechanics */}
-          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 backdrop-blur-2xl">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-2">
               <Flame className="w-5 h-5 text-rose-500" />
               <h2 className="text-lg font-black text-white">Live Crowd Reaction & Hype Meter</h2>
@@ -332,7 +333,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
         <div className="flex flex-col gap-6 animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Draft Mode */}
-            <div className="p-6 rounded-3xl bg-[#0e0e12]/85 border border-white/[0.08] flex flex-col justify-between shadow-xl backdrop-blur-2xl">
+            <div className="p-6 rounded-3xl bg-[#0e0e12]/85 border border-white/[0.08] flex flex-col justify-between shadow-xl">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center text-white font-black text-sm mb-4">
                   7
@@ -349,7 +350,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
             </div>
 
             {/* EP Builder */}
-            <div className="p-6 rounded-3xl bg-[#0e0e12]/85 border border-white/[0.08] flex flex-col justify-between shadow-xl backdrop-blur-2xl">
+            <div className="p-6 rounded-3xl bg-[#0e0e12]/85 border border-white/[0.08] flex flex-col justify-between shadow-xl">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center text-white font-black text-sm mb-4">
                   6-7
@@ -366,7 +367,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
             </div>
 
             {/* Album Builder */}
-            <div className="p-6 rounded-3xl bg-[#0e0e12]/85 border border-white/[0.08] flex flex-col justify-between shadow-xl backdrop-blur-2xl">
+            <div className="p-6 rounded-3xl bg-[#0e0e12]/85 border border-white/[0.08] flex flex-col justify-between shadow-xl">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center text-white font-black text-sm mb-4">
                   12-14
@@ -387,7 +388,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
           </div>
 
           {/* 1v1 Battle Guide */}
-          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 shadow-xl backdrop-blur-2xl">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 shadow-xl">
             <div className="flex items-center gap-3 mb-3">
               <Swords className="w-6 h-6 text-zinc-300" />
               <h2 className="text-lg font-black text-white">1v1 Play Against Friends (Challenge Seeds)</h2>
@@ -418,7 +419,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
       {activeTab === 'personas' && (
         <div className="flex flex-col gap-6 animate-fade-in">
           {/* The 6 DNA Personas */}
-          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 backdrop-blur-2xl">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-2">
               <Dna className="w-5 h-5 text-rose-500" />
               <h2 className="text-lg font-black text-white">The 6 styles</h2>
@@ -445,7 +446,7 @@ export const HowToPlayPanel: React.FC<HowToPlayPanelProps> = ({ onBackToDraft })
           </div>
 
           {/* Pro Tips */}
-          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8 backdrop-blur-2xl">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0e0e12]/85 p-6 sm:p-8">
             <h2 className="text-lg font-black text-white mb-4 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-rose-500" />
               <span>Tips for a higher score</span>

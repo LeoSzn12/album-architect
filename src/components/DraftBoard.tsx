@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { useSnippetAudio } from '@/hooks/useSnippetAudio';
 import { DraftCard } from './DraftCard';
@@ -44,34 +45,14 @@ import { DraftTelemetryBar } from './DraftTelemetryBar';
 import { RIVALS } from '@/lib/firstWeek/rivals';
 import type { Song } from '@/types/draft';
 import { isSoloSeed } from '@/lib/soloSeed';
+import { coverSrc } from '@/lib/coverArt';
 
 interface DraftBoardProps {
   onEvaluateTrigger: () => void;
 }
 
 export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => {
-  const {
-    slots,
-    currentRoundIndex,
-    currentOptions,
-    draftSong,
-    draftedTracks,
-    undoLastPick,
-    rerollTokens,
-    useRerollToken: triggerRerollToken,
-    difficulty,
-    draftSeed,
-    audioEnabled,
-    eraSequence,
-    gameMode,
-    lastOpponentReveal,
-    rivalId,
-    challengeTheme,
-    budgetRemaining,
-    monopolyReport,
-    activeSynergies,
-    crowdHype,
-  } = useDraftStore();
+  const { slots, currentRoundIndex, currentOptions, draftSong, draftedTracks, undoLastPick, rerollTokens, useRerollToken: triggerRerollToken, difficulty, draftSeed, audioEnabled, eraSequence, gameMode, lastOpponentReveal, rivalId, challengeTheme, budgetRemaining, monopolyReport, activeSynergies, crowdHype } = useDraftStore(useShallow((s) => ({ slots: s.slots, currentRoundIndex: s.currentRoundIndex, currentOptions: s.currentOptions, draftSong: s.draftSong, draftedTracks: s.draftedTracks, undoLastPick: s.undoLastPick, rerollTokens: s.rerollTokens, useRerollToken: s.useRerollToken, difficulty: s.difficulty, draftSeed: s.draftSeed, audioEnabled: s.audioEnabled, eraSequence: s.eraSequence, gameMode: s.gameMode, lastOpponentReveal: s.lastOpponentReveal, rivalId: s.rivalId, challengeTheme: s.challengeTheme, budgetRemaining: s.budgetRemaining, monopolyReport: s.monopolyReport, activeSynergies: s.activeSynergies, crowdHype: s.crowdHype })));
 
   const { toggleSong, isSongPlaying, stop } = useSnippetAudio();
 
@@ -264,7 +245,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
 
   if (isCompleted) {
     return (
-      <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] rounded-3xl p-8 sm:p-12 flex flex-col items-center justify-center text-center shadow-2xl backdrop-blur-2xl relative overflow-hidden my-6">
+      <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] rounded-3xl p-8 sm:p-12 flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden my-6">
         <div className="w-16 h-16 rounded-2xl bg-white/[0.06] border border-white/[0.12] shadow-2xl mb-4 flex items-center justify-center">
           <Trophy className="w-8 h-8 text-amber-400" aria-hidden="true" />
         </div>
@@ -301,7 +282,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
       {/* Round header: where you are, what to pick, and the two round tools */}
       <section
         aria-labelledby="current-slot-heading"
-        className="relative bg-[#111117]/90 border border-white/[0.08] rounded-3xl p-4 sm:p-5 backdrop-blur-2xl flex flex-col gap-3 shadow-2xl"
+        className="relative bg-[#111117]/90 border border-white/[0.08] rounded-3xl p-4 sm:p-5 flex flex-col gap-3 shadow-2xl"
       >
         <div className="flex gap-1" aria-hidden="true">
           {slots.map((slot, i) => (
@@ -469,7 +450,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
       )}
 
       {/* Everything else lives one tap away */}
-      <details id="crowd-stats" className="group rounded-2xl border border-white/[0.08] bg-[#0e0e12]/80 backdrop-blur-xl">
+      <details id="crowd-stats" className="group rounded-2xl border border-white/[0.08] bg-[#0e0e12]/80">
         <summary className="min-h-[48px] list-none cursor-pointer px-4 py-3 flex items-center justify-between gap-3 text-sm font-bold text-zinc-200 [&::-webkit-details-marker]:hidden">
           <span className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-rose-400" aria-hidden="true" />
@@ -503,9 +484,9 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fade-in"
         >
-          <div className="relative w-full max-w-md rounded-3xl border border-white/[0.12] bg-[#121216]/95 p-6 shadow-2xl shadow-black/80 text-center overflow-hidden backdrop-blur-2xl">
+          <div className="relative w-full max-w-md rounded-3xl border border-white/[0.12] bg-[#121216]/95 p-6 shadow-2xl shadow-black/80 text-center overflow-hidden">
             <button
               onClick={() => {
                 setWildcardModalOpen(false);
@@ -525,7 +506,7 @@ export const DraftBoard: React.FC<DraftBoardProps> = ({ onEvaluateTrigger }) => 
             <div className="relative w-32 h-32 mx-auto my-2 rounded-2xl overflow-hidden shadow-2xl border border-white/[0.12] bg-zinc-950">
               {unlockedWildcard.artwork ? (
                 <img
-                  src={unlockedWildcard.artwork}
+                  src={coverSrc(unlockedWildcard.artwork)}
                   alt={unlockedWildcard.title}
                   className="w-full h-full object-cover"
                 />

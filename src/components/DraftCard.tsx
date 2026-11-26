@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Song } from '@/types/draft';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { useSnippetAudio } from '@/hooks/useSnippetAudio';
 import { Play, Pause, Flame, Disc, AlertTriangle, Sparkles, Plus, Maximize2, GitCompare, Loader2 } from 'lucide-react';
@@ -10,6 +11,7 @@ import {
   playDraftLockSound,
 } from '@/lib/audioEngine';
 import { getSongBudgetPrice } from '@/lib/budgetEngine';
+import { coverSrc, coverSrcSet } from '@/lib/coverArt';
 
 interface DraftCardProps {
   song: Song;
@@ -28,16 +30,7 @@ export const DraftCard: React.FC<DraftCardProps> = ({
   isComparing = false,
   onHoverCandidate,
 }) => {
-  const {
-    audioEnabled,
-    monopolyReport,
-    setActivePlayingSongId,
-    openRealSongPlayer,
-    gameMode,
-    budgetRemaining,
-    mysteryRoundIndex,
-    currentRoundIndex,
-  } = useDraftStore();
+  const { audioEnabled, monopolyReport, setActivePlayingSongId, openRealSongPlayer, gameMode, budgetRemaining, mysteryRoundIndex, currentRoundIndex } = useDraftStore(useShallow((s) => ({ audioEnabled: s.audioEnabled, monopolyReport: s.monopolyReport, setActivePlayingSongId: s.setActivePlayingSongId, openRealSongPlayer: s.openRealSongPlayer, gameMode: s.gameMode, budgetRemaining: s.budgetRemaining, mysteryRoundIndex: s.mysteryRoundIndex, currentRoundIndex: s.currentRoundIndex })));
   // Snippet Round: titles, artists and covers stay hidden until the pick.
   const isMystery = mysteryRoundIndex !== null && mysteryRoundIndex === currentRoundIndex;
   const mysteryName = `Mystery track ${candidateIndex !== undefined ? candidateIndex + 1 : ''}`.trim();
@@ -119,7 +112,9 @@ export const DraftCard: React.FC<DraftCardProps> = ({
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 lg:w-full lg:h-auto lg:aspect-square flex-shrink-0 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 shadow-lg shadow-black/50">
           {song.artwork && !isMystery ? (
             <img
-              src={song.artwork}
+              src={coverSrc(song.artwork)}
+              srcSet={coverSrcSet(song.artwork)}
+              sizes="(min-width: 1024px) 240px, 96px"
               alt=""
               className="w-full h-full object-cover"
               loading="lazy"

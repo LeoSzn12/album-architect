@@ -1,19 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { History, Trash2, Sparkles } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
 
 export const DraftHistoryPanel: React.FC = () => {
-  const { pastDrafts, clearHistory, audioEnabled, gameMode } = useDraftStore();
+  const { pastDrafts, clearHistory, audioEnabled, gameMode } = useDraftStore(useShallow((s) => ({ pastDrafts: s.pastDrafts, clearHistory: s.clearHistory, audioEnabled: s.audioEnabled, gameMode: s.gameMode })));
   const [isOpen, setIsOpen] = useState(false);
 
   const currentProjectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
 
   if (pastDrafts.length === 0) {
     return (
-      <div className="w-full rounded-3xl border border-dashed border-white/[0.08] bg-[#0e0e12]/60 p-6 text-center backdrop-blur-xl">
+      <div className="w-full rounded-3xl border border-dashed border-white/[0.08] bg-[#0e0e12]/60 p-6 text-center">
         <History className="mx-auto h-5 w-5 text-zinc-600" />
         <h3 className="mt-2 text-sm font-extrabold uppercase tracking-wider text-zinc-300">No past drafts yet</h3>
         <p className="mt-1 text-xs text-zinc-500">
@@ -24,7 +25,7 @@ export const DraftHistoryPanel: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] rounded-3xl p-6 backdrop-blur-2xl shadow-xl my-4">
+    <div className="w-full bg-[#0e0e12]/90 border border-white/[0.08] rounded-3xl p-6 shadow-xl my-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">

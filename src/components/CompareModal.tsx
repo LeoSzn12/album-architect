@@ -3,6 +3,7 @@
 import React from 'react';
 import type { Song, DraftSlot } from '@/types/draft';
 import { useSnippetAudio } from '@/hooks/useSnippetAudio';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import {
   X,
@@ -18,6 +19,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import { playDraftLockSound } from '@/lib/audioEngine';
+import { coverSrc } from '@/lib/coverArt';
 
 interface CompareModalProps {
   isOpen: boolean;
@@ -34,7 +36,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({
   slot,
   onSelectSong,
 }) => {
-  const { monopolyReport, audioEnabled } = useDraftStore();
+  const { monopolyReport, audioEnabled } = useDraftStore(useShallow((s) => ({ monopolyReport: s.monopolyReport, audioEnabled: s.audioEnabled })));
   const { isSongPlaying, toggleSong, currentTime, duration, progressPercent, stop } = useSnippetAudio();
 
   if (!isOpen || songs.length < 2) return null;
@@ -68,11 +70,11 @@ export const CompareModal: React.FC<CompareModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 animate-fade-in"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-4xl bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-4xl bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Header */}
         <div className="p-5 border-b border-white/[0.08] bg-[#09090c] flex items-center justify-between">
@@ -148,7 +150,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-white/10 shadow-md bg-zinc-900 flex-shrink-0">
                       {song.artwork ? (
                         <img
-                          src={song.artwork}
+                          src={coverSrc(song.artwork)}
                           alt={song.title}
                           className="w-full h-full object-cover"
                         />

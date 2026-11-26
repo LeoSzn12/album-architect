@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { CrowdHypeResult, Song, DraftSlot, DraftedTrack, SynergyBadge } from '@/types/draft';
 import { computeCrowdHype } from '@/lib/synergyEngine';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import {
   playAirhornSound,
@@ -42,7 +43,7 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
   activeSynergies,
 }) => {
   const { score: currentScore, status, reactionQuote } = crowdHype;
-  const { audioEnabled } = useDraftStore();
+  const { audioEnabled } = useDraftStore(useShallow((s) => ({ audioEnabled: s.audioEnabled })));
 
   const [activeFx, setActiveFx] = useState<string | null>(null);
   const [fxMessage, setFxMessage] = useState<string | null>(null);
@@ -167,7 +168,7 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
   return (
     <section
       aria-label="Live Crowd and Aux Hype Stage"
-      className="relative w-full rounded-2xl border border-white/[0.08] bg-[#0e0e12]/85 p-3.5 sm:p-4 backdrop-blur-2xl shadow-2xl overflow-hidden transition-all duration-500"
+      className="relative w-full rounded-2xl border border-white/[0.08] bg-[#0e0e12]/85 p-3.5 sm:p-4 shadow-2xl overflow-hidden transition-all duration-500"
     >
       {/* Subtle Acoustic Stage Lighting Sheen */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -274,7 +275,7 @@ export const CrowdStageVisualizer: React.FC<CrowdStageVisualizerProps> = ({
       <div className="relative z-10 w-full h-20 sm:h-24 bg-black/50 rounded-xl border border-white/[0.06] overflow-hidden flex items-end justify-center px-4">
         {/* Dynamic Speech Bubble */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 w-max max-w-[94%] sm:max-w-md animate-bubble-pop">
-          <div className="relative px-3 py-1.5 rounded-2xl bg-zinc-900/95 border border-white/[0.15] text-zinc-100 text-xs font-semibold shadow-2xl backdrop-blur-xl flex items-center gap-2">
+          <div className="relative px-3 py-1.5 rounded-2xl bg-zinc-900/95 border border-white/[0.15] text-zinc-100 text-xs font-semibold shadow-2xl flex items-center gap-2">
             <span className="text-sm">
               {activeFx ? '⚡' : isHyped ? '🔥' : isGroove ? '🎧' : isMid ? '📱' : '💤'}
             </span>

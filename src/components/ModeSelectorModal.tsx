@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { GameMode, DifficultyTier, ChallengeTheme } from '@/types/draft';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Zap, Disc, Check, X, ShieldAlert, Sparkles, Flame, EyeOff, Award, Swords, DollarSign, Crown, Heart, Clock, Music2 } from 'lucide-react';
 import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
@@ -16,15 +17,7 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const {
-    gameMode,
-    setGameMode,
-    difficulty,
-    setDifficulty,
-    challengeTheme,
-    setChallengeTheme,
-    audioEnabled,
-  } = useDraftStore();
+  const { gameMode, setGameMode, difficulty, setDifficulty, challengeTheme, setChallengeTheme, audioEnabled } = useDraftStore(useShallow((s) => ({ gameMode: s.gameMode, setGameMode: s.setGameMode, difficulty: s.difficulty, setDifficulty: s.setDifficulty, challengeTheme: s.challengeTheme, setChallengeTheme: s.setChallengeTheme, audioEnabled: s.audioEnabled })));
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
     isOpen,
@@ -88,12 +81,12 @@ export const ModeSelectorModal: React.FC<ModeSelectorModalProps> = ({
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fade-in"
     >
       <div
         ref={modalRef}
         {...modalProps}
-        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl relative overflow-hidden flex flex-col gap-6 max-h-[90vh] overflow-y-auto"
+        className="bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl relative overflow-hidden flex flex-col gap-6 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex justify-between items-center pb-4 border-b border-white/[0.08]">
           <div>

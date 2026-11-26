@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { buildChallengeInvite, parseChallengeInvite } from '@/lib/challengeInvite';
@@ -33,22 +34,7 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
   onClose,
   onStarted,
 }) => {
-  const {
-    draftSeed,
-    startNewDraft,
-    playerAlias,
-    setPlayerAlias,
-    evaluationResult,
-    gameMode,
-    difficulty,
-    selectedEra,
-    challengeTheme,
-    draftedTracks,
-    versusMatchup,
-    setVersusMatchup,
-    audioEnabled,
-    slots,
-  } = useDraftStore();
+  const { draftSeed, startNewDraft, playerAlias, setPlayerAlias, evaluationResult, gameMode, difficulty, selectedEra, challengeTheme, draftedTracks, versusMatchup, setVersusMatchup, audioEnabled, slots } = useDraftStore(useShallow((s) => ({ draftSeed: s.draftSeed, startNewDraft: s.startNewDraft, playerAlias: s.playerAlias, setPlayerAlias: s.setPlayerAlias, evaluationResult: s.evaluationResult, gameMode: s.gameMode, difficulty: s.difficulty, selectedEra: s.selectedEra, challengeTheme: s.challengeTheme, draftedTracks: s.draftedTracks, versusMatchup: s.versusMatchup, setVersusMatchup: s.setVersusMatchup, audioEnabled: s.audioEnabled, slots: s.slots })));
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
     isOpen,
@@ -204,12 +190,12 @@ export const PlayAgainstFriendsModal: React.FC<PlayAgainstFriendsModalProps> = (
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fade-in"
     >
       <div
         ref={modalRef}
         {...modalProps}
-        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative max-h-[90dvh] overflow-y-auto flex flex-col gap-6"
+        className="bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative max-h-[90dvh] overflow-y-auto flex flex-col gap-6"
       >
         <div className="flex justify-between items-center pb-4 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">

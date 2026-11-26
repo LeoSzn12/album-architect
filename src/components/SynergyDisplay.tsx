@@ -36,7 +36,7 @@ export const SynergyDisplay: React.FC<SynergyDisplayProps> = ({ synergies }) => 
       {synergies.map((syn) => (
         <div
           key={syn.id}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs font-semibold text-zinc-200 shadow-sm backdrop-blur-xl animate-fade-in"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs font-semibold text-zinc-200 shadow-sm animate-fade-in"
           title={syn.description}
         >
           {getIcon(syn.category)}
