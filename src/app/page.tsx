@@ -107,11 +107,16 @@ export default function Home() {
 
   // Fetch the results screen's code while the last picks are being made, so it
   // shows instantly when the album is released.
-  const [, setResultsReady] = useState(0);
+  const [loadedResults, setLoadedResults] = useState<{ Panel: NonNullable<ReturnType<typeof getLoadedResultsPanel>> } | null>(null);
   useEffect(() => {
-    if (currentRoundIndex >= Math.max(0, slots.length - 2)) preloadResultsScreen(() => setResultsReady((n) => n + 1));
+    if (currentRoundIndex >= Math.max(0, slots.length - 2)) {
+      preloadResultsScreen(() => {
+        const Panel = getLoadedResultsPanel();
+        if (Panel) setLoadedResults({ Panel });
+      });
+    }
   }, [currentRoundIndex, slots.length]);
-  const ResultsPanel = getLoadedResultsPanel() ?? AICriticPanel;
+  const ResultsPanel = loadedResults?.Panel ?? AICriticPanel;
 
   const handleEvaluate = async () => {
     await evaluateDraft();
