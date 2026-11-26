@@ -57,9 +57,14 @@ async function run(browser, dir, label) {
   await page.goto(url, { waitUntil: 'load' });
   const start = page.getByRole('button', { name: /^Draft an? .*album/ }).first();
   await start.waitFor();
-  // "Ready" = the start button responds (the page has finished starting up).
-  await start.click();
-  await page.getByText(/Round 1 of/).first().waitFor();
+  // "Ready" = the start button responds. The button is in the page's HTML
+  // before the code has started, so keep tapping until a draft really begins.
+  const hasPick = () => page.evaluate(() => [...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Pick'));
+  for (let attempt = 0; attempt < 120 && !(await hasPick()); attempt++) {
+    await start.click({ timeout: 2000 }).catch(() => {});
+    await page.waitForTimeout(250);
+  }
+  if (!(await hasPick())) throw new Error('draft never started');
   out.readyAndStartedMs = Date.now() - t0;
   Object.assign(out, await page.evaluate(() => {
     const nav = performance.getEntriesByType('navigation')[0];
