@@ -136,7 +136,12 @@ async function run(browser, dir, label) {
   const nav = page.getByRole('navigation', { name: 'Mobile Navigation Dock' });
   try { await nav.getByRole('button', { name: /Tracks/ }).click(); await page.getByRole('dialog').first().waitFor({ timeout: 8000 }); opened.tracklist = true; await page.keyboard.press('Escape'); } catch { opened.tracklist = false; }
   try { await nav.getByRole('button', { name: /Friend/ }).click(); await page.getByRole('dialog').first().waitFor({ timeout: 8000 }); opened.friends = true; await page.keyboard.press('Escape'); } catch { opened.friends = false; }
-  try { await page.getByRole('button', { name: 'How to Play' }).first().click(); await page.getByText(/Basics/).first().waitFor({ timeout: 8000 }); opened.howToPlay = true; } catch { opened.howToPlay = false; }
+  try {
+    // On phones How to Play sits in the menu; press the first button with that label.
+    await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'How to Play')?.click());
+    await page.getByRole('button', { name: /Basics/ }).first().waitFor({ timeout: 8000 });
+    opened.howToPlay = true;
+  } catch { opened.howToPlay = false; }
   out.opened = opened;
 
   // Reload on the results screen: the saved game must come back.

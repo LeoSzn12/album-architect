@@ -26,6 +26,7 @@ import {
   RealSongPlayerModal,
   SetupPanel,
   TracklistDrawer,
+  getLoadedResultsPanel,
   preloadResultsScreen,
 } from '@/components/lazyPanels';
 
@@ -106,9 +107,11 @@ export default function Home() {
 
   // Fetch the results screen's code while the last picks are being made, so it
   // shows instantly when the album is released.
+  const [, setResultsReady] = useState(0);
   useEffect(() => {
-    if (currentRoundIndex >= Math.max(0, slots.length - 2)) preloadResultsScreen();
+    if (currentRoundIndex >= Math.max(0, slots.length - 2)) preloadResultsScreen(() => setResultsReady((n) => n + 1));
   }, [currentRoundIndex, slots.length]);
+  const ResultsPanel = getLoadedResultsPanel() ?? AICriticPanel;
 
   const handleEvaluate = async () => {
     await evaluateDraft();
@@ -223,7 +226,7 @@ export default function Home() {
 
             {/* Main panel: critic results OR draft board */}
             {isCompleted && evaluationResult ? (
-              <AICriticPanel
+              <ResultsPanel
                 onOpenExport={() => setIsExportOpen(true)}
                 onOpenFriendsModal={() => setIsFriendsModalOpen(true)}
               />

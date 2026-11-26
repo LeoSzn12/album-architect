@@ -19,10 +19,26 @@ export const TracklistDrawer = dynamic(() => import('@/components/TracklistDrawe
 export const ExportModal = dynamic(() => import('@/components/ExportModal').then((m) => m.ExportModal), { ssr: false });
 export const RealSongPlayerModal = dynamic(() => import('@/components/RealSongPlayerModal').then((m) => m.RealSongPlayerModal), { ssr: false });
 
+type ResultsPanelComponent = Awaited<ReturnType<typeof loadResults>>;
 let resultsPreloaded = false;
-/** Starts downloading the results screen ahead of time (safe to call often). */
-export function preloadResultsScreen() {
+let loadedResultsPanel: ResultsPanelComponent | null = null;
+
+/**
+ * Starts downloading the results screen ahead of time (safe to call often).
+ * `onReady` runs once it is in memory, so the page can show it directly:
+ * going through the lazy wrapper again would make React hold the reveal
+ * for a moment even though the code is already here.
+ */
+export function preloadResultsScreen(onReady?: () => void) {
+  if (loadedResultsPanel) { onReady?.(); return; }
   if (resultsPreloaded) return;
   resultsPreloaded = true;
-  void loadResults().catch(() => { resultsPreloaded = false; });
+  void loadResults()
+    .then((panel) => { loadedResultsPanel = panel; onReady?.(); })
+    .catch(() => { resultsPreloaded = false; });
+}
+
+/** The results screen if it has already been downloaded, else null. */
+export function getLoadedResultsPanel(): ResultsPanelComponent | null {
+  return loadedResultsPanel;
 }
