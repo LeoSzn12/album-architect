@@ -28,15 +28,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Build after
-        env:
-          NEXT_BASE_PATH: /album-architect
-        run: npm ci && bash scripts/build-static.sh && mv out out-after
       - name: Build before
         env:
           NEXT_BASE_PATH: /album-architect
         working-directory: before
         run: npm ci && bash scripts/build-static.sh && mv out ../out-before
+      # The second checkout would otherwise be type-checked by the next build.
+      - run: rm -rf before
+      - name: Build after
+        env:
+          NEXT_BASE_PATH: /album-architect
+        run: npm ci && bash scripts/build-static.sh && mv out out-after
       - name: Install browser
         run: npx playwright install --with-deps chromium
       - name: Compare
