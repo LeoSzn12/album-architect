@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Trophy, Crown, Filter, Trash2, Swords, ChevronDown, ChevronUp } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
@@ -8,7 +9,7 @@ import { GameMode, DifficultyTier } from '@/types/draft';
 import { isSoloSeed } from '@/lib/soloSeed';
 
 export const LeaderboardPanel: React.FC<{ defaultOpen?: boolean }> = ({ defaultOpen = false }) => {
-  const { leaderboard, clearLeaderboard, audioEnabled } = useDraftStore();
+  const { leaderboard, clearLeaderboard, audioEnabled } = useDraftStore(useShallow((s) => ({ leaderboard: s.leaderboard, clearLeaderboard: s.clearLeaderboard, audioEnabled: s.audioEnabled })));
   const [filterMode, setFilterMode] = useState<'all' | GameMode>('all');
   const [filterDiff, setFilterDiff] = useState<'all' | DifficultyTier>('all');
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -20,7 +21,7 @@ export const LeaderboardPanel: React.FC<{ defaultOpen?: boolean }> = ({ defaultO
   });
 
   return (
-    <div className="box-border min-w-0 w-full bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-6 shadow-2xl backdrop-blur-2xl my-6 flex flex-col gap-5">
+    <div className="box-border min-w-0 w-full bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-6 shadow-2xl my-6 flex flex-col gap-5">
       {/* Panel Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-white/[0.08] gap-3">
         <div className="flex items-center gap-3">
@@ -130,7 +131,7 @@ export const LeaderboardPanel: React.FC<{ defaultOpen?: boolean }> = ({ defaultO
               <div
                 key={entry.id}
                 onMouseEnter={() => playHoverSound(audioEnabled)}
-                className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 backdrop-blur-md ${
+                className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                   isFirst
                     ? 'bg-[#181822]/90 border-amber-500/40 shadow-lg'
                     : isSecond

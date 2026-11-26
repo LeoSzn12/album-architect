@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Disc3, Zap, Trophy, Swords, ChevronRight, Check, DollarSign, Disc } from 'lucide-react';
 import { playDraftLockSound, playHoverSound } from '@/lib/audioEngine';
@@ -28,7 +29,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
   onScrollToLeaderboard,
   onOpenHowToPlay,
 }) => {
-  const { audioEnabled, gameMode, slots, setGameMode, challengeTheme } = useDraftStore();
+  const { audioEnabled, gameMode, slots, setGameMode, challengeTheme } = useDraftStore(useShallow((s) => ({ audioEnabled: s.audioEnabled, gameMode: s.gameMode, slots: s.slots, setGameMode: s.setGameMode, challengeTheme: s.challengeTheme })));
   const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : gameMode === 'budget' ? '$15 Budget' : 'Album';
   const isBuilder = gameMode !== 'draft';
   const [category, setCategory] = React.useState<ChallengeTheme>(

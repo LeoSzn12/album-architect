@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import confetti from 'canvas-confetti';
 import {
@@ -49,7 +50,7 @@ function scoreColor(score: number): string {
 const ResultsSection: React.FC<{ title: string; hint?: string; children: React.ReactNode }> = ({ title, hint, children }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-white/[0.08] rounded-3xl overflow-hidden bg-[#0e0e12]/90 backdrop-blur-xl">
+    <div className="border border-white/[0.08] rounded-3xl overflow-hidden bg-[#0e0e12]/90">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -68,18 +69,7 @@ const ResultsSection: React.FC<{ title: string; hint?: string; children: React.R
 };
 
 export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOpenFriendsModal }) => {
-  const {
-    evaluationResult,
-    isEvaluating,
-    audioEnabled,
-    startNewDraft,
-    draftedTracks,
-    openRealSongPlayer,
-    evaluateDraft,
-    opponentEvaluationResult,
-    gameMode,
-    draftSeed,
-  } = useDraftStore();
+  const { evaluationResult, isEvaluating, audioEnabled, startNewDraft, draftedTracks, openRealSongPlayer, evaluateDraft, opponentEvaluationResult, gameMode, draftSeed } = useDraftStore(useShallow((s) => ({ evaluationResult: s.evaluationResult, isEvaluating: s.isEvaluating, audioEnabled: s.audioEnabled, startNewDraft: s.startNewDraft, draftedTracks: s.draftedTracks, openRealSongPlayer: s.openRealSongPlayer, evaluateDraft: s.evaluateDraft, opponentEvaluationResult: s.opponentEvaluationResult, gameMode: s.gameMode, draftSeed: s.draftSeed })));
 
   const [showCriticBoard, setShowCriticBoard] = useState(false);
   const [showBestPossible, setShowBestPossible] = useState(false);
@@ -151,7 +141,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
   if (isEvaluating) {
     const projectLabel = gameMode === 'draft' ? 'Draft' : gameMode === 'ep' ? 'EP' : 'Album';
     return (
-      <div className="w-full bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-2xl my-6 backdrop-blur-2xl">
+      <div className="w-full bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-2xl my-6">
         <div className="w-16 h-16 rounded-full border-4 border-white/[0.08] border-t-rose-500 animate-spin mb-4" />
         <h3 className="text-xl font-black text-white mb-1">
           Scoring Your {projectLabel}…
@@ -481,7 +471,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
 
         <ResultsSection title="Your style" hint={curatorPersona.title}>
       {/* Your style */}
-      <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 backdrop-blur-xl">
+      <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-white/[0.06] border border-white/[0.08] shadow-inner flex items-center justify-center flex-shrink-0">
             <Crown className="w-6 h-6 text-amber-400" />
@@ -516,7 +506,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           <ResultsSection title="Badges and bonuses">
       {/* ── Curator Badges ── */}
       {curatorBadges && curatorBadges.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
+        <div className="flex flex-wrap items-center gap-2 p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08]">
           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
             <Award className="w-3.5 h-3.5 text-rose-500" /> Badges earned:
           </span>
@@ -594,7 +584,7 @@ export const AICriticPanel: React.FC<AICriticPanelProps> = ({ onOpenExport, onOp
           <ResultsSection title="Emoji recap">
       {/* Emoji recap */}
       {wordleData && (
-        <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl flex flex-col gap-3 backdrop-blur-xl">
+        <div className="p-5 rounded-3xl bg-[#121216]/90 border border-white/[0.08] shadow-xl flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-rose-500">

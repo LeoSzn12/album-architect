@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { X, Music, Flame, Play, Radio, Music2, ArrowUp, ArrowDown } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
@@ -17,17 +18,7 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
   isOpen,
   onClose,
 }) => {
-  const {
-    draftedTracks,
-    slots,
-    energyMetrics,
-    monopolyReport,
-    audioEnabled,
-    openRealSongPlayer,
-    reorderDraftedTracks,
-    gameMode,
-    sessionId,
-  } = useDraftStore();
+  const { draftedTracks, slots, energyMetrics, monopolyReport, audioEnabled, openRealSongPlayer, reorderDraftedTracks, gameMode, sessionId } = useDraftStore(useShallow((s) => ({ draftedTracks: s.draftedTracks, slots: s.slots, energyMetrics: s.energyMetrics, monopolyReport: s.monopolyReport, audioEnabled: s.audioEnabled, openRealSongPlayer: s.openRealSongPlayer, reorderDraftedTracks: s.reorderDraftedTracks, gameMode: s.gameMode, sessionId: s.sessionId })));
 
   const { modalRef, handleBackdropClick, modalProps } = useModalA11y({
     isOpen,
@@ -45,12 +36,12 @@ export const TracklistDrawer: React.FC<TracklistDrawerProps> = ({
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex justify-end bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex justify-end bg-black/85 animate-fade-in"
     >
       <div
         ref={modalRef}
         {...modalProps}
-        className="w-full max-w-md bg-[#0d0d11]/95 backdrop-blur-2xl border-l border-white/[0.08] h-full flex flex-col justify-between shadow-2xl p-5 sm:p-6 pb-safe overflow-y-auto"
+        className="w-full max-w-md bg-[#0d0d11]/95 border-l border-white/[0.08] h-full flex flex-col justify-between shadow-2xl p-5 sm:p-6 pb-safe overflow-y-auto"
       >
         <div>
           <div className="flex justify-between items-center pb-4 mb-4 border-b border-white/[0.08]">

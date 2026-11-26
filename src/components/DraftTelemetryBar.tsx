@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { OscilloscopeEnergyBar } from '@/components/OscilloscopeEnergyBar';
 import { ArtistMonopolyTracker } from '@/components/ArtistMonopolyTracker';
@@ -8,7 +9,7 @@ import { Activity, ShieldCheck, AlertTriangle, ChevronDown, ChevronUp, Zap } fro
 
 export const DraftTelemetryBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { energyMetrics, monopolyReport, slots, currentRoundIndex } = useDraftStore();
+  const { energyMetrics, monopolyReport, slots, currentRoundIndex } = useDraftStore(useShallow((s) => ({ energyMetrics: s.energyMetrics, monopolyReport: s.monopolyReport, slots: s.slots, currentRoundIndex: s.currentRoundIndex })));
 
   const activeSlot = slots[currentRoundIndex];
   const { hasViolation, totalPenaltyDeduction } = monopolyReport;
@@ -16,7 +17,7 @@ export const DraftTelemetryBar: React.FC = () => {
   return (
     <div className="w-full flex flex-col gap-2">
       {/* Sleek compact HUD bar */}
-      <div className="w-full flex items-center justify-between gap-3 px-3.5 py-2 rounded-2xl bg-[#0e0e12]/85 border border-white/[0.08] backdrop-blur-2xl text-xs shadow-lg">
+      <div className="w-full flex items-center justify-between gap-3 px-3.5 py-2 rounded-2xl bg-[#0e0e12]/85 border border-white/[0.08] text-xs shadow-lg">
         <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none py-0.5">
           {/* Energy pacing badge */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-[11px] font-bold text-rose-300 whitespace-nowrap">

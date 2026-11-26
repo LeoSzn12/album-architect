@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { Disc3, Flame, Music2, Swords, Trophy } from 'lucide-react';
 import { playHoverSound } from '@/lib/audioEngine';
@@ -22,7 +23,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onScrollToLeaderboard,
   onScrollToCrowd,
 }) => {
-  const { draftedTracks, slots, crowdHype, audioEnabled } = useDraftStore();
+  const { draftedTracks, slots, crowdHype, audioEnabled } = useDraftStore(useShallow((s) => ({ draftedTracks: s.draftedTracks, slots: s.slots, crowdHype: s.crowdHype, audioEnabled: s.audioEnabled })));
 
   const handleBoardClick = () => {
     playHoverSound(audioEnabled);
@@ -59,7 +60,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <nav
       aria-label="Mobile Navigation Dock"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0e]/95 backdrop-blur-2xl border-t border-white/[0.08] pb-safe shadow-2xl shadow-black/90"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0e]/95 border-t border-white/[0.08] pb-safe shadow-2xl shadow-black/90"
     >
       <div className="flex items-center justify-around px-2 py-1 min-h-[52px]">
         {/* 1. Board / Draft */}

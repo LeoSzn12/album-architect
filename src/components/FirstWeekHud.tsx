@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ChevronDown, EyeOff, Swords, TrendingUp } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { RIVALS } from '@/lib/firstWeek/rivals';
 import { RULE_CARDS } from '@/lib/firstWeek/ruleCards';
@@ -9,7 +10,7 @@ import { getWeeklyTrend } from '@/lib/firstWeek/weeklyTrend';
 
 /** Rival, rule cards and this week's trend, shown above the pick pool. */
 export const FirstWeekHud: React.FC = () => {
-  const { gameMode, rivalId, ruleCardIds, mysteryRoundIndex, currentRoundIndex, rivalPrePick } = useDraftStore();
+  const { gameMode, rivalId, ruleCardIds, mysteryRoundIndex, currentRoundIndex, rivalPrePick } = useDraftStore(useShallow((s) => ({ gameMode: s.gameMode, rivalId: s.rivalId, ruleCardIds: s.ruleCardIds, mysteryRoundIndex: s.mysteryRoundIndex, currentRoundIndex: s.currentRoundIndex, rivalPrePick: s.rivalPrePick })));
   const rival = RIVALS[rivalId];
   const trend = React.useMemo(() => getWeeklyTrend(), []);
   const isMysteryRound = mysteryRoundIndex === currentRoundIndex;

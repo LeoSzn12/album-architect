@@ -1,0 +1,48 @@
+name: First Week speed check
+
+# Builds the static game twice (the pull request's base and its changes) and
+# plays the same flow on each in a phone-sized Chrome with the CPU slowed 4x.
+# Read-only: publishes nothing.
+on:
+  pull_request:
+    branches: [claude/project-thread-wexxks]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || 'claude/project-thread-wexxks' }}
+          path: before
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build after
+        env:
+          NEXT_BASE_PATH: /album-architect
+        run: npm ci && bash scripts/build-static.sh && mv out out-after
+      - name: Build before
+        env:
+          NEXT_BASE_PATH: /album-architect
+        working-directory: before
+        run: npm ci && bash scripts/build-static.sh && mv out ../out-before
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Compare
+        run: node scripts/speed-check.cjs out-before out-after speed-report.md && cat speed-report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: speed-report
+          path: speed-report.md

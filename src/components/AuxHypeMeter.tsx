@@ -36,7 +36,7 @@ export const AuxHypeMeter: React.FC<AuxHypeMeterProps> = ({ crowdHype, isCompact
 
   if (isCompact) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0e0e12]/90 border border-white/[0.08] backdrop-blur-2xl">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0e0e12]/90 border border-white/[0.08]">
         <Icon className="w-3.5 h-3.5 text-rose-500" />
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5">
@@ -55,7 +55,7 @@ export const AuxHypeMeter: React.FC<AuxHypeMeterProps> = ({ crowdHype, isCompact
   }
 
   return (
-    <div className="w-full bg-[#0e0e12]/85 border border-white/[0.08] rounded-2xl p-3.5 backdrop-blur-2xl shadow-xl flex flex-col gap-2 relative overflow-hidden group hover:border-white/20 transition">
+    <div className="w-full bg-[#0e0e12]/85 border border-white/[0.08] rounded-2xl p-3.5 shadow-xl flex flex-col gap-2 relative overflow-hidden group hover:border-white/20 transition">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08]">

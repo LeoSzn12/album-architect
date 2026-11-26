@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { useSnippetAudio } from '@/hooks/useSnippetAudio';
 import {
@@ -29,21 +30,10 @@ import {
   VolumeX,
   Minimize2,
 } from 'lucide-react';
+import { coverSrc } from '@/lib/coverArt';
 
 export const DockedMusicPlayer: React.FC = () => {
-  const {
-    selectedRealSong,
-    isPlayerModalOpen,
-    closeMusicPlayer,
-    audioSourcePreference,
-    setAudioSourcePreference,
-    openRealSongPlayer,
-    draftedTracks,
-    currentOptions,
-    audioEnabled,
-    mysteryRoundIndex,
-    currentRoundIndex,
-  } = useDraftStore();
+  const { selectedRealSong, isPlayerModalOpen, closeMusicPlayer, audioSourcePreference, setAudioSourcePreference, openRealSongPlayer, draftedTracks, currentOptions, audioEnabled, mysteryRoundIndex, currentRoundIndex } = useDraftStore(useShallow((s) => ({ selectedRealSong: s.selectedRealSong, isPlayerModalOpen: s.isPlayerModalOpen, closeMusicPlayer: s.closeMusicPlayer, audioSourcePreference: s.audioSourcePreference, setAudioSourcePreference: s.setAudioSourcePreference, openRealSongPlayer: s.openRealSongPlayer, draftedTracks: s.draftedTracks, currentOptions: s.currentOptions, audioEnabled: s.audioEnabled, mysteryRoundIndex: s.mysteryRoundIndex, currentRoundIndex: s.currentRoundIndex })));
 
   const {
     song: snippetSong,
@@ -127,7 +117,7 @@ export const DockedMusicPlayer: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 p-2 sm:p-4 pointer-events-none flex justify-center animate-slide-up">
-      <div className="w-full max-w-4xl bg-[#0e0e12]/95 border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/80 backdrop-blur-2xl pointer-events-auto overflow-hidden flex flex-col transition-all">
+      <div className="w-full max-w-4xl bg-[#0e0e12]/95 border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/80 pointer-events-auto overflow-hidden flex flex-col transition-all">
         {/* Top Control Bar */}
         <div className="p-2.5 sm:p-4 flex items-center justify-between gap-3 border-b border-white/[0.08] bg-[#09090c]/90">
           {/* Song Info & Artwork */}
@@ -135,7 +125,7 @@ export const DockedMusicPlayer: React.FC = () => {
             <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden shadow-lg border border-white/10 flex-shrink-0 bg-zinc-900">
               {activeSong.artwork ? (
                 <img
-                  src={activeSong.artwork}
+                  src={coverSrc(activeSong.artwork)}
                   alt={activeSong.title}
                   className="w-full h-full object-cover"
                 />

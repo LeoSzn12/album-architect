@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import {
   getYouTubeMusicUrl,
@@ -31,17 +32,7 @@ import { useModalA11y } from '@/hooks/useModalA11y';
 import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer';
 
 export const RealSongPlayerModal: React.FC = () => {
-  const {
-    isPlayerModalOpen,
-    closeRealSongPlayer,
-    selectedRealSong,
-    audioSourcePreference,
-    setAudioSourcePreference,
-    draftedTracks,
-    playNextDraftedTrack,
-    playPrevDraftedTrack,
-    audioEnabled,
-  } = useDraftStore();
+  const { isPlayerModalOpen, closeRealSongPlayer, selectedRealSong, audioSourcePreference, setAudioSourcePreference, draftedTracks, playNextDraftedTrack, playPrevDraftedTrack, audioEnabled } = useDraftStore(useShallow((s) => ({ isPlayerModalOpen: s.isPlayerModalOpen, closeRealSongPlayer: s.closeRealSongPlayer, selectedRealSong: s.selectedRealSong, audioSourcePreference: s.audioSourcePreference, setAudioSourcePreference: s.setAudioSourcePreference, draftedTracks: s.draftedTracks, playNextDraftedTrack: s.playNextDraftedTrack, playPrevDraftedTrack: s.playPrevDraftedTrack, audioEnabled: s.audioEnabled })));
 
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
 
@@ -117,12 +108,12 @@ export const RealSongPlayerModal: React.FC = () => {
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fade-in"
     >
       <div
         ref={modalRef}
         {...modalProps}
-        className="relative w-full max-w-2xl bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+        className="relative w-full max-w-2xl bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
       >
         {/* Header Smoked Glass Banner */}
         <div className="relative p-6 bg-gradient-to-b from-[#181822] to-[#0e0e12] border-b border-white/[0.08] text-white flex flex-col gap-1">

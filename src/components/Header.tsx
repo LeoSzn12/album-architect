@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import {
   Volume2,
@@ -52,16 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenHowToPlay,
   showProgress = true,
 }) => {
-  const {
-    gameMode,
-    draftSeed,
-    currentRoundIndex,
-    slots,
-    audioEnabled,
-    toggleAudio,
-    startNewDraft,
-    draftedTracks,
-  } = useDraftStore();
+  const { gameMode, draftSeed, currentRoundIndex, slots, audioEnabled, toggleAudio, startNewDraft, draftedTracks } = useDraftStore(useShallow((s) => ({ gameMode: s.gameMode, draftSeed: s.draftSeed, currentRoundIndex: s.currentRoundIndex, slots: s.slots, audioEnabled: s.audioEnabled, toggleAudio: s.toggleAudio, startNewDraft: s.startNewDraft, draftedTracks: s.draftedTracks })));
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -96,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="w-full max-w-6xl mx-auto mb-4 sm:mb-6 px-3 sm:px-4 py-2 border border-white/[0.08] bg-[#121216]/80 backdrop-blur-2xl sticky top-2 sm:top-3 z-40 rounded-2xl shadow-[0_16px_40px_-10px_rgba(0,0,0,0.65)]">
+      <header className="w-full max-w-6xl mx-auto mb-4 sm:mb-6 px-3 sm:px-4 py-2 border border-white/[0.08] bg-[#121216]/95 sticky top-2 sm:top-3 z-40 rounded-2xl shadow-[0_16px_40px_-10px_rgba(0,0,0,0.65)]">
         <div className="flex items-center justify-between gap-2 min-h-[44px]">
           {/* Brand + progress */}
           <button
@@ -182,11 +174,11 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center bg-black/80 backdrop-blur-xl animate-fade-in"
+          className="fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center bg-black/85 animate-fade-in"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
-            className="w-full sm:max-w-md bg-[#121216]/95 border-t sm:border border-white/[0.12] rounded-t-3xl sm:rounded-3xl p-5 pb-safe shadow-2xl flex flex-col gap-4 max-h-[85vh] overflow-y-auto backdrop-blur-2xl"
+            className="w-full sm:max-w-md bg-[#121216]/95 border-t sm:border border-white/[0.12] rounded-t-3xl sm:rounded-3xl p-5 pb-safe shadow-2xl flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Sheet Handle */}

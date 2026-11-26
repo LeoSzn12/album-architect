@@ -106,7 +106,7 @@ export const LibraryPanel: React.FC<LibraryPanelProps> = ({ songs = SONG_LIBRARY
   };
 
   return (
-    <section aria-labelledby="library-panel-title" className="w-full max-w-6xl rounded-3xl border border-white/[0.08] bg-[#0e0e12]/95 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
+    <section aria-labelledby="library-panel-title" className="w-full max-w-6xl rounded-3xl border border-white/[0.08] bg-[#0e0e12]/95 p-6 shadow-2xl sm:p-8">
       {onBackToGame && (
         <div className="mb-6 flex items-center justify-between pb-4 border-b border-white/[0.08]">
           <button

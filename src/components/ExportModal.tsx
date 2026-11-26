@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { X, ExternalLink, Copy, Check, Download, Disc, Sparkles, Music } from 'lucide-react';
 import { playHoverSound, playDraftLockSound } from '@/lib/audioEngine';
@@ -15,7 +16,7 @@ interface ExportModalProps {
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
-  const { draftedTracks, gameMode, evaluationResult, opponentEvaluationResult, playerAlias, draftSeed, audioEnabled } = useDraftStore();
+  const { draftedTracks, gameMode, evaluationResult, opponentEvaluationResult, playerAlias, draftSeed, audioEnabled } = useDraftStore(useShallow((s) => ({ draftedTracks: s.draftedTracks, gameMode: s.gameMode, evaluationResult: s.evaluationResult, opponentEvaluationResult: s.opponentEvaluationResult, playerAlias: s.playerAlias, draftSeed: s.draftSeed, audioEnabled: s.audioEnabled })));
   const [copied, setCopied] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [durableShareToken, setDurableShareToken] = useState<string | null>(null);
@@ -127,12 +128,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fade-in"
     >
       <div
         ref={modalRef}
         {...modalProps}
-        className="bg-[#0e0e12]/95 border border-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative overflow-hidden"
+        className="bg-[#0e0e12]/95 border border-white/[0.08] rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative overflow-hidden"
       >
         <div className="flex justify-between items-center pb-4 mb-6 border-b border-white/[0.08]">
           <div>

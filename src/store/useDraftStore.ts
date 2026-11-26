@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { canPersistGame } from '@/lib/cloudPersistence';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
+import { batchedLocalStorage } from '@/lib/batchedStorage';
 import {
   GameMode,
   DraftSlot,
@@ -643,6 +644,8 @@ export const useDraftStore = create<DraftStoreState>()(
         // starts a new draft while the request is in flight. Fixes audit M4.
         let result: EvaluationResult;
         try {
+          // The GitHub Pages build has no server: score on the device right away.
+          if (process.env.NEXT_PUBLIC_STATIC_SITE === '1') throw new Error('static site: local scoring');
           const response = await fetch('/api/critic-evaluate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -665,7 +668,7 @@ export const useDraftStore = create<DraftStoreState>()(
           // Preserve the source returned by the API; do NOT force 'gemini'.
           result = parsed;
         } catch (err) {
-          console.warn('API Evaluation error, falling back to local evaluation:', err);
+          if (process.env.NEXT_PUBLIC_STATIC_SITE !== '1') console.warn('API Evaluation error, falling back to local evaluation:', err);
           result = generateFallbackEvaluation(
             gameMode,
             draftedTracksSnapshot,
@@ -738,7 +741,6 @@ export const useDraftStore = create<DraftStoreState>()(
           trackCount: draftedTracksSnapshot.length,
           topTrackTitle: draftedTracksSnapshot[0]?.song.title || 'Master Project',
           topTrackArtist: draftedTracksSnapshot[0]?.song.rawArtistString || 'Various Artists',
-          evaluationResult: result,
           theme: get().challengeTheme,
           budgetReport: result.budgetReport,
           crowdHypeScore: result.crowdHype?.score,
@@ -898,16 +900,7 @@ export const useDraftStore = create<DraftStoreState>()(
     {
       name: 'album-architect-draft-v1',
       version: PERSIST_VERSION,
-      storage: createJSONStorage(() => {
-        if (typeof window !== 'undefined') {
-          return window.localStorage;
-        }
-        return {
-          getItem: () => null,
-          setItem: () => {},
-          removeItem: () => {},
-        } as unknown as Storage;
-      }),
+      storage: batchedLocalStorage(),
       /**
        * Schema migrations. Each branch brings persisted state up to PERSIST_VERSION.
       * v1→v2: added rerollCount; recomputed slots+currentOptions.
@@ -1018,7 +1011,12 @@ export const useDraftStore = create<DraftStoreState>()(
         opponentEvaluationResult: state.opponentEvaluationResult,
         audioEnabled: state.audioEnabled,
         audioSourcePreference: state.audioSourcePreference,
-        pastDrafts: state.pastDrafts,
+        // Summaries only: the history list never shows the full result.
+        pastDrafts: state.pastDrafts.map((draft) => {
+          const summary = { ...draft };
+          delete summary.evaluationResult;
+          return summary;
+        }),
         leaderboard: state.leaderboard,
         versusMatchup: state.versusMatchup,
         opponentDraftedTracks: state.opponentDraftedTracks,

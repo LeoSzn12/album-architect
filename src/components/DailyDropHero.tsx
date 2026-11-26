@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Calendar, Flame, ArrowRight, Trophy } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDraftStore } from '@/store/useDraftStore';
 import { getDailySeed, getDailyTheme } from '@/lib/dailyDrop';
 import { playDraftLockSound } from '@/lib/audioEngine';
@@ -11,7 +12,7 @@ interface DailyDropHeroProps {
 }
 
 export const DailyDropHero: React.FC<DailyDropHeroProps> = ({ onStart }) => {
-  const { dailyStreak, lastDailyCompletedDate, startDailyDrop, audioEnabled } = useDraftStore();
+  const { dailyStreak, lastDailyCompletedDate, startDailyDrop, audioEnabled } = useDraftStore(useShallow((s) => ({ dailyStreak: s.dailyStreak, lastDailyCompletedDate: s.lastDailyCompletedDate, startDailyDrop: s.startDailyDrop, audioEnabled: s.audioEnabled })));
 
   const todaySeed = getDailySeed();
   const dailyTheme = getDailyTheme();
@@ -24,7 +25,7 @@ export const DailyDropHero: React.FC<DailyDropHeroProps> = ({ onStart }) => {
   };
 
   return (
-    <div className="w-full relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e0e12]/90 p-5 md:p-7 shadow-2xl backdrop-blur-2xl group hover:border-white/20 transition-all">
+    <div className="w-full relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0e0e12]/90 p-5 md:p-7 shadow-2xl group hover:border-white/20 transition-all">
       {/* Subtle Specular Top Sheen */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
 
